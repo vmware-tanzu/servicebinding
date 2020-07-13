@@ -37,8 +37,6 @@ var (
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(
 		SchemeGroupVersion,
-		&ImageableType{},
-		(&ImageableType{}).GetListType(),
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

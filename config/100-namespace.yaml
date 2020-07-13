@@ -1,0 +1,10 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: service-bindings
+  labels:
+    bindings.labs.vmware.com/release: devel
+    bindings.labs.vmware.com/exclude: "true"

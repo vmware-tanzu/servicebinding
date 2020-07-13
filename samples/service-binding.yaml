@@ -1,0 +1,52 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: service.binding/v1alpha2
+kind: ServiceBinding
+metadata:
+  name: account-db
+spec:
+  type: mysql
+  application:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: test-deployment
+    containers:
+    - test-container
+  service:
+    apiVersion: bindings.labs.vmware.com/v1alpha1
+    kind: ProvisionedService
+    name: account-db
+  mappings:
+  - name: uri
+    value: mysql://{{ urlquery .username }}:{{ urlquery .password }}@{{ .host }}:{{ .port }}/{{ .name }}?reconnect=true
+  - name: jdbcUri
+    value: jdbc:mysql://{{ .host }}:{{ .port }}/{{ .name }}?user={{ urlquery .username }}&password={{ urlquery .password }}
+  env:
+  - name: SPRING_DATASOURCE_URL
+    key: jdbcUri
+
+---
+apiVersion: bindings.labs.vmware.com/v1alpha1
+kind: ProvisionedService
+metadata:
+  name: account-db
+spec:
+  binding:
+    name: account-db-service
+#status: # status is created by the ProvisionedService controller, and is what implements the duck-type
+#  binding:
+#    name: account-db-service
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: account-db-service
+type: Opaque
+stringData:
+  host: localhost
+  name: default
+  password: ""
+  port: "3306"
+  username: root

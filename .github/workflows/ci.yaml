@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - '**'
+    - '!dependabot/**'
+  pull_request: {}
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2-beta
+      with:
+        go-version: 1.14.x
+    - name: Test
+      run: go test ./...
+
+  stage:
+    needs: test
+    if: github.event_name == 'push' && startsWith(github.repository, 'vmware-labs/')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2-beta
+      with:
+        go-version: 1.14.x
+    - name: Install ko
+      run: |
+        go get github.com/google/ko/cmd/ko
+        echo "##[add-path]$(go env GOPATH)/bin"
+      env:
+        GO111MODULE: "off"
+    - name: gcloud auth
+      run: |
+        gcloud config set disable_prompts True
+        gcloud auth activate-service-account --key-file <(echo $GCLOUD_CLIENT_SECRET | base64 --decode)
+        gcloud auth configure-docker
+      env:
+        GCLOUD_CLIENT_SECRET: ${{ secrets.GCLOUD_CLIENT_SECRET }}
+    - name: Stage
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        readonly version=$(cat VERSION)
+        readonly git_sha=$(git rev-parse HEAD)
+        readonly git_timestamp=$(TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd")
+        readonly slug=${version}-${git_timestamp}-${git_sha:0:16}
+
+        ko resolve -t ${slug} --strict -f config > service-bindings.yaml
+        gsutil cp service-bindings.yaml gs://projectriff/service-bindings/snapshots/${slug}/service-bindings.yaml
+      env:
+        KO_DOCKER_REPO: gcr.io/projectriff/service-bindings
+  
+  # TODO add acceptance tests
+  # acceptance: {}
+
+  publish:
+    # TODO restore once we have acceptance tests
+    # needs: acceptance
+    needs: stage
+    if: |
+      github.event_name == 'push' && startsWith(github.repository, 'vmware-labs/') && (
+        github.ref == 'refs/heads/main' || (
+          startsWith(github.ref, 'refs/heads/v') && endsWith(github.ref, 'x')
+        )
+      )
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: gcloud auth
+      run: |
+        gcloud config set disable_prompts True
+        gcloud auth activate-service-account --key-file <(echo $GCLOUD_CLIENT_SECRET | base64 --decode)
+      env:
+        GCLOUD_CLIENT_SECRET: ${{ secrets.GCLOUD_CLIENT_SECRET }}
+    - name: Publish artifacts
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        readonly version=$(cat VERSION)
+        readonly git_sha=$(git rev-parse HEAD)
+        readonly git_branch=${GITHUB_REF#refs/heads/}
+        readonly git_timestamp=$(TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd")
+        readonly slug=${version}-${git_timestamp}-${git_sha:0:16}
+
+        readonly bucket=gs://projectriff/service-bindings
+
+        cache_control='Cache-Control: public'
+        if echo $version | grep -iqF snapshot; then
+          cache_control="${cache_control}, max-age=60"
+        else
+          cache_control="${cache_control}, max-age=3600"
+        fi
+
+        echo "Promote artifacts"
+        gsutil -h "${cache_control}" rsync -d ${bucket}/snapshots/${slug}/ ${bucket}/${slug}/
+        if [[ ${version} != *"-snapshot" ]] ; then
+          gsutil -h "${cache_control}" rsync -d ${bucket}/snapshots/${slug}/ ${bucket}/${version}/
+        fi
+
+        echo "Capture snapshot slug"
+        gsutil -h 'Content-Type: text/plain' -h 'Cache-Control: private' cp <(echo "${slug}") gs://projectriff/service-bindings/versions/builds/${git_branch}
+        gsutil -h 'Content-Type: text/plain' -h 'Cache-Control: private' cp <(echo "${slug}") gs://projectriff/service-bindings/versions/builds/${version}
+        if [[ ${version} != *"-snapshot" ]] ; then
+          gsutil -h 'Content-Type: text/plain' -h 'Cache-Control: private' cp <(echo "${slug}") gs://projectriff/service-bindings/versions/releases/${git_branch}
+          # avoids overwriting existing values
+          gsutil -h 'Content-Type: text/plain' -h 'Cache-Control: private' cp -n <(echo "${slug}") gs://projectriff/service-bindings/versions/releases/${version}
+        fi

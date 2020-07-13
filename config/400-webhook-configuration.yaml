@@ -1,0 +1,79 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: defaulting.webhook.bindings.labs.vmware.com
+  labels:
+    bindings.labs.vmware.com/release: devel
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook
+      namespace: service-bindings
+  failurePolicy: Fail
+  name: defaulting.webhook.bindings.labs.vmware.com
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validation.webhook.bindings.labs.vmware.com
+  labels:
+    bindings.labs.vmware.com/release: devel
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook
+      namespace: service-bindings
+  failurePolicy: Fail
+  name: validation.webhook.bindings.labs.vmware.com
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: config.webhook.bindings.labs.vmware.com
+  labels:
+    bindings.labs.vmware.com/release: devel
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook
+      namespace: service-bindings
+  failurePolicy: Fail
+  name: config.webhook.bindings.labs.vmware.com
+  namespaceSelector:
+    matchExpressions:
+    - key: bindings.labs.vmware.com/release
+      operator: Exists
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: servicebindings.webhook.bindings.labs.vmware.com
+  labels:
+    bindings.labs.vmware.com/release: devel
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook
+      namespace: service-bindings
+  failurePolicy: Fail
+  name: servicebindings.webhook.bindings.labs.vmware.com
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: webhook-certs
+  namespace: service-bindings
+  labels:
+    bindings.labs.vmware.com/release: devel
+# The data is populated at install time.

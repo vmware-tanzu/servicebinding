@@ -1,0 +1,56 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook
+  namespace: service-bindings
+  labels:
+    bindings.labs.vmware.com/release: devel
+    bindings.labs.vmware.com/exclude: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webhook
+      role: webhook
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: webhook
+        role: webhook
+        bindings.labs.vmware.com/release: devel
+        bindings.labs.vmware.com/exclude: "true"
+    spec:
+      serviceAccountName: controller
+      containers:
+      - name: webhook
+        # This is the Go import path for the binary that is containerized
+        # and substituted here.
+        image: ko://github.com/vmware-labs/service-bindings/cmd/webhook
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 1000m
+            memory: 1000Mi
+        ports:
+        - name: metrics
+          containerPort: 9090
+        - name: https-webhook
+          containerPort: 8443
+        env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        - name: METRICS_DOMAIN
+          value: labs.vmware.com/bindings

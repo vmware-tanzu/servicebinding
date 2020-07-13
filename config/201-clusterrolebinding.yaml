@@ -1,0 +1,17 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: service-binding-controller-admin
+  labels:
+    bindings.labs.vmware.com/release: devel
+subjects:
+  - kind: ServiceAccount
+    name: controller
+    namespace: service-bindings
+roleRef:
+  kind: ClusterRole
+  name: service-binding-admin
+  apiGroup: rbac.authorization.k8s.io

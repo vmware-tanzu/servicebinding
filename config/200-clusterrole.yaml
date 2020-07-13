@@ -1,0 +1,119 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: service-binding-admin
+  labels:
+    bindings.labs.vmware.com/release: devel
+aggregationRule:
+  clusterRoleSelectors:
+  - matchLabels:
+      service.binding/controller: "true"
+rules: [] # Rules are automatically filled in by the controller manager.
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: service-binding-core
+  labels:
+    bindings.labs.vmware.com/release: devel
+    service.binding/controller: "true"
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "services", "secrets", "events", "namespaces"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "deployments/finalizers"] # finalizers are needed for the owner reference of the webhook
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: service-binding-crd
+  labels:
+    bindings.labs.vmware.com/release: devel
+    service.binding/controller: "true"
+rules:
+  - apiGroups: ["bindings.labs.vmware.com"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["service.binding"]
+    resources: ["*"]
+    verbs: ["*"]
+---
+# This piece of the aggregated cluster role enables us to bind to the built-in
+# Kubernetes apps resources
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: service-binding-apps
+  labels:
+    bindings.labs.vmware.com/release: devel
+    service.binding/controller: "true"
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments", "daemonsets", "statefulsets"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+---
+# This piece of the aggregated cluster role enables us to bind to
+# Knative service resources
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: service-binding-knative-serving
+  labels:
+    bindings.labs.vmware.com/release: devel
+    service.binding/controller: "true"
+rules:
+  - apiGroups: ["serving.knative.dev"]
+    resources: ["services", "configurations"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+
+---
+# This piece of the aggregated cluster role enables us to read
+# Kpack image resources
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: service-binding-kpack
+  labels:
+    bindings.labs.vmware.com/release: devel
+    service.binding/controller: "true"
+rules:
+  - apiGroups: ["build.pivotal.io"]
+    resources: ["images"]
+    verbs: ["get", "list", "watch"]
+---
+# This piece of the aggregated cluster role enables us to read
+# riff resources
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: service-binding-riff
+  labels:
+    bindings.labs.vmware.com/release: devel
+    service.binding/controller: "true"
+rules:
+  - apiGroups: ["build.projectriff.io"]
+    resources: ["applications", "containers", "functions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["core.projectriff.io"]
+    resources: ["deployers"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["knative.projectriff.io"]
+    resources: ["deployers"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["streams.projectriff.io"]
+    resources: ["processors"]
+    verbs: ["get", "list", "watch", "update", "patch"]

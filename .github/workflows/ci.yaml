@@ -63,6 +63,7 @@ jobs:
         path: service-bindings.yaml
 
   acceptance:
+    needs: stage
     if: github.event_name == 'push' && startsWith(github.repository, 'vmware-labs/')
     runs-on: ubuntu-latest
     steps:

@@ -43,6 +43,12 @@ jobs:
         gcloud auth configure-docker
       env:
         GCLOUD_CLIENT_SECRET: ${{ secrets.GCLOUD_CLIENT_SECRET }}
+    - name: dockerhub auth
+      run: |
+        echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      env:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
     - name: Stage
       run: |
         set -o errexit
@@ -54,10 +60,11 @@ jobs:
         readonly git_timestamp=$(TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd")
         readonly slug=${version}-${git_timestamp}-${git_sha:0:16}
 
-        ko resolve -t ${slug} --strict -f config > service-bindings.yaml
+        ko resolve -t ${slug} --strict -B -f config > service-bindings.yaml
+
         gsutil cp service-bindings.yaml gs://projectriff/service-bindings/snapshots/${slug}/service-bindings.yaml
       env:
-        KO_DOCKER_REPO: gcr.io/projectriff/service-bindings
+        KO_DOCKER_REPO: docker.io/vmware
   
   # TODO add acceptance tests
   # acceptance: {}

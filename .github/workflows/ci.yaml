@@ -72,7 +72,6 @@ jobs:
       uses: actions/download-artifact@v2.0.1
       with:
         name: service-bindings.yaml
-        path: service-bindings.yaml
     - run: cat service-bindings.yaml
     # TODO add acceptance tests
 
@@ -99,7 +98,6 @@ jobs:
       uses: actions/download-artifact@v2.0.1
       with:
         name: service-bindings.yaml
-        path: service-bindings.yaml
     - name: Upload release asset
       uses: actions/upload-release-asset@v1.0.2
       env:

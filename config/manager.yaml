@@ -4,7 +4,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: webhook
+  name: manager
   namespace: service-bindings
   labels:
     bindings.labs.vmware.com/release: devel
@@ -13,24 +13,24 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: webhook
-      role: webhook
+      app: manager
+      role: manager
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: "false"
       labels:
-        app: webhook
-        role: webhook
+        app: manager
+        role: manager
         bindings.labs.vmware.com/release: devel
         bindings.labs.vmware.com/exclude: "true"
     spec:
       serviceAccountName: controller
       containers:
-      - name: webhook
+      - name: manager
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: ko://github.com/vmware-labs/service-bindings/cmd/webhook
+        image: ko://github.com/vmware-labs/service-bindings/cmd/manager
         resources:
           requests:
             cpu: 100m

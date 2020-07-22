@@ -53,7 +53,7 @@ jobs:
         readonly git_timestamp=$(TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd")
         readonly slug=${version}-${git_timestamp}-${git_sha:0:16}
 
-        ko resolve -t ${slug} --strict -B -f config | sed -e "s|bindings.labs.vmware.com/release/release: devel|bindings.labs.vmware.com/release: ${slug}|" > service-bindings.yaml
+        ko resolve -t ${slug} --strict -B -f config | sed -e "s|bindings.labs.vmware.com/release: devel|bindings.labs.vmware.com/release: ${slug}|" > service-bindings.yaml
       env:
         KO_DOCKER_REPO: docker.io/vmware
     - name: Upload stage asset

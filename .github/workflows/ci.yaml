@@ -36,13 +36,6 @@ jobs:
         echo "##[add-path]$(go env GOPATH)/bin"
       env:
         GO111MODULE: "off"
-    - name: gcloud auth
-      run: |
-        gcloud config set disable_prompts True
-        gcloud auth activate-service-account --key-file <(echo $GCLOUD_CLIENT_SECRET | base64 --decode)
-        gcloud auth configure-docker
-      env:
-        GCLOUD_CLIENT_SECRET: ${{ secrets.GCLOUD_CLIENT_SECRET }}
     - name: dockerhub auth
       run: |
         echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
@@ -61,10 +54,13 @@ jobs:
         readonly slug=${version}-${git_timestamp}-${git_sha:0:16}
 
         ko resolve -t ${slug} --strict -B -f config > service-bindings.yaml
-
-        gsutil cp service-bindings.yaml gs://projectriff/service-bindings/snapshots/${slug}/service-bindings.yaml
       env:
         KO_DOCKER_REPO: docker.io/vmware
+    - name: Upload stage asset
+      uses: actions/upload-artifact@v2.1.0
+      with:
+        name: service-bindings.yaml
+        path: service-bindings.yaml
   
   # TODO add acceptance tests
   # acceptance: {}
@@ -82,54 +78,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2.3.1
-    - name: gcloud auth
+    - name: Get release version
+      id: get-version
       run: |
-        gcloud config set disable_prompts True
-        gcloud auth activate-service-account --key-file <(echo $GCLOUD_CLIENT_SECRET | base64 --decode)
-      env:
-        GCLOUD_CLIENT_SECRET: ${{ secrets.GCLOUD_CLIENT_SECRET }}
-    - name: Publish artifacts
-      id: publish
-      run: |
-        set -o errexit
-        set -o nounset
-        set -o pipefail
-
-        readonly version=$(cat VERSION)
-        readonly git_sha=$(git rev-parse HEAD)
-        readonly git_branch=${GITHUB_REF#refs/heads/}
-        readonly git_timestamp=$(TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd")
-        readonly slug=${version}-${git_timestamp}-${git_sha:0:16}
-
-        readonly bucket=gs://projectriff/service-bindings
-
-        cache_control='Cache-Control: public'
-        if echo $version | grep -iqF snapshot; then
-          cache_control="${cache_control}, max-age=60"
-        else
-          cache_control="${cache_control}, max-age=3600"
-        fi
-
-        echo "Promote artifacts"
-        gsutil -h "${cache_control}" rsync -d ${bucket}/snapshots/${slug}/ ${bucket}/${slug}/
-        if [[ ${version} != *"-snapshot" ]] ; then
-          gsutil -h "${cache_control}" rsync -d ${bucket}/snapshots/${slug}/ ${bucket}/${version}/
-        fi
-
-        echo "Capture snapshot slug"
-        gsutil -h 'Content-Type: text/plain' -h 'Cache-Control: private' cp <(echo "${slug}") gs://projectriff/service-bindings/versions/builds/${git_branch}
-        gsutil -h 'Content-Type: text/plain' -h 'Cache-Control: private' cp <(echo "${slug}") gs://projectriff/service-bindings/versions/builds/${version}
-        if [[ ${version} != *"-snapshot" ]] ; then
-          gsutil -h 'Content-Type: text/plain' -h 'Cache-Control: private' cp <(echo "${slug}") gs://projectriff/service-bindings/versions/releases/${git_branch}
-          # avoids overwriting existing values
-          gsutil -h 'Content-Type: text/plain' -h 'Cache-Control: private' cp -n <(echo "${slug}") gs://projectriff/service-bindings/versions/releases/${version}
-        fi
-
-        # setup release
-        echo ::set-output name=version::${version}
-        mkdir dist/
-        gsutil -h "${cache_control}" rsync -d ${bucket}/snapshots/${slug}/ dist/
-    - name: Draft Release
+        echo ::set-output name=version::$(cat VERSION)
+    - name: Draft release
       if: startsWith(github.ref, 'refs/tags/')
       id: create_release
       uses: actions/create-release@v1.1.2
@@ -139,13 +92,18 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         draft: true
-    - name: Upload Release Asset
+    - name: Download staged asset
+      uses: actions/download-artifact@v2.0.1
+      with:
+        name: service-bindings.yaml
+        path: service-bindings.yaml
+    - name: Upload release asset
       if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-        asset_path: ./dist/service-bindings.yaml
-        asset_name: service-bindings-${{ steps.publish.outputs.version }}.yaml
+        asset_path: service-bindings.yaml
+        asset_name: service-bindings-${{ steps.get-version.outputs.version }}.yaml
         asset_content_type: application/x-yaml

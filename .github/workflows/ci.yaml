@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2.3.1
-    - uses: actions/setup-go@v2.1.0
+    - uses: actions/setup-go@v2.1.1
       with:
         go-version: 1.14.x
     - name: Test
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2.3.1
-    - uses: actions/setup-go@v2.1.0
+    - uses: actions/setup-go@v2.1.1
       with:
         go-version: 1.14.x
     - name: Install ko

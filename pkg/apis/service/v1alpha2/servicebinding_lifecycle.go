@@ -21,12 +21,14 @@ import (
 )
 
 const (
-	ServiceBindingConditionReady            = apis.ConditionReady
-	ServiceBindingConditionBindingAvailable = "BindingAvailable"
+	ServiceBindingConditionReady                = apis.ConditionReady
+	ServiceBindingConditionApplicationAvailable = "ApplicationAvailable"
+	ServiceBindingConditionServiceAvailable     = "ServiceAvailable"
 )
 
 var serviceCondSet = apis.NewLivingConditionSet(
-	ServiceBindingConditionBindingAvailable,
+	ServiceBindingConditionApplicationAvailable,
+	ServiceBindingConditionServiceAvailable,
 )
 
 func (b *ServiceBinding) GetStatus() *duckv1.Status {
@@ -57,8 +59,11 @@ func (b *ServiceBinding) Do(ctx context.Context, ps *v1.WithPod) {
 	newVolumes := sets.NewString()
 	sb := b.Status.Binding
 	if sb == nil {
+		b.Status.MarkServiceUnavailable("ServiceMissing", "missing service secret to bind")
 		return
 	}
+	b.Status.MarkServiceAvailable()
+
 	// TODO ensure unique volume names
 	// TODO limit volume name length
 	bindingVolume := fmt.Sprintf("%s-binding", sb.Name)
@@ -215,12 +220,25 @@ func (bs *ServiceBindingStatus) InitializeConditions() {
 }
 
 func (bs *ServiceBindingStatus) MarkBindingAvailable() {
-	serviceCondSet.Manage(bs).MarkTrue(ServiceBindingConditionBindingAvailable)
+	serviceCondSet.Manage(bs).MarkTrue(ServiceBindingConditionApplicationAvailable)
 }
 
 func (bs *ServiceBindingStatus) MarkBindingUnavailable(reason string, message string) {
+	if strings.HasPrefix(reason, "Subject") {
+		// knative/pkg uses "Subject*" reasons, we want to rename to "Application*"
+		reason = strings.Replace(reason, "Subject", "Application", 1)
+	}
 	serviceCondSet.Manage(bs).MarkFalse(
-		ServiceBindingConditionBindingAvailable, reason, message)
+		ServiceBindingConditionApplicationAvailable, reason, message)
+}
+
+func (bs *ServiceBindingStatus) MarkServiceAvailable() {
+	serviceCondSet.Manage(bs).MarkTrue(ServiceBindingConditionServiceAvailable)
+}
+
+func (bs *ServiceBindingStatus) MarkServiceUnavailable(reason string, message string) {
+	serviceCondSet.Manage(bs).MarkFalse(
+		ServiceBindingConditionServiceAvailable, reason, message)
 }
 
 func (bs *ServiceBindingStatus) SetObservedGeneration(gen int64) {

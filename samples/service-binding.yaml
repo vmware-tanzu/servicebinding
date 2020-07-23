@@ -19,9 +19,9 @@ spec:
     name: account-db
   mappings:
   - name: uri
-    value: mysql://{{ urlquery .username }}:{{ urlquery .password }}@{{ .host }}:{{ .port }}/{{ .name }}?reconnect=true
+    value: mysql://{{ urlquery .username }}:{{ urlquery .password }}@{{ .host }}:{{ .port }}/{{ .database }}?reconnect=true
   - name: jdbcUri
-    value: jdbc:mysql://{{ .host }}:{{ .port }}/{{ .name }}?user={{ urlquery .username }}&password={{ urlquery .password }}
+    value: jdbc:mysql://{{ .host }}:{{ .port }}/{{ .database }}?user={{ urlquery .username }}&password={{ urlquery .password }}
   env:
   - name: SPRING_DATASOURCE_URL
     key: jdbcUri
@@ -46,7 +46,7 @@ metadata:
 type: Opaque
 stringData:
   host: localhost
-  name: default
+  database: default
   password: ""
   port: "3306"
   username: root

@@ -3,16 +3,19 @@ Copyright 2020 VMware, Inc.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package servicebindingprep
+package servicebinding
 
 import (
 	"context"
 	"fmt"
 
 	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
+	serviceinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/serviceinternal/v1alpha2"
+	bindingclientset "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned"
 	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/service/v1alpha2/servicebinding"
-	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebindingprep/resources"
-	resourcenames "github.com/vmware-labs/service-bindings/pkg/reconciler/servicebindingprep/resources/names"
+	serviceinternalv1alpha2listers "github.com/vmware-labs/service-bindings/pkg/client/listers/serviceinternal/v1alpha2"
+	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources"
+	resourcenames "github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources/names"
 	"github.com/vmware-labs/service-bindings/pkg/resolver"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -36,8 +39,10 @@ func newReconciledNormal(namespace, name string) reconciler.Event {
 // Reconciler implements servicebindingreconciler.Interface for
 // ServiceBinding resources.
 type Reconciler struct {
-	kubeclient   kubernetes.Interface
-	secretLister corev1listers.SecretLister
+	kubeclient                     kubernetes.Interface
+	bindingclient                  bindingclientset.Interface
+	secretLister                   corev1listers.SecretLister
+	serviceBindingProjectionLister serviceinternalv1alpha2listers.ServiceBindingProjectionLister
 
 	resolver *resolver.ServiceableResolver
 	tracker  tracker.Interface
@@ -55,23 +60,31 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, binding *servicev1alpha2
 		// When a controller needs finalizer handling, it would go here.
 		return nil
 	}
-	// let the main controller manage the common status fields
-	// binding.Status.InitializeConditions()
 
-	projection, err := r.projectedSecret(ctx, logger, binding)
+	binding.Status.InitializeConditions()
+
+	secret, err := r.projectedSecret(ctx, logger, binding)
 	if err != nil {
 		return err
 	}
 	binding.Status.Binding = nil
-	if projection != nil {
+	if secret != nil {
 		binding.Status.Binding = &corev1.LocalObjectReference{
-			Name: projection.Name,
+			Name: secret.Name,
 		}
+		binding.Status.MarkServiceAvailable()
 	}
 
-	// let the main controller manage the common status fields
-	// binding.Status.ObservedGeneration = binding.Generation
-	// binding.Status.MarkReady()
+	serviceBindingProjection, err := r.serviceBindingProjection(ctx, logger, binding)
+	if err != nil {
+		return err
+	}
+	if serviceBindingProjection != nil {
+		binding.Status.PropagateServiceBindingProjectionStatus(serviceBindingProjection)
+	}
+
+	binding.Status.ObservedGeneration = binding.Generation
+
 	return newReconciledNormal(binding.Namespace, binding.Name)
 }
 
@@ -146,4 +159,67 @@ func (c *Reconciler) reconcileProtectedSecret(ctx context.Context, binding *serv
 	existing.Data = desiredProjection.Data
 	existing.ObjectMeta.Labels = desiredProjection.ObjectMeta.Labels
 	return c.kubeclient.CoreV1().Secrets(binding.Namespace).Update(existing)
+}
+
+func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.SugaredLogger, binding *servicev1alpha2.ServiceBinding) (*serviceinternalv1alpha2.ServiceBindingProjection, error) {
+	recorder := controller.GetEventRecorder(ctx)
+
+	if binding.Status.Binding == nil {
+		return nil, nil
+	}
+
+	serviceBindingProjectionName := resourcenames.ServiceBindingProjection(binding)
+	serviceBindingProjection, err := r.serviceBindingProjectionLister.ServiceBindingProjections(binding.Namespace).Get(serviceBindingProjectionName)
+	if apierrs.IsNotFound(err) {
+		serviceBindingProjection, err = r.createServiceBindingProjection(binding)
+		if err != nil {
+			recorder.Eventf(binding, corev1.EventTypeWarning, "CreationFailed", "Failed to create ServiceBindingProjection %q: %v", serviceBindingProjectionName, err)
+			return nil, fmt.Errorf("failed to create ServiceBindingProjection: %w", err)
+		}
+		recorder.Eventf(binding, corev1.EventTypeNormal, "Created", "Created ServiceBindingProjection %q", serviceBindingProjectionName)
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to get ServiceBindingProjection: %w", err)
+	} else if !metav1.IsControlledBy(serviceBindingProjection, binding) {
+		return nil, fmt.Errorf("service: %q does not own ServiceBindingProjection: %q", binding.Name, serviceBindingProjectionName)
+	} else if serviceBindingProjection, err = r.reconcileServiceBindingProjection(ctx, binding, serviceBindingProjection); err != nil {
+		return nil, fmt.Errorf("failed to reconcile ServiceBindingProjection: %w", err)
+	}
+	return serviceBindingProjection, nil
+}
+
+func (c *Reconciler) createServiceBindingProjection(binding *servicev1alpha2.ServiceBinding) (*serviceinternalv1alpha2.ServiceBindingProjection, error) {
+	serviceBindingProjection, err := resources.MakeServiceBindingProjection(binding)
+	if err != nil {
+		return nil, err
+	}
+	return c.bindingclient.InternalV1alpha2().ServiceBindingProjections(binding.Namespace).Create(serviceBindingProjection)
+}
+
+func serviceBindingProjectionSemanticEquals(ctx context.Context, desiredServiceBindingProjection, serviceBindingProjection *serviceinternalv1alpha2.ServiceBindingProjection) (bool, error) {
+	return equality.Semantic.DeepEqual(desiredServiceBindingProjection.Spec, serviceBindingProjection.Spec) &&
+		equality.Semantic.DeepEqual(desiredServiceBindingProjection.ObjectMeta.Labels, serviceBindingProjection.ObjectMeta.Labels) &&
+		equality.Semantic.DeepEqual(desiredServiceBindingProjection.ObjectMeta.Annotations, serviceBindingProjection.ObjectMeta.Annotations), nil
+}
+
+func (c *Reconciler) reconcileServiceBindingProjection(ctx context.Context, binding *servicev1alpha2.ServiceBinding, projection *serviceinternalv1alpha2.ServiceBindingProjection) (*serviceinternalv1alpha2.ServiceBindingProjection, error) {
+	existing := projection.DeepCopy()
+	// In the case of an upgrade, there can be default values set that don't exist pre-upgrade.
+	// We are setting the up-to-date default values here so an update won't be triggered if the only
+	// diff is the new default values.
+	desired, err := resources.MakeServiceBindingProjection(binding)
+	if err != nil {
+		return nil, err
+	}
+
+	if equals, err := serviceBindingProjectionSemanticEquals(ctx, desired, existing); err != nil {
+		return nil, err
+	} else if equals {
+		return projection, nil
+	}
+
+	// Preserve the rest of the object (e.g. ObjectMeta except for labels).
+	existing.Spec = desired.Spec
+	existing.ObjectMeta.Labels = desired.ObjectMeta.Labels
+	existing.ObjectMeta.Annotations = desired.ObjectMeta.Annotations
+	return c.bindingclient.InternalV1alpha2().ServiceBindingProjections(binding.Namespace).Update(existing)
 }

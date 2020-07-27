@@ -11,13 +11,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/apis"
-	"knative.dev/pkg/apis/duck"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/kmeta"
 	"knative.dev/pkg/tracker"
-	"knative.dev/pkg/webhook/psbinding"
+
+	serviceinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/serviceinternal/v1alpha2"
 )
 
 const (
@@ -41,10 +40,6 @@ var (
 	_ apis.Defaultable   = (*ServiceBinding)(nil)
 	_ kmeta.OwnerRefable = (*ServiceBinding)(nil)
 	_ duckv1.KRShaped    = (*ServiceBinding)(nil)
-
-	// Check is Bindable
-	_ psbinding.Bindable  = (*ServiceBinding)(nil)
-	_ duck.BindableStatus = (*ServiceBindingStatus)(nil)
 )
 
 type ServiceBindingSpec struct {
@@ -73,19 +68,9 @@ type ServiceBindingSpec struct {
 	Mappings []Mapping `json:"mappings,omitempty"`
 }
 
-type ApplicationReference struct {
-	tracker.Reference
+type ApplicationReference = serviceinternalv1alpha2.ApplicationReference
 
-	// Containers to target within the application. If not set, all containers
-	// will be injected. Containers may be specified by index or name.
-	// InitContainers may only be specified by name.
-	Containers []intstr.IntOrString `json:"containers,omitempty"`
-}
-
-type EnvVar struct {
-	Name string `json:"name"`
-	Key  string `json:"key"`
-}
+type EnvVar = serviceinternalv1alpha2.EnvVar
 
 type Mapping struct {
 	Name  string `json:"name"`
@@ -143,21 +128,6 @@ func (b *ServiceBinding) Validate(ctx context.Context) (errs *apis.FieldError) {
 	if b.Status.Annotations != nil {
 		errs = errs.Also(
 			apis.ErrDisallowedFields("status.annotations"),
-		)
-	}
-
-	return errs
-}
-
-func (e EnvVar) Validate(ctx context.Context) (errs *apis.FieldError) {
-	if e.Name == "" {
-		errs = errs.Also(
-			apis.ErrMissingField("name"),
-		)
-	}
-	if e.Key == "" {
-		errs = errs.Also(
-			apis.ErrMissingField("key"),
 		)
 	}
 

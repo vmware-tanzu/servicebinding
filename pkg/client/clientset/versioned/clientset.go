@@ -13,6 +13,7 @@ import (
 	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/bindings/v1alpha1"
 	duckv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha1"
 	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/service/v1alpha2"
+	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/serviceinternal/v1alpha2"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -23,6 +24,7 @@ type Interface interface {
 	BindingsV1alpha1() bindingsv1alpha1.BindingsV1alpha1Interface
 	DuckV1alpha1() duckv1alpha1.DuckV1alpha1Interface
 	ServiceV1alpha2() servicev1alpha2.ServiceV1alpha2Interface
+	InternalV1alpha2() internalv1alpha2.InternalV1alpha2Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -32,6 +34,7 @@ type Clientset struct {
 	bindingsV1alpha1 *bindingsv1alpha1.BindingsV1alpha1Client
 	duckV1alpha1     *duckv1alpha1.DuckV1alpha1Client
 	serviceV1alpha2  *servicev1alpha2.ServiceV1alpha2Client
+	internalV1alpha2 *internalv1alpha2.InternalV1alpha2Client
 }
 
 // BindingsV1alpha1 retrieves the BindingsV1alpha1Client
@@ -47,6 +50,11 @@ func (c *Clientset) DuckV1alpha1() duckv1alpha1.DuckV1alpha1Interface {
 // ServiceV1alpha2 retrieves the ServiceV1alpha2Client
 func (c *Clientset) ServiceV1alpha2() servicev1alpha2.ServiceV1alpha2Interface {
 	return c.serviceV1alpha2
+}
+
+// InternalV1alpha2 retrieves the InternalV1alpha2Client
+func (c *Clientset) InternalV1alpha2() internalv1alpha2.InternalV1alpha2Interface {
+	return c.internalV1alpha2
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -82,6 +90,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs.internalV1alpha2, err = internalv1alpha2.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 
 	cs.DiscoveryClient, err = discovery.NewDiscoveryClientForConfig(&configShallowCopy)
 	if err != nil {
@@ -97,6 +109,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 	cs.bindingsV1alpha1 = bindingsv1alpha1.NewForConfigOrDie(c)
 	cs.duckV1alpha1 = duckv1alpha1.NewForConfigOrDie(c)
 	cs.serviceV1alpha2 = servicev1alpha2.NewForConfigOrDie(c)
+	cs.internalV1alpha2 = internalv1alpha2.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -108,6 +121,7 @@ func New(c rest.Interface) *Clientset {
 	cs.bindingsV1alpha1 = bindingsv1alpha1.New(c)
 	cs.duckV1alpha1 = duckv1alpha1.New(c)
 	cs.serviceV1alpha2 = servicev1alpha2.New(c)
+	cs.internalV1alpha2 = internalv1alpha2.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

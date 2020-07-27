@@ -15,6 +15,8 @@ import (
 	fakeduckv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha1/fake"
 	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/service/v1alpha2"
 	fakeservicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/service/v1alpha2/fake"
+	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/serviceinternal/v1alpha2"
+	fakeinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/serviceinternal/v1alpha2/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -82,4 +84,9 @@ func (c *Clientset) DuckV1alpha1() duckv1alpha1.DuckV1alpha1Interface {
 // ServiceV1alpha2 retrieves the ServiceV1alpha2Client
 func (c *Clientset) ServiceV1alpha2() servicev1alpha2.ServiceV1alpha2Interface {
 	return &fakeservicev1alpha2.FakeServiceV1alpha2{Fake: &c.Fake}
+}
+
+// InternalV1alpha2 retrieves the InternalV1alpha2Client
+func (c *Clientset) InternalV1alpha2() internalv1alpha2.InternalV1alpha2Interface {
+	return &fakeinternalv1alpha2.FakeInternalV1alpha2{Fake: &c.Fake}
 }

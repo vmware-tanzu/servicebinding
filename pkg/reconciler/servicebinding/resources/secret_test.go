@@ -9,6 +9,6 @@ import (
 	"testing"
 )
 
-func TestStub(t *testing.T) {
+func TestMakeProjectedSecret(t *testing.T) {
 	// TODO add tests
 }

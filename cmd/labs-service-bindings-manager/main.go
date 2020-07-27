@@ -30,9 +30,10 @@ import (
 
 	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/bindings/v1alpha1"
 	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
+	serviceinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/serviceinternal/v1alpha2"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/provisionedservice"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding"
-	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebindingprep"
+	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebindingprojection"
 )
 
 var (
@@ -57,8 +58,9 @@ var (
 	}
 )
 var ourTypes = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
-	bindingsv1alpha1.SchemeGroupVersion.WithKind("ProvisionedService"): &bindingsv1alpha1.ProvisionedService{},
-	servicev1alpha2.SchemeGroupVersion.WithKind("ServiceBinding"):      &servicev1alpha2.ServiceBinding{},
+	bindingsv1alpha1.SchemeGroupVersion.WithKind("ProvisionedService"):      &bindingsv1alpha1.ProvisionedService{},
+	servicev1alpha2.SchemeGroupVersion.WithKind("ServiceBinding"):           &servicev1alpha2.ServiceBinding{},
+	servicev1alpha2.SchemeGroupVersion.WithKind("ServiceBindingProjection"): &serviceinternalv1alpha2.ServiceBindingProjection{},
 }
 
 func NewDefaultingAdmissionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
@@ -166,8 +168,8 @@ func main() {
 
 		// Our reconcilers
 		provisionedservice.NewController,
-		// TODO(scothis) merge prep and main servicebinding controllers
-		servicebindingprep.NewController, servicebinding.NewController, NewBindingWebhook("servicebindings", servicebinding.ListAll, nil),
+		servicebinding.NewController,
+		servicebindingprojection.NewController, NewBindingWebhook("servicebindingprojections", servicebindingprojection.ListAll, nil),
 	)
 }
 

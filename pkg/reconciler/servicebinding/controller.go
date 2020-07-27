@@ -8,81 +8,60 @@ package servicebinding
 import (
 	"context"
 
-	"github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
+	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
+	bindingclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client"
 	servicebindinginformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/service/v1alpha2/servicebinding"
+	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/serviceinternal/v1alpha2/servicebindingprojection"
+	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/service/v1alpha2/servicebinding"
+	"github.com/vmware-labs/service-bindings/pkg/resolver"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/record"
-	"knative.dev/pkg/apis/duck"
-	"knative.dev/pkg/client/injection/ducks/duck/v1/podspecable"
-	nsinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	secretinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/secret"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
-	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/tracker"
-	"knative.dev/pkg/webhook/psbinding"
 )
 
-const (
-	controllerAgentName = "servicebinding-controller"
-)
-
-// NewController returns a new ServiceBinding reconciler.
+// NewController creates a Reconciler and returns the result of NewImpl.
 func NewController(
 	ctx context.Context,
 	cmw configmap.Watcher,
 ) *controller.Impl {
 	logger := logging.FromContext(ctx)
+
+	secretInformer := secretinformer.Get(ctx)
+	serviceBindingProjectionInformer := servicebindingprojectioninformer.Get(ctx)
 	serviceBindingInformer := servicebindinginformer.Get(ctx)
-	nsInformer := nsinformer.Get(ctx)
-	dc := dynamicclient.Get(ctx)
 
-	psInformerFactory := podspecable.Get(ctx)
-	c := &psbinding.BaseReconciler{
-		GVR: v1alpha2.SchemeGroupVersion.WithResource("servicebindings"),
-		Get: func(namespace string, name string) (psbinding.Bindable, error) {
-			return serviceBindingInformer.Lister().ServiceBindings(namespace).Get(name)
-		},
-		DynamicClient: dc,
-		Recorder: record.NewBroadcaster().NewRecorder(
-			scheme.Scheme, corev1.EventSource{Component: controllerAgentName}),
-		NamespaceLister: nsInformer.Lister(),
+	r := &Reconciler{
+		kubeclient:                     kubeclient.Get(ctx),
+		bindingclient:                  bindingclient.Get(ctx),
+		secretLister:                   secretInformer.Lister(),
+		serviceBindingProjectionLister: serviceBindingProjectionInformer.Lister(),
 	}
+	impl := servicebindingreconciler.NewImpl(ctx, r)
+	r.resolver = resolver.NewServiceableResolver(ctx, impl.EnqueueKey)
 
-	impl := controller.NewImpl(c, logger, "ServiceBindings")
-
-	logger.Info("Setting up event handlers")
+	logger.Info("Setting up event handlers.")
 
 	serviceBindingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
-	c.Tracker = tracker.New(impl.EnqueueKey, controller.GetTrackerLease(ctx))
-	c.Factory = &duck.CachedInformerFactory{
-		Delegate: &duck.EnqueueInformerFactory{
-			Delegate:     psInformerFactory,
-			EventHandler: controller.HandleAll(c.Tracker.OnChanged),
-		},
+	handleMatchingControllers := cache.FilteringResourceEventHandler{
+		FilterFunc: controller.FilterControllerGK(servicev1alpha2.Kind("ServiceBinding")),
+		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	}
+	secretInformer.Informer().AddEventHandler(handleMatchingControllers)
+	serviceBindingProjectionInformer.Informer().AddEventHandler(handleMatchingControllers)
+
+	r.tracker = tracker.New(impl.EnqueueKey, controller.GetTrackerLease(ctx))
+	secretInformer.Informer().AddEventHandler(controller.HandleAll(
+		controller.EnsureTypeMeta(
+			r.tracker.OnChanged,
+			corev1.SchemeGroupVersion.WithKind("Secret"),
+		),
+	))
+
 	return impl
-}
-
-func ListAll(ctx context.Context, handler cache.ResourceEventHandler) psbinding.ListAll {
-	serviceBindingInformer := servicebindinginformer.Get(ctx)
-
-	// Whenever a ServiceBinding changes our webhook programming might change.
-	serviceBindingInformer.Informer().AddEventHandler(handler)
-
-	return func() ([]psbinding.Bindable, error) {
-		l, err := serviceBindingInformer.Lister().List(labels.Everything())
-		if err != nil {
-			return nil, err
-		}
-		bl := make([]psbinding.Bindable, 0, len(l))
-		for _, elt := range l {
-			bl = append(bl, elt)
-		}
-		return bl, nil
-	}
 }

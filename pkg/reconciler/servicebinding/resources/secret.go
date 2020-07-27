@@ -15,13 +15,13 @@ import (
 	"knative.dev/pkg/kmeta"
 
 	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
+	resourcenames "github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources/names"
 )
 
 func MakeProjectedSecret(binding *servicev1alpha2.ServiceBinding, reference *corev1.Secret) (*corev1.Secret, error) {
 	projection := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			// TODO generate the secret name
-			Name:      fmt.Sprintf("%s-projection", binding.Name),
+			Name:      resourcenames.ProjectedSecret(binding),
 			Namespace: binding.Namespace,
 			Labels: kmeta.UnionMaps(binding.GetLabels(), map[string]string{
 				servicev1alpha2.ServiceBindingLabelKey: binding.Name,

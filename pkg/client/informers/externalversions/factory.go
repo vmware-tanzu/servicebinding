@@ -16,6 +16,7 @@ import (
 	bindings "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/bindings"
 	internalinterfaces "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/internalinterfaces"
 	service "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/service"
+	serviceinternal "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/serviceinternal"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -164,6 +165,7 @@ type SharedInformerFactory interface {
 
 	Bindings() bindings.Interface
 	Service() service.Interface
+	Internal() serviceinternal.Interface
 }
 
 func (f *sharedInformerFactory) Bindings() bindings.Interface {
@@ -172,4 +174,8 @@ func (f *sharedInformerFactory) Bindings() bindings.Interface {
 
 func (f *sharedInformerFactory) Service() service.Interface {
 	return service.New(f, f.namespace, f.tweakListOptions)
+}
+
+func (f *sharedInformerFactory) Internal() serviceinternal.Interface {
+	return serviceinternal.New(f, f.namespace, f.tweakListOptions)
 }

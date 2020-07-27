@@ -48,6 +48,9 @@ rules:
   - apiGroups: ["service.binding"]
     resources: ["*"]
     verbs: ["*"]
+  - apiGroups: ["internal.service.binding"]
+    resources: ["*"]
+    verbs: ["*"]
 ---
 # This piece of the aggregated cluster role enables us to bind to the built-in
 # Kubernetes apps resources

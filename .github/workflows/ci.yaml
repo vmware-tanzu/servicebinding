@@ -61,7 +61,7 @@ jobs:
       env:
         KO_DOCKER_REPO: docker.io/vmware
     - name: Upload stage asset
-      uses: actions/upload-artifact@v2.1.0
+      uses: actions/upload-artifact@v2.1.1
       with:
         name: service-bindings.yaml
         path: service-bindings.yaml

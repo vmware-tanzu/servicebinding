@@ -19,7 +19,7 @@ const (
 	ServiceBindingConditionServiceAvailable = "ServiceAvailable"
 )
 
-var serviceCondSet = apis.NewLivingConditionSet(
+var sbCondSet = apis.NewLivingConditionSet(
 	ServiceBindingConditionProjectionReady,
 	ServiceBindingConditionServiceAvailable,
 )
@@ -29,40 +29,36 @@ func (b *ServiceBinding) GetStatus() *duckv1.Status {
 }
 
 func (b *ServiceBinding) GetConditionSet() apis.ConditionSet {
-	return serviceCondSet
+	return sbCondSet
 }
 
 func (bs *ServiceBindingStatus) InitializeConditions() {
-	serviceCondSet.Manage(bs).InitializeConditions()
+	sbCondSet.Manage(bs).InitializeConditions()
 }
 
 func (bs *ServiceBindingStatus) PropagateServiceBindingProjectionStatus(bp *serviceinternalv1alpha2.ServiceBindingProjection) {
 	if bp == nil {
 		return
 	}
-	sbpready := bp.Status.GetCondition(serviceinternalv1alpha2.ServiceBindingConditionReady)
+	sbpready := bp.Status.GetCondition(serviceinternalv1alpha2.ServiceBindingProjectionConditionReady)
 	if sbpready == nil {
 		return
 	}
 	switch sbpready.Status {
 	case corev1.ConditionTrue:
-		serviceCondSet.Manage(bs).MarkTrueWithReason(ServiceBindingConditionProjectionReady, sbpready.Reason, sbpready.Message)
+		sbCondSet.Manage(bs).MarkTrueWithReason(ServiceBindingConditionProjectionReady, sbpready.Reason, sbpready.Message)
 	case corev1.ConditionFalse:
-		serviceCondSet.Manage(bs).MarkFalse(ServiceBindingConditionProjectionReady, sbpready.Reason, sbpready.Message)
+		sbCondSet.Manage(bs).MarkFalse(ServiceBindingConditionProjectionReady, sbpready.Reason, sbpready.Message)
 	default:
-		serviceCondSet.Manage(bs).MarkUnknown(ServiceBindingConditionProjectionReady, sbpready.Reason, sbpready.Message)
+		sbCondSet.Manage(bs).MarkUnknown(ServiceBindingConditionProjectionReady, sbpready.Reason, sbpready.Message)
 	}
 }
 
 func (bs *ServiceBindingStatus) MarkServiceAvailable() {
-	serviceCondSet.Manage(bs).MarkTrue(ServiceBindingConditionServiceAvailable)
+	sbCondSet.Manage(bs).MarkTrue(ServiceBindingConditionServiceAvailable)
 }
 
 func (bs *ServiceBindingStatus) MarkServiceUnavailable(reason string, message string) {
-	serviceCondSet.Manage(bs).MarkFalse(
+	sbCondSet.Manage(bs).MarkFalse(
 		ServiceBindingConditionServiceAvailable, reason, message)
-}
-
-func (bs *ServiceBindingStatus) SetObservedGeneration(gen int64) {
-	bs.ObservedGeneration = gen
 }

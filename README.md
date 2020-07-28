@@ -19,7 +19,7 @@ ko apply --strict -f config
 
 ## Resources
 
-### ServiceBinding (service.bindings/v1alpha2)
+### ServiceBinding (service.binding/v1alpha2)
 
 The `ServiceBinding` resource shape and behavior is defined upstream. In addition to the [core specification](https://github.com/k8s-service-bindings/spec#service-binding), the [Role-Based Access Control (RBAC) extension](https://github.com/k8s-service-bindings/spec#role-based-access-control-rbac) is also supported by this implementation.
 

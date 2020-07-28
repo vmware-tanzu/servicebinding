@@ -21,12 +21,12 @@ import (
 )
 
 const (
-	ServiceBindingConditionReady                = apis.ConditionReady
-	ServiceBindingConditionApplicationAvailable = "ApplicationAvailable"
+	ServiceBindingProjectionConditionReady                = apis.ConditionReady
+	ServiceBindingProjectionConditionApplicationAvailable = "ApplicationAvailable"
 )
 
-var serviceCondSet = apis.NewLivingConditionSet(
-	ServiceBindingConditionApplicationAvailable,
+var sbpCondSet = apis.NewLivingConditionSet(
+	ServiceBindingProjectionConditionApplicationAvailable,
 )
 
 func (b *ServiceBindingProjection) GetStatus() *duckv1.Status {
@@ -34,11 +34,14 @@ func (b *ServiceBindingProjection) GetStatus() *duckv1.Status {
 }
 
 func (b *ServiceBindingProjection) GetConditionSet() apis.ConditionSet {
-	return serviceCondSet
+	return sbpCondSet
 }
 
 func (b *ServiceBindingProjection) GetSubject() tracker.Reference {
-	return b.Spec.Application.Reference
+	var ref tracker.Reference
+	b.Spec.Application.Reference.DeepCopyInto(&ref)
+	ref.Namespace = b.Namespace
+	return ref
 }
 
 func (b *ServiceBindingProjection) GetBindingStatus() duck.BindableStatus {
@@ -209,11 +212,11 @@ func (b *ServiceBindingProjection) annotationKey() string {
 }
 
 func (bs *ServiceBindingProjectionStatus) InitializeConditions() {
-	serviceCondSet.Manage(bs).InitializeConditions()
+	sbpCondSet.Manage(bs).InitializeConditions()
 }
 
 func (bs *ServiceBindingProjectionStatus) MarkBindingAvailable() {
-	serviceCondSet.Manage(bs).MarkTrue(ServiceBindingConditionApplicationAvailable)
+	sbpCondSet.Manage(bs).MarkTrue(ServiceBindingProjectionConditionApplicationAvailable)
 }
 
 func (bs *ServiceBindingProjectionStatus) MarkBindingUnavailable(reason string, message string) {
@@ -221,8 +224,8 @@ func (bs *ServiceBindingProjectionStatus) MarkBindingUnavailable(reason string, 
 		// knative/pkg uses "Subject*" reasons, we want to rename to "Application*"
 		reason = strings.Replace(reason, "Subject", "Application", 1)
 	}
-	serviceCondSet.Manage(bs).MarkFalse(
-		ServiceBindingConditionApplicationAvailable, reason, message)
+	sbpCondSet.Manage(bs).MarkFalse(
+		ServiceBindingProjectionConditionApplicationAvailable, reason, message)
 }
 
 func (bs *ServiceBindingProjectionStatus) SetObservedGeneration(gen int64) {

@@ -7,6 +7,7 @@ package v1alpha2
 
 import (
 	"context"
+	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -91,38 +92,91 @@ type ServiceBindingList struct {
 }
 
 func (b *ServiceBinding) Validate(ctx context.Context) (errs *apis.FieldError) {
-	errs = errs.Also(
-		b.Spec.Application.Validate(ctx).ViaField("spec.application"),
-	)
-	if b.Spec.Application.Namespace != b.Namespace {
+	if b.Spec.Application == nil {
 		errs = errs.Also(
-			apis.ErrDisallowedFields("spec.application.namespace"),
+			apis.ErrMissingField("spec.application"),
 		)
-	}
-	errs = errs.Also(
-		b.Spec.Service.Validate(ctx).ViaField("spec.service"),
-	)
-	if b.Spec.Service.Namespace != b.Namespace {
+	} else {
+		// tracker.Reference requires a Namespace
+		a := b.Spec.Application.DeepCopy()
+		a.Namespace = "fake"
 		errs = errs.Also(
-			apis.ErrDisallowedFields("spec.service.namespace"),
+			a.Validate(ctx).ViaField("spec.application"),
 		)
+		if b.Spec.Application.Namespace != "" {
+			errs = errs.Also(
+				apis.ErrDisallowedFields("spec.application.namespace"),
+			)
+		}
 	}
-	if b.Spec.Service.Name == "" {
+
+	if b.Spec.Service == nil {
 		errs = errs.Also(
-			apis.ErrMissingField("spec.service.name"),
+			apis.ErrMissingField("spec.service"),
 		)
+	} else {
+		// tracker.Reference requires a Namespace
+		s := b.Spec.Service.DeepCopy()
+		s.Namespace = "fake"
+		errs = errs.Also(
+			s.Validate(ctx).ViaField("spec.service"),
+		)
+		if b.Spec.Service.Namespace != "" {
+			errs = errs.Also(
+				apis.ErrDisallowedFields("spec.service.namespace"),
+			)
+		}
+		if b.Spec.Service.Name == "" {
+			errs = errs.Also(
+				apis.ErrMissingField("spec.service.name"),
+			)
+		}
 	}
+
+	envSet := map[string][]int{}
 	for i, e := range b.Spec.Env {
 		errs = errs.Also(
 			e.Validate(ctx).ViaFieldIndex("env", i).ViaField("spec"),
 		)
-		// TODO look for conflicting names
+		if _, ok := envSet[e.Name]; !ok {
+			envSet[e.Name] = []int{}
+		}
+		envSet[e.Name] = append(envSet[e.Name], i)
 	}
+	// look for conflicting names
+	for _, v := range envSet {
+		if len(v) != 1 {
+			paths := make([]string, len(v))
+			for pi, i := range v {
+				paths[i] = fmt.Sprintf("spec.env[%d].name", pi)
+			}
+			errs = errs.Also(
+				apis.ErrMultipleOneOf(paths...),
+			)
+		}
+	}
+
+	mappingSet := map[string][]int{}
 	for i, m := range b.Spec.Mappings {
 		errs = errs.Also(
 			m.Validate(ctx).ViaFieldIndex("mappings", i).ViaField("spec"),
 		)
-		// TODO look for conflicting names
+		if _, ok := mappingSet[m.Name]; !ok {
+			mappingSet[m.Name] = []int{}
+		}
+		mappingSet[m.Name] = append(mappingSet[m.Name], i)
+	}
+	// look for conflicting names
+	for _, v := range mappingSet {
+		if len(v) != 1 {
+			paths := make([]string, len(v))
+			for pi, i := range v {
+				paths[i] = fmt.Sprintf("spec.mappings[%d].name", pi)
+			}
+			errs = errs.Also(
+				apis.ErrMultipleOneOf(paths...),
+			)
+		}
 	}
 
 	if b.Status.Annotations != nil {
@@ -147,14 +201,6 @@ func (m Mapping) Validate(ctx context.Context) (errs *apis.FieldError) {
 func (b *ServiceBinding) SetDefaults(context.Context) {
 	if b.Spec.Name == "" {
 		b.Spec.Name = b.Name
-	}
-	if b.Spec.Application.Namespace == "" {
-		// Default the application's namespace to our namespace.
-		b.Spec.Application.Namespace = b.Namespace
-	}
-	if b.Spec.Service.Namespace == "" {
-		// Default the service's namespace to our namespace.
-		b.Spec.Service.Namespace = b.Namespace
 	}
 }
 

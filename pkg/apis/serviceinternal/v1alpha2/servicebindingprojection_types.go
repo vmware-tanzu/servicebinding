@@ -7,6 +7,7 @@ package v1alpha2
 
 import (
 	"context"
+	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -90,26 +91,49 @@ type ServiceBindingProjectionList struct {
 
 func (b *ServiceBindingProjection) Validate(ctx context.Context) (errs *apis.FieldError) {
 	if b.Spec.Name == "" {
-		apis.ErrMissingField("spec.name")
+		errs = errs.Also(
+			apis.ErrMissingField("spec.name"),
+		)
 	}
 
 	if b.Spec.Binding.Name == "" {
-		apis.ErrMissingField("spec.binding")
+		errs = errs.Also(
+			apis.ErrMissingField("spec.binding"),
+		)
 	}
 
+	a := b.Spec.Application.DeepCopy()
+	a.Namespace = "fake"
 	errs = errs.Also(
-		b.Spec.Application.Validate(ctx).ViaField("spec.application"),
+		a.Validate(ctx).ViaField("spec.application"),
 	)
-	if b.Spec.Application.Namespace != b.Namespace {
+	if b.Spec.Application.Namespace != "" {
 		errs = errs.Also(
 			apis.ErrDisallowedFields("spec.application.namespace"),
 		)
 	}
+
+	envSet := map[string][]int{}
 	for i, e := range b.Spec.Env {
 		errs = errs.Also(
 			e.Validate(ctx).ViaFieldIndex("env", i).ViaField("spec"),
 		)
-		// TODO look for conflicting names
+		if _, ok := envSet[e.Name]; !ok {
+			envSet[e.Name] = []int{}
+		}
+		envSet[e.Name] = append(envSet[e.Name], i)
+	}
+	// look for conflicting names
+	for _, v := range envSet {
+		if len(v) != 1 {
+			paths := make([]string, len(v))
+			for pi, i := range v {
+				paths[i] = fmt.Sprintf("spec.env[%d].name", pi)
+			}
+			errs = errs.Also(
+				apis.ErrMultipleOneOf(paths...),
+			)
+		}
 	}
 
 	if b.Status.Annotations != nil {

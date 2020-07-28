@@ -10,9 +10,9 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/bindings/v1alpha1"
-	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
-	v1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/serviceinternal/v1alpha2"
+	v1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
+	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
+	v1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -52,7 +52,7 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Internal().V1alpha2().ServiceBindingProjections().Informer()}, nil
 
 		// Group=service.binding, Version=v1alpha2
-	case servicev1alpha2.SchemeGroupVersion.WithResource("servicebindings"):
+	case servicebindingv1alpha2.SchemeGroupVersion.WithResource("servicebindings"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Service().V1alpha2().ServiceBindings().Informer()}, nil
 
 	}

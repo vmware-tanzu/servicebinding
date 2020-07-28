@@ -13,10 +13,10 @@ import (
 	time "time"
 
 	versioned "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned"
-	bindings "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/bindings"
 	internalinterfaces "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/internalinterfaces"
-	service "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/service"
-	serviceinternal "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/serviceinternal"
+	labs "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/labs"
+	servicebinding "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/servicebinding"
+	servicebindinginternal "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/servicebindinginternal"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -163,19 +163,19 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Bindings() bindings.Interface
-	Service() service.Interface
-	Internal() serviceinternal.Interface
+	Bindings() labs.Interface
+	Service() servicebinding.Interface
+	Internal() servicebindinginternal.Interface
 }
 
-func (f *sharedInformerFactory) Bindings() bindings.Interface {
-	return bindings.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Bindings() labs.Interface {
+	return labs.New(f, f.namespace, f.tweakListOptions)
 }
 
-func (f *sharedInformerFactory) Service() service.Interface {
-	return service.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Service() servicebinding.Interface {
+	return servicebinding.New(f, f.namespace, f.tweakListOptions)
 }
 
-func (f *sharedInformerFactory) Internal() serviceinternal.Interface {
-	return serviceinternal.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Internal() servicebindinginternal.Interface {
+	return servicebindinginternal.New(f, f.namespace, f.tweakListOptions)
 }

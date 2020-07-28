@@ -10,10 +10,10 @@ package versioned
 import (
 	"fmt"
 
-	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/bindings/v1alpha1"
 	duckv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha1"
-	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/service/v1alpha2"
-	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/serviceinternal/v1alpha2"
+	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1"
+	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha2"
+	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebindinginternal/v1alpha2"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -21,8 +21,8 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	BindingsV1alpha1() bindingsv1alpha1.BindingsV1alpha1Interface
 	DuckV1alpha1() duckv1alpha1.DuckV1alpha1Interface
+	BindingsV1alpha1() bindingsv1alpha1.BindingsV1alpha1Interface
 	ServiceV1alpha2() servicev1alpha2.ServiceV1alpha2Interface
 	InternalV1alpha2() internalv1alpha2.InternalV1alpha2Interface
 }
@@ -31,20 +31,20 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	bindingsV1alpha1 *bindingsv1alpha1.BindingsV1alpha1Client
 	duckV1alpha1     *duckv1alpha1.DuckV1alpha1Client
+	bindingsV1alpha1 *bindingsv1alpha1.BindingsV1alpha1Client
 	serviceV1alpha2  *servicev1alpha2.ServiceV1alpha2Client
 	internalV1alpha2 *internalv1alpha2.InternalV1alpha2Client
-}
-
-// BindingsV1alpha1 retrieves the BindingsV1alpha1Client
-func (c *Clientset) BindingsV1alpha1() bindingsv1alpha1.BindingsV1alpha1Interface {
-	return c.bindingsV1alpha1
 }
 
 // DuckV1alpha1 retrieves the DuckV1alpha1Client
 func (c *Clientset) DuckV1alpha1() duckv1alpha1.DuckV1alpha1Interface {
 	return c.duckV1alpha1
+}
+
+// BindingsV1alpha1 retrieves the BindingsV1alpha1Client
+func (c *Clientset) BindingsV1alpha1() bindingsv1alpha1.BindingsV1alpha1Interface {
+	return c.bindingsV1alpha1
 }
 
 // ServiceV1alpha2 retrieves the ServiceV1alpha2Client
@@ -78,11 +78,11 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.bindingsV1alpha1, err = bindingsv1alpha1.NewForConfig(&configShallowCopy)
+	cs.duckV1alpha1, err = duckv1alpha1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
-	cs.duckV1alpha1, err = duckv1alpha1.NewForConfig(&configShallowCopy)
+	cs.bindingsV1alpha1, err = bindingsv1alpha1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -106,8 +106,8 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.bindingsV1alpha1 = bindingsv1alpha1.NewForConfigOrDie(c)
 	cs.duckV1alpha1 = duckv1alpha1.NewForConfigOrDie(c)
+	cs.bindingsV1alpha1 = bindingsv1alpha1.NewForConfigOrDie(c)
 	cs.serviceV1alpha2 = servicev1alpha2.NewForConfigOrDie(c)
 	cs.internalV1alpha2 = internalv1alpha2.NewForConfigOrDie(c)
 
@@ -118,8 +118,8 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.bindingsV1alpha1 = bindingsv1alpha1.New(c)
 	cs.duckV1alpha1 = duckv1alpha1.New(c)
+	cs.bindingsV1alpha1 = bindingsv1alpha1.New(c)
 	cs.serviceV1alpha2 = servicev1alpha2.New(c)
 	cs.internalV1alpha2 = internalv1alpha2.New(c)
 

@@ -14,17 +14,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/kmeta"
 
-	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
+	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
 	resourcenames "github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources/names"
 )
 
-func MakeProjectedSecret(binding *servicev1alpha2.ServiceBinding, reference *corev1.Secret) (*corev1.Secret, error) {
+func MakeProjectedSecret(binding *servicebindingv1alpha2.ServiceBinding, reference *corev1.Secret) (*corev1.Secret, error) {
 	projection := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      resourcenames.ProjectedSecret(binding),
 			Namespace: binding.Namespace,
 			Labels: kmeta.UnionMaps(binding.GetLabels(), map[string]string{
-				servicev1alpha2.ServiceBindingLabelKey: binding.Name,
+				servicebindingv1alpha2.ServiceBindingLabelKey: binding.Name,
 			}),
 			OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(binding)},
 		},

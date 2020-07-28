@@ -9,11 +9,11 @@ import (
 	"context"
 	"fmt"
 
-	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
-	serviceinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/serviceinternal/v1alpha2"
+	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
+	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	bindingclientset "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned"
-	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/service/v1alpha2/servicebinding"
-	serviceinternalv1alpha2listers "github.com/vmware-labs/service-bindings/pkg/client/listers/serviceinternal/v1alpha2"
+	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha2/servicebinding"
+	servicebindinginternalv1alpha2listers "github.com/vmware-labs/service-bindings/pkg/client/listers/servicebindinginternal/v1alpha2"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources"
 	resourcenames "github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources/names"
 	"github.com/vmware-labs/service-bindings/pkg/resolver"
@@ -42,7 +42,7 @@ type Reconciler struct {
 	kubeclient                     kubernetes.Interface
 	bindingclient                  bindingclientset.Interface
 	secretLister                   corev1listers.SecretLister
-	serviceBindingProjectionLister serviceinternalv1alpha2listers.ServiceBindingProjectionLister
+	serviceBindingProjectionLister servicebindinginternalv1alpha2listers.ServiceBindingProjectionLister
 
 	resolver *resolver.ServiceableResolver
 	tracker  tracker.Interface
@@ -52,7 +52,7 @@ type Reconciler struct {
 var _ servicebindingreconciler.Interface = (*Reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
-func (r *Reconciler) ReconcileKind(ctx context.Context, binding *servicev1alpha2.ServiceBinding) reconciler.Event {
+func (r *Reconciler) ReconcileKind(ctx context.Context, binding *servicebindingv1alpha2.ServiceBinding) reconciler.Event {
 	logger := logging.FromContext(ctx)
 
 	if binding.GetDeletionTimestamp() != nil {
@@ -88,7 +88,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, binding *servicev1alpha2
 	return newReconciledNormal(binding.Namespace, binding.Name)
 }
 
-func (r *Reconciler) projectedSecret(ctx context.Context, logger *zap.SugaredLogger, binding *servicev1alpha2.ServiceBinding) (*corev1.Secret, error) {
+func (r *Reconciler) projectedSecret(ctx context.Context, logger *zap.SugaredLogger, binding *servicebindingv1alpha2.ServiceBinding) (*corev1.Secret, error) {
 	recorder := controller.GetEventRecorder(ctx)
 
 	providerRef, err := r.resolver.ServiceableFromObjectReference(binding.Spec.Service, binding)
@@ -125,7 +125,7 @@ func (r *Reconciler) projectedSecret(ctx context.Context, logger *zap.SugaredLog
 	return projection, nil
 }
 
-func (c *Reconciler) createProjectedSecret(binding *servicev1alpha2.ServiceBinding, reference *corev1.Secret) (*corev1.Secret, error) {
+func (c *Reconciler) createProjectedSecret(binding *servicebindingv1alpha2.ServiceBinding, reference *corev1.Secret) (*corev1.Secret, error) {
 	projection, err := resources.MakeProjectedSecret(binding, reference)
 	if err != nil {
 		return nil, err
@@ -139,7 +139,7 @@ func projectedSecretSemanticEquals(ctx context.Context, desiredProjection, proje
 		equality.Semantic.DeepEqual(desiredProjection.ObjectMeta.Annotations, projection.ObjectMeta.Annotations), nil
 }
 
-func (c *Reconciler) reconcileProtectedSecret(ctx context.Context, binding *servicev1alpha2.ServiceBinding, reference, projection *corev1.Secret) (*corev1.Secret, error) {
+func (c *Reconciler) reconcileProtectedSecret(ctx context.Context, binding *servicebindingv1alpha2.ServiceBinding, reference, projection *corev1.Secret) (*corev1.Secret, error) {
 	existing := projection.DeepCopy()
 	// In the case of an upgrade, there can be default values set that don't exist pre-upgrade.
 	// We are setting the up-to-date default values here so an update won't be triggered if the only
@@ -161,7 +161,7 @@ func (c *Reconciler) reconcileProtectedSecret(ctx context.Context, binding *serv
 	return c.kubeclient.CoreV1().Secrets(binding.Namespace).Update(existing)
 }
 
-func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.SugaredLogger, binding *servicev1alpha2.ServiceBinding) (*serviceinternalv1alpha2.ServiceBindingProjection, error) {
+func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.SugaredLogger, binding *servicebindingv1alpha2.ServiceBinding) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
 	recorder := controller.GetEventRecorder(ctx)
 
 	if binding.Status.Binding == nil {
@@ -187,7 +187,7 @@ func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.S
 	return serviceBindingProjection, nil
 }
 
-func (c *Reconciler) createServiceBindingProjection(binding *servicev1alpha2.ServiceBinding) (*serviceinternalv1alpha2.ServiceBindingProjection, error) {
+func (c *Reconciler) createServiceBindingProjection(binding *servicebindingv1alpha2.ServiceBinding) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
 	serviceBindingProjection, err := resources.MakeServiceBindingProjection(binding)
 	if err != nil {
 		return nil, err
@@ -195,13 +195,13 @@ func (c *Reconciler) createServiceBindingProjection(binding *servicev1alpha2.Ser
 	return c.bindingclient.InternalV1alpha2().ServiceBindingProjections(binding.Namespace).Create(serviceBindingProjection)
 }
 
-func serviceBindingProjectionSemanticEquals(ctx context.Context, desiredServiceBindingProjection, serviceBindingProjection *serviceinternalv1alpha2.ServiceBindingProjection) (bool, error) {
+func serviceBindingProjectionSemanticEquals(ctx context.Context, desiredServiceBindingProjection, serviceBindingProjection *servicebindinginternalv1alpha2.ServiceBindingProjection) (bool, error) {
 	return equality.Semantic.DeepEqual(desiredServiceBindingProjection.Spec, serviceBindingProjection.Spec) &&
 		equality.Semantic.DeepEqual(desiredServiceBindingProjection.ObjectMeta.Labels, serviceBindingProjection.ObjectMeta.Labels) &&
 		equality.Semantic.DeepEqual(desiredServiceBindingProjection.ObjectMeta.Annotations, serviceBindingProjection.ObjectMeta.Annotations), nil
 }
 
-func (c *Reconciler) reconcileServiceBindingProjection(ctx context.Context, binding *servicev1alpha2.ServiceBinding, projection *serviceinternalv1alpha2.ServiceBindingProjection) (*serviceinternalv1alpha2.ServiceBindingProjection, error) {
+func (c *Reconciler) reconcileServiceBindingProjection(ctx context.Context, binding *servicebindingv1alpha2.ServiceBinding, projection *servicebindinginternalv1alpha2.ServiceBindingProjection) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
 	existing := projection.DeepCopy()
 	// In the case of an upgrade, there can be default values set that don't exist pre-upgrade.
 	// We are setting the up-to-date default values here so an update won't be triggered if the only

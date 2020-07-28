@@ -8,8 +8,8 @@ package servicebindingprojection
 import (
 	"context"
 
-	serviceinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/serviceinternal/v1alpha2"
-	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/serviceinternal/v1alpha2/servicebindingprojection"
+	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
+	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebindinginternal/v1alpha2/servicebindingprojection"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -42,7 +42,7 @@ func NewController(
 
 	psInformerFactory := podspecable.Get(ctx)
 	c := &psbinding.BaseReconciler{
-		GVR: serviceinternalv1alpha2.SchemeGroupVersion.WithResource("servicebindingprojections"),
+		GVR: servicebindinginternalv1alpha2.SchemeGroupVersion.WithResource("servicebindingprojections"),
 		Get: func(namespace string, name string) (psbinding.Bindable, error) {
 			return serviceBindingProjectionInformer.Lister().ServiceBindingProjections(namespace).Get(name)
 		},

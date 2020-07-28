@@ -9,14 +9,14 @@ package fake
 
 import (
 	clientset "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned"
-	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/bindings/v1alpha1"
-	fakebindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/bindings/v1alpha1/fake"
 	duckv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha1"
 	fakeduckv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha1/fake"
-	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/service/v1alpha2"
-	fakeservicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/service/v1alpha2/fake"
-	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/serviceinternal/v1alpha2"
-	fakeinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/serviceinternal/v1alpha2/fake"
+	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1"
+	fakebindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1/fake"
+	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha2"
+	fakeservicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha2/fake"
+	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebindinginternal/v1alpha2"
+	fakeinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebindinginternal/v1alpha2/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -71,14 +71,14 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// BindingsV1alpha1 retrieves the BindingsV1alpha1Client
-func (c *Clientset) BindingsV1alpha1() bindingsv1alpha1.BindingsV1alpha1Interface {
-	return &fakebindingsv1alpha1.FakeBindingsV1alpha1{Fake: &c.Fake}
-}
-
 // DuckV1alpha1 retrieves the DuckV1alpha1Client
 func (c *Clientset) DuckV1alpha1() duckv1alpha1.DuckV1alpha1Interface {
 	return &fakeduckv1alpha1.FakeDuckV1alpha1{Fake: &c.Fake}
+}
+
+// BindingsV1alpha1 retrieves the BindingsV1alpha1Client
+func (c *Clientset) BindingsV1alpha1() bindingsv1alpha1.BindingsV1alpha1Interface {
+	return &fakebindingsv1alpha1.FakeBindingsV1alpha1{Fake: &c.Fake}
 }
 
 // ServiceV1alpha2 retrieves the ServiceV1alpha2Client

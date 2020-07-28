@@ -28,9 +28,9 @@ import (
 	"knative.dev/pkg/webhook/resourcesemantics/defaulting"
 	"knative.dev/pkg/webhook/resourcesemantics/validation"
 
-	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/bindings/v1alpha1"
-	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
-	serviceinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/serviceinternal/v1alpha2"
+	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
+	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
+	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/provisionedservice"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebindingprojection"
@@ -58,9 +58,9 @@ var (
 	}
 )
 var ourTypes = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
-	bindingsv1alpha1.SchemeGroupVersion.WithKind("ProvisionedService"):      &bindingsv1alpha1.ProvisionedService{},
-	servicev1alpha2.SchemeGroupVersion.WithKind("ServiceBinding"):           &servicev1alpha2.ServiceBinding{},
-	servicev1alpha2.SchemeGroupVersion.WithKind("ServiceBindingProjection"): &serviceinternalv1alpha2.ServiceBindingProjection{},
+	labsv1alpha1.SchemeGroupVersion.WithKind("ProvisionedService"):                 &labsv1alpha1.ProvisionedService{},
+	servicebindingv1alpha2.SchemeGroupVersion.WithKind("ServiceBinding"):           &servicebindingv1alpha2.ServiceBinding{},
+	servicebindingv1alpha2.SchemeGroupVersion.WithKind("ServiceBindingProjection"): &servicebindinginternalv1alpha2.ServiceBindingProjection{},
 }
 
 func NewDefaultingAdmissionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {

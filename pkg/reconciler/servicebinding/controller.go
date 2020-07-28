@@ -8,11 +8,11 @@ package servicebinding
 import (
 	"context"
 
-	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
+	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
 	bindingclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client"
-	servicebindinginformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/service/v1alpha2/servicebinding"
-	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/serviceinternal/v1alpha2/servicebindingprojection"
-	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/service/v1alpha2/servicebinding"
+	servicebindinginformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha2/servicebinding"
+	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebindinginternal/v1alpha2/servicebindingprojection"
+	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha2/servicebinding"
 	"github.com/vmware-labs/service-bindings/pkg/resolver"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
@@ -49,7 +49,7 @@ func NewController(
 	serviceBindingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 	handleMatchingControllers := cache.FilteringResourceEventHandler{
-		FilterFunc: controller.FilterControllerGK(servicev1alpha2.Kind("ServiceBinding")),
+		FilterFunc: controller.FilterControllerGK(servicebindingv1alpha2.Kind("ServiceBinding")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	}
 	secretInformer.Informer().AddEventHandler(handleMatchingControllers)

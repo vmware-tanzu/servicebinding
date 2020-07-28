@@ -10,8 +10,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/bindings/v1alpha1"
-	provisionedservicereconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/bindings/v1alpha1/provisionedservice"
+	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
+	provisionedservicereconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/labs/v1alpha1/provisionedservice"
 	"knative.dev/pkg/reconciler"
 )
 
@@ -29,7 +29,7 @@ type Reconciler struct{}
 var _ provisionedservicereconciler.Interface = (*Reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
-func (r *Reconciler) ReconcileKind(ctx context.Context, o *bindingsv1alpha1.ProvisionedService) reconciler.Event {
+func (r *Reconciler) ReconcileKind(ctx context.Context, o *labsv1alpha1.ProvisionedService) reconciler.Event {
 	if o.GetDeletionTimestamp() != nil {
 		// Check for a DeletionTimestamp.  If present, elide the normal reconcile logic.
 		// When a controller needs finalizer handling, it would go here.

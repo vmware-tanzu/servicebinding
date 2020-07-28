@@ -18,7 +18,7 @@ export GOPATH=${GOPATH:-${TMP_DIR}}
 TMP_REPO_PATH="${TMP_DIR}/src/github.com/vmware-labs/service-bindings"
 mkdir -p "$(dirname "${TMP_REPO_PATH}")" && ln -s "${REPO_ROOT}" "${TMP_REPO_PATH}"
 
-API_GROUPS="bindings:v1alpha1 duck:v1alpha1 service:v1alpha2 serviceinternal:v1alpha2"
+API_GROUPS="duck:v1alpha1 labs:v1alpha1 servicebinding:v1alpha2 servicebindinginternal:v1alpha2"
 
 # generate the code with:
 # --output-base    because this script should also be able to run inside the vendor dir of

@@ -8,10 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 package scheme
 
 import (
-	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/bindings/v1alpha1"
 	duckv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha1"
-	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/service/v1alpha2"
-	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/serviceinternal/v1alpha2"
+	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
+	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
+	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -23,8 +23,8 @@ var Scheme = runtime.NewScheme()
 var Codecs = serializer.NewCodecFactory(Scheme)
 var ParameterCodec = runtime.NewParameterCodec(Scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
-	bindingsv1alpha1.AddToScheme,
 	duckv1alpha1.AddToScheme,
+	bindingsv1alpha1.AddToScheme,
 	servicev1alpha2.AddToScheme,
 	internalv1alpha2.AddToScheme,
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/tracker"
@@ -470,4 +471,927 @@ func TestServiceBindingProjection_SetObservedGeneration(t *testing.T) {
 	seed.Status.SetObservedGeneration(expected)
 	actual := seed.Status.ObservedGeneration
 	assert.Equal(t, expected, actual)
+}
+
+func TestServiceBindingProjection_Undo(t *testing.T) {
+	tests := []struct {
+		name     string
+		binding  *ServiceBindingProjection
+		seed     *duckv1.WithPod
+		expected *duckv1.WithPod
+	}{
+		{
+			name:     "empty",
+			binding:  &ServiceBindingProjection{},
+			seed:     &duckv1.WithPod{},
+			expected: &duckv1.WithPod{},
+		},
+		{
+			name: "remove bound volumes",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+			},
+			seed: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "injected-a,injected-b",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Volumes: []corev1.Volume{
+								{Name: "preserve"},
+								{Name: "injected-a"},
+								{Name: "injected-b"},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Volumes: []corev1.Volume{
+								{Name: "preserve"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "remove injected container volumemounts",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+			},
+			seed: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "injected",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+										{Name: "injected"},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+										{Name: "injected"},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{Name: "injected"},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "remove injected environment variables",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+			},
+			seed: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "injected",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name: "INJECTED",
+											ValueFrom: &corev1.EnvVarSource{
+												SecretKeyRef: &corev1.SecretKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "injected-secret",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name: "INJECTED",
+											ValueFrom: &corev1.EnvVarSource{
+												SecretKeyRef: &corev1.SecretKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "injected-secret",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "injected",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "injected-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{Name: "PRESERVE"},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{Name: "PRESERVE"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, c := range tests {
+		t.Run(c.name, func(t *testing.T) {
+			actual := c.seed.DeepCopy()
+			binding := c.binding.DeepCopy()
+			binding.Undo(context.TODO(), actual)
+			if diff := cmp.Diff(c.binding, binding); diff != "" {
+				t.Errorf("%s: Undo() unexpected binding mutation (-expected, +actual): %s", c.name, diff)
+			}
+			if diff := cmp.Diff(c.expected, actual, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("%s: Undo() (-expected, +actual): %s", c.name, diff)
+			}
+		})
+	}
+}
+
+func TestServiceBindingProjection_Do(t *testing.T) {
+	tests := []struct {
+		name     string
+		binding  *ServiceBindingProjection
+		seed     *duckv1.WithPod
+		expected *duckv1.WithPod
+	}{
+		{
+			name: "inject volume into each container",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{},
+							},
+							Containers: []corev1.Container{
+								{},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "my-secret-binding",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "my-secret-binding",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "inject volume into named container",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+					Application: ApplicationReference{
+						Containers: []intstr.IntOrString{
+							intstr.FromString("my-container"),
+						},
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{},
+								{Name: "my-container"},
+							},
+							Containers: []corev1.Container{
+								{},
+								{Name: "my-container"},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "my-secret-binding",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{},
+								{
+									Name: "my-container",
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{},
+								{
+									Name: "my-container",
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "my-secret-binding",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "inject volume into a container by index",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+					Application: ApplicationReference{
+						Containers: []intstr.IntOrString{
+							intstr.FromInt(1),
+						},
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{},
+								{},
+							},
+							Containers: []corev1.Container{
+								{},
+								{},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "my-secret-binding",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{},
+								{},
+							},
+							Containers: []corev1.Container{
+								{},
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "my-secret-binding",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "preserve volume mounts",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{Name: "preserve"},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "my-secret-binding",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{Name: "preserve"},
+								{
+									Name: "my-secret-binding",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "inject volume at custom path",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/custom/path",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "my-secret-binding",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/custom/path",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/custom/path/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "my-secret-binding",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "inject custom envvars",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+					Env: []EnvVar{
+						{
+							Name: "MY_VAR",
+							Key:  "my-key",
+						},
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "my-secret-binding",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+										{
+											Name: "MY_VAR",
+											ValueFrom: &corev1.EnvVarSource{
+												SecretKeyRef: &corev1.SecretKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "my-secret",
+													},
+													Key: "my-key",
+												},
+											},
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "my-secret-binding",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "runs undo before do",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "injected",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Volumes: []corev1.Volume{
+								{Name: "preserve"},
+								{Name: "injected"},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "my-secret-binding",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Volumes: []corev1.Volume{
+								{Name: "preserve"},
+								{
+									Name: "my-secret-binding",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "idempotent",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "my-secret-binding",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "my-secret-binding",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "my-secret-binding",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "my-secret-binding",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "my-secret-binding",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, c := range tests {
+		t.Run(c.name, func(t *testing.T) {
+			actual := c.seed.DeepCopy()
+			binding := c.binding.DeepCopy()
+			binding.Do(context.TODO(), actual)
+			if diff := cmp.Diff(c.binding, binding); diff != "" {
+				t.Errorf("%s: Do() unexpected binding mutation (-expected, +actual): %s", c.name, diff)
+			}
+			if diff := cmp.Diff(c.expected, actual, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("%s: Do() (-expected, +actual): %s", c.name, diff)
+			}
+		})
+	}
 }

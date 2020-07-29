@@ -16,7 +16,6 @@ import (
 	"knative.dev/pkg/apis"
 	"knative.dev/pkg/apis/duck"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	v1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/tracker"
 )
 
@@ -48,7 +47,7 @@ func (b *ServiceBindingProjection) GetBindingStatus() duck.BindableStatus {
 	return &b.Status
 }
 
-func (b *ServiceBindingProjection) Do(ctx context.Context, ps *v1.WithPod) {
+func (b *ServiceBindingProjection) Do(ctx context.Context, ps *duckv1.WithPod) {
 	// undo existing bindings so we can start clean
 	b.Undo(ctx, ps)
 
@@ -78,13 +77,13 @@ func (b *ServiceBindingProjection) Do(ctx context.Context, ps *v1.WithPod) {
 	for i := range ps.Spec.Template.Spec.InitContainers {
 		c := &ps.Spec.Template.Spec.InitContainers[i]
 		if b.isTargetContainer(-1, c) {
-			b.DoContainer(ctx, ps, c, bindingVolume, sb.Name)
+			b.doContainer(ctx, ps, c, bindingVolume, sb.Name)
 		}
 	}
 	for i := range ps.Spec.Template.Spec.Containers {
 		c := &ps.Spec.Template.Spec.Containers[i]
 		if b.isTargetContainer(i, c) {
-			b.DoContainer(ctx, ps, c, bindingVolume, sb.Name)
+			b.doContainer(ctx, ps, c, bindingVolume, sb.Name)
 		}
 	}
 
@@ -92,7 +91,7 @@ func (b *ServiceBindingProjection) Do(ctx context.Context, ps *v1.WithPod) {
 	ps.Annotations[b.annotationKey()] = strings.Join(newVolumes.List(), ",")
 }
 
-func (b *ServiceBindingProjection) DoContainer(ctx context.Context, ps *v1.WithPod, c *corev1.Container, bindingVolume, secretName string) {
+func (b *ServiceBindingProjection) doContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, bindingVolume, secretName string) {
 	mountPath := ""
 	// lookup predefined mount path
 	for _, e := range c.Env {
@@ -159,7 +158,7 @@ func (b *ServiceBindingProjection) isTargetContainer(idx int, c *corev1.Containe
 	return false
 }
 
-func (b *ServiceBindingProjection) Undo(ctx context.Context, ps *v1.WithPod) {
+func (b *ServiceBindingProjection) Undo(ctx context.Context, ps *duckv1.WithPod) {
 	if ps.Annotations == nil {
 		ps.Annotations = map[string]string{}
 	}
@@ -180,16 +179,16 @@ func (b *ServiceBindingProjection) Undo(ctx context.Context, ps *v1.WithPod) {
 	ps.Spec.Template.Spec.Volumes = preservedVolumes
 
 	for i := range ps.Spec.Template.Spec.InitContainers {
-		b.UndoContainer(ctx, ps, &ps.Spec.Template.Spec.InitContainers[i], boundVolumes, boundSecrets)
+		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.InitContainers[i], boundVolumes, boundSecrets)
 	}
 	for i := range ps.Spec.Template.Spec.Containers {
-		b.UndoContainer(ctx, ps, &ps.Spec.Template.Spec.Containers[i], boundVolumes, boundSecrets)
+		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.Containers[i], boundVolumes, boundSecrets)
 	}
 
 	delete(ps.Annotations, b.annotationKey())
 }
 
-func (b *ServiceBindingProjection) UndoContainer(ctx context.Context, ps *v1.WithPod, c *corev1.Container, boundVolumes, boundSecrets sets.String) {
+func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, boundVolumes, boundSecrets sets.String) {
 	preservedMounts := []corev1.VolumeMount{}
 	for _, vm := range c.VolumeMounts {
 		if !boundVolumes.Has(vm.Name) {

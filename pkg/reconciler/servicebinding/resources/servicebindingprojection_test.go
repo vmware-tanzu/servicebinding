@@ -13,11 +13,11 @@ import (
 	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/tracker"
 )
 
 func TestMakeServiceBindingProjection(t *testing.T) {
-	True := true
 	tests := []struct {
 		name        string
 		binding     *servicebindingv1alpha2.ServiceBinding
@@ -65,8 +65,8 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 							APIVersion:         "service.binding/v1alpha2",
 							Kind:               "ServiceBinding",
 							Name:               "my-binding",
-							Controller:         &True,
-							BlockOwnerDeletion: &True,
+							Controller:         ptr.Bool(true),
+							BlockOwnerDeletion: ptr.Bool(true),
 						},
 					},
 				},

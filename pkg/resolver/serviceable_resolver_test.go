@@ -36,7 +36,10 @@ func init() {
 func TestNewServiceableResolver(t *testing.T) {
 	ctx, _ := fakedynamicclient.With(context.Background(), scheme.Scheme, []runtime.Object{}...)
 	ctx = serviceable.WithDuck(ctx)
-	_ = NewServiceableResolver(ctx, func(types.NamespacedName) {})
+	r := NewServiceableResolver(ctx, func(types.NamespacedName) {})
+	if r == nil {
+		t.Fatal("expected NewServiceableResolver to return a non-nil value")
+	}
 }
 
 func TestServiceableResolver_ServiceableFromObjectReference(t *testing.T) {

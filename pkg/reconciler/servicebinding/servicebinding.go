@@ -33,7 +33,7 @@ import (
 // newReconciledNormal makes a new reconciler event with event type Normal, and
 // reason ServiceBindingReconciled.
 func newReconciledNormal(namespace, name string) reconciler.Event {
-	return reconciler.NewEvent(corev1.EventTypeNormal, "ServiceBindingReconciled", "ServiceBinding reconciled: \"%s/%s\"", namespace, name)
+	return reconciler.NewEvent(corev1.EventTypeNormal, "Reconciled", "ServiceBinding reconciled: \"%s/%s\"", namespace, name)
 }
 
 // Reconciler implements servicebindingreconciler.Interface for
@@ -91,7 +91,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, binding *servicebindingv
 func (r *Reconciler) projectedSecret(ctx context.Context, logger *zap.SugaredLogger, binding *servicebindingv1alpha2.ServiceBinding) (*corev1.Secret, error) {
 	recorder := controller.GetEventRecorder(ctx)
 
-	providerRef, err := r.resolver.ServiceableFromObjectReference(binding.Spec.Service, binding)
+	serviceRef := binding.Spec.Service.DeepCopy()
+	serviceRef.Namespace = binding.Namespace
+	providerRef, err := r.resolver.ServiceableFromObjectReference(serviceRef, binding)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +120,7 @@ func (r *Reconciler) projectedSecret(ctx context.Context, logger *zap.SugaredLog
 	} else if err != nil {
 		return nil, fmt.Errorf("failed to get projected Secret: %w", err)
 	} else if !metav1.IsControlledBy(projection, binding) {
-		return nil, fmt.Errorf("service: %q does not own projected secret: %q", binding.Name, projectionName)
+		return nil, fmt.Errorf("ServiceBinding %q does not own projected Secret: %q", binding.Name, projectionName)
 	} else if projection, err = r.reconcileProtectedSecret(ctx, binding, reference, projection); err != nil {
 		return nil, fmt.Errorf("failed to reconcile projected Secret: %w", err)
 	}
@@ -180,7 +182,7 @@ func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.S
 	} else if err != nil {
 		return nil, fmt.Errorf("failed to get ServiceBindingProjection: %w", err)
 	} else if !metav1.IsControlledBy(serviceBindingProjection, binding) {
-		return nil, fmt.Errorf("service: %q does not own ServiceBindingProjection: %q", binding.Name, serviceBindingProjectionName)
+		return nil, fmt.Errorf("ServiceBinding %q does not own ServiceBindingProjection: %q", binding.Name, serviceBindingProjectionName)
 	} else if serviceBindingProjection, err = r.reconcileServiceBindingProjection(ctx, binding, serviceBindingProjection); err != nil {
 		return nil, fmt.Errorf("failed to reconcile ServiceBindingProjection: %w", err)
 	}

@@ -73,7 +73,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.1
     - name: Download staged asset
-      uses: actions/download-artifact@v2.0.1
+      uses: actions/download-artifact@v2.0.2
       with:
         name: service-bindings.yaml
     - run: cat service-bindings.yaml
@@ -99,7 +99,7 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: true
     - name: Download staged asset
-      uses: actions/download-artifact@v2.0.1
+      uses: actions/download-artifact@v2.0.2
       with:
         name: service-bindings.yaml
     - name: Upload release asset

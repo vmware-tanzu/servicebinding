@@ -1,0 +1,17 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: service.binding/v1alpha2
+kind: ServiceBinding
+metadata:
+  name: petclinic-db
+spec:
+  application:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: petclinic
+  service:
+    apiVersion: bindings.labs.vmware.com/v1alpha1
+    kind: ProvisionedService
+    name: petclinic-db

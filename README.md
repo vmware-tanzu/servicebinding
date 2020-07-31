@@ -17,6 +17,12 @@ From within the cloned directory for this project, run:
 ko apply --strict -f config
 ```
 
+## Samples
+
+Samples are located in the [samples directory](./samples), including:
+
+- [Spring PetClinic with MySQL](./samples/petclinic)
+
 ## Resources
 
 ### ServiceBinding (service.binding/v1alpha2)
@@ -68,7 +74,6 @@ stringData:
   password: ""
   port: "3306"
   username: root
-
 ```
 
 The controller writes the resource's status to implement the duck type.

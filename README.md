@@ -22,12 +22,13 @@ ko apply --strict -f config
 Samples are located in the [samples directory](./samples), including:
 
 - [Spring PetClinic with MySQL](./samples/petclinic)
+- [Custom Projections](./samples/custom-projections)
 
 ## Resources
 
 ### ServiceBinding (service.binding/v1alpha2)
 
-The `ServiceBinding` resource shape and behavior is defined upstream. In addition to the [core specification](https://github.com/k8s-service-bindings/spec#service-binding), the [Role-Based Access Control (RBAC) extension](https://github.com/k8s-service-bindings/spec#role-based-access-control-rbac) is also supported by this implementation.
+The `ServiceBinding` resource shape and behavior is defined upstream. In addition to the [core specification](https://github.com/k8s-service-bindings/spec#service-binding), the [Custom Projects](https://github.com/k8s-service-bindings/spec/blob/master/README.md#custom-projection) and [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec#role-based-access-control-rbac) extensions are also supported by this implementation.
 
 ```
 apiVersion: service.binding/v1alpha2

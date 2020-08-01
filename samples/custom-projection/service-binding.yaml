@@ -1,0 +1,22 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: service.binding/v1alpha2
+kind: ServiceBinding
+metadata:
+  name: custom
+  annotations:
+    # disable the default binding projection
+    projection.service.binding/type: Custom
+spec:
+  # pointing application at a real resource, but not one we can reconcile as 
+  # PodSpecable, replace with the desired application.
+  application:
+    apiVersion: v1
+    kind: Secret
+    name: custom
+  service:
+    apiVersion: bindings.labs.vmware.com/v1alpha1
+    kind: ProvisionedService
+    name: custom

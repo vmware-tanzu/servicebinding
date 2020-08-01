@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package resources
 
 import (
+	"strings"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/kmeta"
 
@@ -17,8 +19,9 @@ import (
 func MakeServiceBindingProjection(binding *servicebindingv1alpha2.ServiceBinding) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
 	projection := &servicebindinginternalv1alpha2.ServiceBindingProjection{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      resourcenames.ServiceBindingProjection(binding),
-			Namespace: binding.Namespace,
+			Name:        resourcenames.ServiceBindingProjection(binding),
+			Namespace:   binding.Namespace,
+			Annotations: map[string]string{},
 			Labels: kmeta.UnionMaps(binding.GetLabels(), map[string]string{
 				servicebindingv1alpha2.ServiceBindingLabelKey: binding.Name,
 			}),
@@ -30,6 +33,13 @@ func MakeServiceBindingProjection(binding *servicebindingv1alpha2.ServiceBinding
 			Application: *binding.Spec.Application,
 			Env:         binding.Spec.Env,
 		},
+	}
+
+	for k, v := range binding.Annotations {
+		// copy forward "serice.bindings" annotations
+		if strings.Contains(k, servicebindingv1alpha2.GroupName) {
+			projection.Annotations[k] = v
+		}
 	}
 
 	return projection, nil

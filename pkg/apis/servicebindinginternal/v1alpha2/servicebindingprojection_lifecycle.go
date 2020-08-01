@@ -47,9 +47,23 @@ func (b *ServiceBindingProjection) GetBindingStatus() duck.BindableStatus {
 	return &b.Status
 }
 
+const (
+	ServiceBindingProjectionTypeKey    = "projection.service.binding/type"
+	ServiceBindingProjectionTypeCustom = "Custom"
+)
+
+func (b *ServiceBindingProjection) IsCustomProjection() bool {
+	return b.Annotations != nil && b.Annotations[ServiceBindingProjectionTypeKey] == ServiceBindingProjectionTypeCustom
+}
+
 func (b *ServiceBindingProjection) Do(ctx context.Context, ps *duckv1.WithPod) {
 	// undo existing bindings so we can start clean
 	b.Undo(ctx, ps)
+
+	if b.IsCustomProjection() {
+		// someone else is responsible for the projection
+		return
+	}
 
 	existingVolumes := sets.NewString()
 	for _, v := range ps.Spec.Template.Spec.Volumes {

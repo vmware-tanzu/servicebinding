@@ -10,7 +10,7 @@ package serviceable
 import (
 	context "context"
 
-	v1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha1"
+	v1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha2"
 	duck "knative.dev/pkg/apis/duck"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
@@ -30,7 +30,7 @@ func WithDuck(ctx context.Context) context.Context {
 	dif := &duck.CachedInformerFactory{
 		Delegate: &duck.TypedInformerFactory{
 			Client:       dc,
-			Type:         (&v1alpha1.Serviceable{}).GetFullType(),
+			Type:         (&v1alpha2.Serviceable{}).GetFullType(),
 			ResyncPeriod: controller.GetResyncPeriod(ctx),
 			StopChannel:  ctx.Done(),
 		},

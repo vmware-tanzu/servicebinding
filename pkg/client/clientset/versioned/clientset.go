@@ -10,7 +10,7 @@ package versioned
 import (
 	"fmt"
 
-	duckv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha1"
+	duckv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha2"
 	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1"
 	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha2"
 	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebindinginternal/v1alpha2"
@@ -21,7 +21,7 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	DuckV1alpha1() duckv1alpha1.DuckV1alpha1Interface
+	DuckV1alpha2() duckv1alpha2.DuckV1alpha2Interface
 	BindingsV1alpha1() bindingsv1alpha1.BindingsV1alpha1Interface
 	ServiceV1alpha2() servicev1alpha2.ServiceV1alpha2Interface
 	InternalV1alpha2() internalv1alpha2.InternalV1alpha2Interface
@@ -31,15 +31,15 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	duckV1alpha1     *duckv1alpha1.DuckV1alpha1Client
+	duckV1alpha2     *duckv1alpha2.DuckV1alpha2Client
 	bindingsV1alpha1 *bindingsv1alpha1.BindingsV1alpha1Client
 	serviceV1alpha2  *servicev1alpha2.ServiceV1alpha2Client
 	internalV1alpha2 *internalv1alpha2.InternalV1alpha2Client
 }
 
-// DuckV1alpha1 retrieves the DuckV1alpha1Client
-func (c *Clientset) DuckV1alpha1() duckv1alpha1.DuckV1alpha1Interface {
-	return c.duckV1alpha1
+// DuckV1alpha2 retrieves the DuckV1alpha2Client
+func (c *Clientset) DuckV1alpha2() duckv1alpha2.DuckV1alpha2Interface {
+	return c.duckV1alpha2
 }
 
 // BindingsV1alpha1 retrieves the BindingsV1alpha1Client
@@ -78,7 +78,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.duckV1alpha1, err = duckv1alpha1.NewForConfig(&configShallowCopy)
+	cs.duckV1alpha2, err = duckv1alpha2.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.duckV1alpha1 = duckv1alpha1.NewForConfigOrDie(c)
+	cs.duckV1alpha2 = duckv1alpha2.NewForConfigOrDie(c)
 	cs.bindingsV1alpha1 = bindingsv1alpha1.NewForConfigOrDie(c)
 	cs.serviceV1alpha2 = servicev1alpha2.NewForConfigOrDie(c)
 	cs.internalV1alpha2 = internalv1alpha2.NewForConfigOrDie(c)
@@ -118,7 +118,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.duckV1alpha1 = duckv1alpha1.New(c)
+	cs.duckV1alpha2 = duckv1alpha2.New(c)
 	cs.bindingsV1alpha1 = bindingsv1alpha1.New(c)
 	cs.serviceV1alpha2 = servicev1alpha2.New(c)
 	cs.internalV1alpha2 = internalv1alpha2.New(c)

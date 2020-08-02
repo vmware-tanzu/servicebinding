@@ -10,8 +10,8 @@ import (
 	"errors"
 	"fmt"
 
-	iduckv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha1"
-	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha1/serviceable"
+	duckv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha2"
+	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha2/serviceable"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/types"
@@ -57,7 +57,7 @@ func (r *ServiceableResolver) ServiceableFromObjectReference(ref *tracker.Refere
 	if err != nil {
 		return nil, fmt.Errorf("failed to get resource for %+v: %v", gvr, err)
 	}
-	serviceable, ok := obj.(*iduckv1alpha1.ServiceableType)
+	serviceable, ok := obj.(*duckv1alpha2.ServiceableType)
 	if !ok {
 		return nil, fmt.Errorf("%+v (%T) is not an ServiceableType", ref, ref)
 	}

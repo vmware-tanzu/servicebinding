@@ -15,6 +15,7 @@ import (
 	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
 	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	servicebindingsclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client"
+	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha2/serviceable"
 	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha2/servicebinding"
 	"github.com/vmware-labs/service-bindings/pkg/resolver"
 	corev1 "k8s.io/api/core/v1"
@@ -31,8 +32,7 @@ import (
 	"knative.dev/pkg/tracker"
 
 	// register injection fakes
-	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha1/serviceable"
-	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha1/serviceable/fake"
+	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha2/serviceable/fake"
 	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha2/servicebinding/fake"
 	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebindinginternal/v1alpha2/servicebindingprojection/fake"
 	_ "knative.dev/pkg/client/injection/kube/informers/core/v1/secret/fake"

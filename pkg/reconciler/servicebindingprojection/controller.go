@@ -41,7 +41,7 @@ func NewController(
 	dc := dynamicclient.Get(ctx)
 
 	psInformerFactory := podspecable.Get(ctx)
-	c := &psbinding.BaseReconciler{
+	d := &psbinding.BaseReconciler{
 		GVR: servicebindinginternalv1alpha2.SchemeGroupVersion.WithResource("servicebindingprojections"),
 		Get: func(namespace string, name string) (psbinding.Bindable, error) {
 			return serviceBindingProjectionInformer.Lister().ServiceBindingProjections(namespace).Get(name)
@@ -51,6 +51,10 @@ func NewController(
 			scheme.Scheme, corev1.EventSource{Component: controllerAgentName}),
 		NamespaceLister: nsInformer.Lister(),
 	}
+	c := &ConditionalReconciler{
+		Delegate: d,
+		Lister:   serviceBindingProjectionInformer.Lister(),
+	}
 
 	impl := controller.NewImpl(c, logger, "ServiceBindingProjections")
 
@@ -58,11 +62,11 @@ func NewController(
 
 	serviceBindingProjectionInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
-	c.Tracker = tracker.New(impl.EnqueueKey, controller.GetTrackerLease(ctx))
-	c.Factory = &duck.CachedInformerFactory{
+	d.Tracker = tracker.New(impl.EnqueueKey, controller.GetTrackerLease(ctx))
+	d.Factory = &duck.CachedInformerFactory{
 		Delegate: &duck.EnqueueInformerFactory{
 			Delegate:     psInformerFactory,
-			EventHandler: controller.HandleAll(c.Tracker.OnChanged),
+			EventHandler: controller.HandleAll(d.Tracker.OnChanged),
 		},
 	}
 	return impl

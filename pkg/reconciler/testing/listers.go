@@ -70,6 +70,10 @@ func (l *Listers) GetServiceBindingsObjects() []runtime.Object {
 	return l.sorter.ObjectsForSchemeFunc(fakeservicebindingsclientset.AddToScheme)
 }
 
+func (l *Listers) GetNamespaceLister() corev1listers.NamespaceLister {
+	return corev1listers.NewNamespaceLister(l.IndexerFor(&corev1.Namespace{}))
+}
+
 func (l *Listers) GetSecretLister() corev1listers.SecretLister {
 	return corev1listers.NewSecretLister(l.IndexerFor(&corev1.Secret{}))
 }

@@ -676,6 +676,46 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "undoes previous bindings even if a custom projections",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+					Annotations: map[string]string{
+						"projection.service.binding/type": "Custom",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/service-binding-projection-my-binding": "injected-a,injected-b",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Volumes: []corev1.Volume{
+								{Name: "preserve"},
+								{Name: "injected-a"},
+								{Name: "injected-b"},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Volumes: []corev1.Volume{
+								{Name: "preserve"},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, c := range tests {
 		t.Run(c.name, func(t *testing.T) {
@@ -1374,6 +1414,51 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 										},
 									},
 								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "don't bind custom projections",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+					Annotations: map[string]string{
+						"projection.service.binding/type": "Custom",
+					},
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{},
+							},
+							Containers: []corev1.Container{
+								{},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{},
+							},
+							Containers: []corev1.Container{
+								{},
 							},
 						},
 					},

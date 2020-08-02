@@ -30,6 +30,11 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "my-namespace",
 					Name:      "my-binding",
+					Annotations: map[string]string{
+						"projection.service.bindings/type": "Custom",
+						"service.bindings/include":         "me",
+						"ignore":                           "me",
+					},
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
 					Name: "my-binding",
@@ -57,6 +62,10 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "my-namespace",
 					Name:      "my-binding",
+					Annotations: map[string]string{
+						"projection.service.bindings/type": "Custom",
+						"service.bindings/include":         "me",
+					},
 					Labels: map[string]string{
 						"service.binding/servicebinding": "my-binding",
 					},

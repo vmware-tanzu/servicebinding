@@ -1,0 +1,23 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: service.binding/v1alpha2
+kind: ServiceBinding
+metadata:
+  name: mappings
+spec:
+  application:
+    apiVersion: batch/v1
+    kind: Job
+    name: mappings
+  service:
+    apiVersion: bindings.labs.vmware.com/v1alpha1
+    kind: ProvisionedService
+    name: mappings
+  mappings:
+  - name: uri
+    value: "https://{{ urlquery .username }}:{{ urlquery .password }}@{{ .host }}"
+  env:
+  - name: GAME_SERVER
+    key: uri

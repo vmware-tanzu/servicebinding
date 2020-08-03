@@ -1,0 +1,22 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: bindings.labs.vmware.com/v1alpha1
+kind: ProvisionedService
+metadata:
+  name: mappings
+spec:
+  binding:
+    name: mappings
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mappings
+type: Opaque
+stringData:
+  username: sfalken
+  password: JOSHUA
+  host: wopr.norad.mil

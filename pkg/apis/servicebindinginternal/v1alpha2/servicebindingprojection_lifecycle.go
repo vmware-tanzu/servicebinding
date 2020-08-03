@@ -7,6 +7,7 @@ package v1alpha2
 
 import (
 	"context"
+	"crypto/sha1"
 	"fmt"
 	"strings"
 
@@ -73,9 +74,7 @@ func (b *ServiceBindingProjection) Do(ctx context.Context, ps *duckv1.WithPod) {
 	newVolumes := sets.NewString()
 	sb := b.Spec.Binding
 
-	// TODO ensure unique volume names
-	// TODO limit volume name length
-	bindingVolume := fmt.Sprintf("%s-binding", sb.Name)
+	bindingVolume := truncateAt63("binding-%x", sha1.Sum([]byte(sb.Name)))
 	if !existingVolumes.Has(bindingVolume) {
 		ps.Spec.Template.Spec.Volumes = append(ps.Spec.Template.Spec.Volumes, corev1.Volume{
 			Name: bindingVolume,
@@ -177,7 +176,9 @@ func (b *ServiceBindingProjection) Undo(ctx context.Context, ps *duckv1.WithPod)
 		ps.Annotations = map[string]string{}
 	}
 
-	boundVolumes := sets.NewString(strings.Split(ps.Annotations[b.annotationKey()], ",")...)
+	key := b.annotationKey()
+
+	boundVolumes := sets.NewString(strings.Split(ps.Annotations[key], ",")...)
 	boundSecrets := sets.NewString()
 
 	preservedVolumes := []corev1.Volume{}
@@ -199,7 +200,7 @@ func (b *ServiceBindingProjection) Undo(ctx context.Context, ps *duckv1.WithPod)
 		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.Containers[i], boundVolumes, boundSecrets)
 	}
 
-	delete(ps.Annotations, b.annotationKey())
+	delete(ps.Annotations, key)
 }
 
 func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, boundVolumes, boundSecrets sets.String) {
@@ -221,7 +222,7 @@ func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1
 }
 
 func (b *ServiceBindingProjection) annotationKey() string {
-	return fmt.Sprintf("%s-%s", ServiceBindingProjectionAnnotationKey, b.Name)
+	return truncateAt63("%s-%x", ServiceBindingProjectionAnnotationKey, sha1.Sum([]byte(b.Name)))
 }
 
 func (bs *ServiceBindingProjectionStatus) InitializeConditions() {
@@ -243,4 +244,12 @@ func (bs *ServiceBindingProjectionStatus) MarkBindingUnavailable(reason string, 
 
 func (bs *ServiceBindingProjectionStatus) SetObservedGeneration(gen int64) {
 	bs.ObservedGeneration = gen
+}
+
+func truncateAt63(msg string, a ...interface{}) string {
+	s := fmt.Sprintf(msg, a...)
+	if len(s) <= 63 {
+		return s
+	}
+	return s[:63]
 }

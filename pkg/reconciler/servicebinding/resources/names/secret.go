@@ -12,6 +12,10 @@ import (
 )
 
 func ProjectedSecret(binding *servicebindingv1alpha2.ServiceBinding) string {
-	// TODO generate the secret name
-	return fmt.Sprintf("%s-projection", binding.Name)
+	name := binding.Name
+	// limit the returned value to at most 63 characters
+	if len(name) > 52 {
+		name = name[:52]
+	}
+	return fmt.Sprintf("%s-projection", name)
 }

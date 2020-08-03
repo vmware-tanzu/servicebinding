@@ -1,7 +1,7 @@
 # Custom Projection
 
-[Custom Projections][custom-projections] are an extension to the Service Bindings spec that allows another controller to manage how the binding is applied to the application.
-Service binding implementation are not required to support custom projections, so this behavior may not be portable to other implementations.
+[Custom Projection][custom-projection] is an extension to the Service Bindings spec that allows another controller to manage how the binding is applied to the application.
+Service binding implementation are not required to support custom projection, so this behavior may not be portable to other implementations.
 By default, PodSpecable resources (`Deployment`, `Job`, Knative `Service`, etc) are the only type of resource that the application can reference.
 
 To mark a resource as custom, the `ServiceBinding` resource **MUST** set the `projection.service.binding/type: Custom` annotation.
@@ -71,5 +71,5 @@ Make to only reconcile resources with the `projection.service.binding/type: Cust
 If that seems too complex, hopefully the ecosystem will evolve to provide turn-key custom projection reconcilers.
 For now, we'll have to wait.
 
-[custom-projections]: https://github.com/k8s-service-bindings/spec/#custom-projection
+[custom-projection]: https://github.com/k8s-service-bindings/spec/#custom-projection
 [install]: ../../README.md#try-it-out

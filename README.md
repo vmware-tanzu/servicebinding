@@ -21,7 +21,7 @@ ko apply --strict -f config
 
 Samples are located in the [samples directory](./samples), including:
 
-- [Spring PetClinic with MySQL](./samples/petclinic)
+- [Spring PetClinic with MySQL](./samples/spring-petclinic)
 - [Custom Projection](./samples/custom-projection)
 - [Controlled Resource](./samples/controlled-resource)
 - [Environment Variables and Mappings](./samples/environment-variable-mappings)

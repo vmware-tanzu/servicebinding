@@ -99,7 +99,7 @@ kubectl delete -f ./samples/environment-variable-mappings/
 kubectl apply -f ./samples/environment-variable-mappings/
 ```
 
-The application logs will not contain the `GAME_SERVER` variable:
+The application logs will no longer contain the `GAME_SERVER` variable:
 
 ```sh
 kubectl logs -l job-name=mappings

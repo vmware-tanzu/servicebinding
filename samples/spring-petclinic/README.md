@@ -11,13 +11,13 @@ If not already installed, [install the ServiceBinding CRD and controller][instal
 Apply the PetClinic application, MySQL service and connect them with a ServiceBinding:
 
 ```sh
-kubectl apply -f ./samples/petclinic
+kubectl apply -f ./samples/spring-petclinic
 ```
 
 Wait for the application (and database) to start and become healthy:
 
 ```sh
-kubectl wait deployment petclinic --for condition=available --timeout=2m
+kubectl wait deployment spring-petclinic --for condition=available --timeout=2m
 ```
 
 ## Understand
@@ -25,10 +25,10 @@ kubectl wait deployment petclinic --for condition=available --timeout=2m
 Inspect the PetClinic application as bound:
 
 ```sh
-kubectl describe deployment petclinic
+kubectl describe deployment spring-petclinic
 ```
 
-If the ServiceBinding is working, a new environment variable (SERVICE_BINDINGS_ROOT), volume and volume mount (petclinic-db-projection-binding) is added to the deployment.
+If the ServiceBinding is working, a new environment variable (SERVICE_BINDINGS_ROOT), volume and volume mount (binding-49a23274b0590d5057aae1ae621be723716c4dd5) is added to the deployment.
 The describe output will contain:
 
 ```txt
@@ -42,11 +42,11 @@ The describe output will contain:
       SPRING_PROFILES_ACTIVE:  mysql
       SERVICE_BINDINGS_ROOT:   /bindings
     Mounts:
-      /bindings/petclinic-db from petclinic-db-projection-binding (ro)
+      /bindings/spring-petclinic-db from binding-49a23274b0590d5057aae1ae621be723716c4dd5 (ro)
   Volumes:
-   petclinic-db-projection-binding:
+   binding-49a23274b0590d5057aae1ae621be723716c4dd5:
     Type:        Secret (a volume populated by a Secret)
-    SecretName:  petclinic-db-projection
+    SecretName:  spring-petclinic-db-projection
     Optional:    false
 ...
 ```
@@ -57,7 +57,7 @@ Spring Cloud Bindings is automatically added to Spring applications built by Pak
 We can see the effect of Spring Cloud Bindings by view the application logs:
 
 ```sh
-kubectl logs -l app=petclinic -c application --tail 1000
+kubectl logs -l app=spring-petclinic -c application --tail 1000
 ```
 
 The logs should contain:
@@ -92,7 +92,7 @@ Spring Cloud Bindings Boot Auto-Configuration Enabled
 To connect to the application, forward a local port into the cluster:
 
 ```sh
-kubectl port-forward service/petclinic 8080:80
+kubectl port-forward service/spring-petclinic 8080:80
 ```
 
 Then open `http://localhost:8080` in a browser.

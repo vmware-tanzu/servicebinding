@@ -5,13 +5,13 @@
 apiVersion: service.binding/v1alpha2
 kind: ServiceBinding
 metadata:
-  name: petclinic-db
+  name: spring-petclinic-db
 spec:
   application:
     apiVersion: apps/v1
     kind: Deployment
-    name: petclinic
+    name: spring-petclinic
   service:
     apiVersion: bindings.labs.vmware.com/v1alpha1
     kind: ProvisionedService
-    name: petclinic-db
+    name: spring-petclinic-db

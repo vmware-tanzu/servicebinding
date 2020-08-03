@@ -5,16 +5,16 @@
 apiVersion: bindings.labs.vmware.com/v1alpha1
 kind: ProvisionedService
 metadata:
-  name: petclinic-db
+  name: spring-petclinic-db
 spec:
   binding:
-    name: petclinic-db
+    name: spring-petclinic-db
 
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: petclinic-db
+  name: spring-petclinic-db
 type: Opaque
 stringData:
   type: mysql
@@ -60,17 +60,17 @@ spec:
         - name: MYSQL_USER
           valueFrom:
             secretKeyRef:
-              name: petclinic-db
+              name: spring-petclinic-db
               key: username
         - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: petclinic-db
+              name: spring-petclinic-db
               key: password
         - name: MYSQL_DATABASE
           valueFrom:
             secretKeyRef:
-              name: petclinic-db
+              name: spring-petclinic-db
               key: database
         - name: MYSQL_ROOT_PASSWORD
           value: root

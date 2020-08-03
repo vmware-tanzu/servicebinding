@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	ServiceBindingProjectionAnnotationKey = GroupName + "/service-binding-projection"
+	ServiceBindingProjectionAnnotationKey = GroupName + "/projection"
 )
 
 // +genclient

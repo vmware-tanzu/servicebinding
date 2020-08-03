@@ -113,7 +113,7 @@ func TestReconcile(t *testing.T) {
 					Namespace: namespace,
 					Name:      "my-application",
 					Annotations: map[string]string{
-						"internal.service.binding/service-binding-projection-my-service": "my-secret-binding",
+						"internal.service.binding/projection-e9ead9b18f311f72f9c7a54af76": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 					},
 				},
 				Spec: appsv1.DeploymentSpec{
@@ -121,7 +121,7 @@ func TestReconcile(t *testing.T) {
 						Spec: corev1.PodSpec{
 							Volumes: []corev1.Volume{
 								{
-									Name: "my-secret-binding",
+									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
 										Secret: &corev1.SecretVolumeSource{
 											SecretName: "my-secret",
@@ -220,7 +220,7 @@ func TestReconcile(t *testing.T) {
 					Namespace: namespace,
 					Name:      "my-application",
 					Annotations: map[string]string{
-						"internal.service.binding/service-binding-projection-my-service": "my-secret-binding",
+						"internal.service.binding/projection-e9ead9b18f311f72f9c7a54af76": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 					},
 				},
 				// will also remove injected PodTemplateSpec items, but the

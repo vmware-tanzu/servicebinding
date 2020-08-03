@@ -23,6 +23,7 @@ Samples are located in the [samples directory](./samples), including:
 
 - [Spring PetClinic with MySQL](./samples/petclinic)
 - [Custom Projections](./samples/custom-projections)
+- [Controlled Resource](./samples/controlled-resource)
 
 ## Resources
 

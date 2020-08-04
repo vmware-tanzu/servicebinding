@@ -1,6 +1,12 @@
 
 # Service Bindings for Kubernetes
 
+![CI](https://github.com/vmware-labs/service-bindings/workflows/CI/badge.svg?branch=main)
+[![GoDoc](https://godoc.org/github.com/vmware-labs/service-bindings?status.svg)](https://godoc.org/github.com/vmware-labs/service-bindings)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vmware-labs/service-bindings)](https://goreportcard.com/report/github.com/vmware-labs/service-bindings)
+[![codecov](https://codecov.io/gh/vmware-labs/service-bindings/branch/main/graph/badge.svg)](https://codecov.io/gh/vmware-labs/service-bindings)
+
+
 Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://github.com/k8s-service-bindings/spec). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC2](https://github.com/k8s-service-bindings/spec/tree/1.0.0-rc2)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
 
 ## Try it out

@@ -36,11 +36,11 @@ jobs:
         go-version: 1.14.x
     - name: Install ko
       run: |
-        go get github.com/google/ko/cmd/ko
-        echo "##[add-path]$(go env GOPATH)/bin"
-      env:
-        GO111MODULE: "off"
-    - name: dockerhub auth
+        cd $(mktemp -d -t ko.XXXX)
+        curl -sL https://github.com/google/ko/releases/download/v0.5.0/ko_0.5.0_Linux_x86_64.tar.gz | tar -xz 
+        sudo mv ./ko /usr/local/bin
+        cd -
+    - name: Docker login
       run: |
         echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
       env:
@@ -60,7 +60,7 @@ jobs:
         ko resolve -t ${slug} --strict -B -R -f config | sed -e "s|bindings.labs.vmware.com/release: devel|bindings.labs.vmware.com/release: ${slug}|" > service-bindings.yaml
       env:
         KO_DOCKER_REPO: docker.io/vmware
-    - name: Upload stage asset
+    - name: Upload Service Bindings build
       uses: actions/upload-artifact@v2.1.3
       with:
         name: service-bindings.yaml
@@ -68,7 +68,7 @@ jobs:
 
   acceptance:
     needs: stage
-    if: github.event_name == 'push' && startsWith(github.repository, 'vmware-labs/')
+    if: "!( cancelled() || failure() )"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -79,10 +79,6 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v2.3.1
-    - name: Download staged asset
-      uses: actions/download-artifact@v2.0.4
-      with:
-        name: service-bindings.yaml
     - name: Install kind
       run: |
         curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.8.1/kind-linux-amd64
@@ -95,7 +91,26 @@ jobs:
         sudo mv ./kapp /usr/local/bin
     - name: Create cluster
       run: kind create cluster --wait 5m --image kindest/node:v${{ matrix.k8s }}
-    - name: Install Service Bindings
+    - name: Download staged Service Bindings build
+      uses: actions/download-artifact@v2.0.4
+      if: needs.stage.result == 'success'
+      with:
+        name: service-bindings.yaml
+    - name: Build Service Bindings locally
+      if: needs.stage.result != 'success'
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        cd $(mktemp -d -t ko.XXXX)
+        curl -sL https://github.com/google/ko/releases/download/v0.5.0/ko_0.5.0_Linux_x86_64.tar.gz | tar -xz 
+        sudo mv ./ko /usr/local/bin
+        cd -
+
+        ko resolve -L --strict -B -R -f config > service-bindings.yaml
+        cat service-bindings.yaml | grep -oh 'ko.local[^\w]*' | xargs -L 1 kind load docker-image
+    - name: Deploy Service Bindings
       run: kapp deploy -a service-bindings -f service-bindings.yaml -y
     - name: Deploy Spring Petclinic
       run: kapp deploy -a spring-petclinic -f samples/spring-petclinic -y
@@ -140,11 +155,11 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         draft: true
-    - name: Download staged asset
+    - name: Download staged Service Bindings build
       uses: actions/download-artifact@v2.0.4
       with:
         name: service-bindings.yaml
-    - name: Upload release asset
+    - name: Upload Service Bindings release
       uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

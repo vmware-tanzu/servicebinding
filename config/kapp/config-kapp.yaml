@@ -3,9 +3,6 @@
 
 apiVersion: kapp.k14s.io/v1alpha1
 kind: Config
-metadata:
-  labels:
-    exclude: "true"
 minimumRequiredVersion: 0.31.0
 rebaseRules:
 - path: [rules]

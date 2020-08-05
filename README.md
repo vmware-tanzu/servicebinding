@@ -20,7 +20,7 @@ We use [`ko`](https://github.com/google/ko) to build the CRD and reconciler, and
 From within the cloned directory for this project, run:
 
 ```
-kapp deploy -a service-bindings -f <(ko resolve --strict -f config)
+kapp deploy -a service-bindings -f <(ko resolve --strict -R -f config)
 ```
 
 #### Uninstall

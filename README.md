@@ -15,12 +15,18 @@ Using the [latest release](https://github.com/vmware-labs/service-bindings/relea
 
 ### Build from source
 
-We use [`ko`](https://github.com/google/ko) to build and deploy the CRD and reconciler.
+We use [`ko`](https://github.com/google/ko) to build the CRD and reconciler, and [`kapp`](https://get-kapp.io) to deploy them.
 
 From within the cloned directory for this project, run:
 
 ```
-ko apply --strict -f config
+kapp deploy -a service-bindings -f <(ko resolve --strict -f config)
+```
+
+#### Uninstall
+
+```
+kapp delete -a service-bindings
 ```
 
 ## Samples

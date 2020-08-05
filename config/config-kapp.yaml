@@ -1,0 +1,37 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: kapp.k14s.io/v1alpha1
+kind: Config
+metadata:
+  labels:
+    exclude: "true"
+minimumRequiredVersion: 0.31.0
+rebaseRules:
+- path: [rules]
+  type: copy
+  sources: [existing]
+  resourceMatchers:
+  - kindNamespaceNameMatcher: {kind: ClusterRole, namespace: "", name: service-binding-admin}
+- path: [data]
+  type: copy
+  sources: [existing]
+  resourceMatchers:
+  - kindNamespaceNameMatcher: {kind: Secret, namespace: service-bindings, name: webhook-certs}
+- paths: 
+  - [metadata, annotations]
+  - [webhooks, {allIndexes: true}, clientConfig, caBundle]
+  - [webhooks, {allIndexes: true}, clientConfig, service, path]
+  - [webhooks, {allIndexes: true}, clientConfig, service, port]
+  - [webhooks, {allIndexes: true}, matchPolicy]
+  - [webhooks, {allIndexes: true}, namespaceSelector]
+  - [webhooks, {allIndexes: true}, objectSelector]
+  - [webhooks, {allIndexes: true}, reinvocationPolicy]
+  - [webhooks, {allIndexes: true}, rules]
+  - [webhooks, {allIndexes: true}, sideEffects]
+  - [webhooks, {allIndexes: true}, timeoutSeconds]
+  type: copy
+  sources: [existing]
+  resourceMatchers:
+  - apiVersionKindMatcher: {apiVersion: admissionregistration.k8s.io/v1beta1, kind: MutatingWebhookConfiguration}
+  - apiVersionKindMatcher: {apiVersion: admissionregistration.k8s.io/v1beta1, kind: ValidatingWebhookConfiguration}

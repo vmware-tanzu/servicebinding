@@ -18,7 +18,8 @@ metadata:
 type: Opaque
 stringData:
   type: mysql
-  host: petclinic-db
+  provider: mariadb
+  host: spring-petclinic-db
   port: "3306"
   database: default
   # demo credentials
@@ -29,32 +30,32 @@ stringData:
 apiVersion: v1
 kind: Service
 metadata:
-  name: petclinic-db
+  name: spring-petclinic-db
 spec:
   ports:
   - port: 3306
   selector:
-    app: petclinic-db
+    app: spring-petclinic-db
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: petclinic-db
+  name: spring-petclinic-db
   labels:
-    app: petclinic-db
+    app: spring-petclinic-db
 spec:
   selector:
     matchLabels:
-      app: petclinic-db
+      app: spring-petclinic-db
   template:
     metadata:
       labels:
-        app: petclinic-db
+        app: spring-petclinic-db
     spec:
       # no persistance configured, the database will be reset when the pod terminates
       containers:
-      - image: mysql:5.6
+      - image: mariadb:10.5
         name: mysql
         env:
         - name: MYSQL_USER

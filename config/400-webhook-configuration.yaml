@@ -1,7 +1,7 @@
 # Copyright 2020 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.bindings.labs.vmware.com
@@ -9,6 +9,7 @@ metadata:
     bindings.labs.vmware.com/release: devel
 webhooks:
 - admissionReviewVersions:
+  - v1
   - v1beta1
   clientConfig:
     service:
@@ -16,8 +17,9 @@ webhooks:
       namespace: service-bindings
   failurePolicy: Fail
   name: defaulting.webhook.bindings.labs.vmware.com
+  sideEffects: None
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.bindings.labs.vmware.com
@@ -25,6 +27,7 @@ metadata:
     bindings.labs.vmware.com/release: devel
 webhooks:
 - admissionReviewVersions:
+  - v1
   - v1beta1
   clientConfig:
     service:
@@ -32,8 +35,9 @@ webhooks:
       namespace: service-bindings
   failurePolicy: Fail
   name: validation.webhook.bindings.labs.vmware.com
+  sideEffects: None
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.bindings.labs.vmware.com
@@ -41,6 +45,7 @@ metadata:
     bindings.labs.vmware.com/release: devel
 webhooks:
 - admissionReviewVersions:
+  - v1
   - v1beta1
   clientConfig:
     service:
@@ -52,8 +57,9 @@ webhooks:
     matchExpressions:
     - key: bindings.labs.vmware.com/release
       operator: Exists
+  sideEffects: None
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: servicebindingprojections.webhook.bindings.labs.vmware.com
@@ -61,6 +67,7 @@ metadata:
     bindings.labs.vmware.com/release: devel
 webhooks:
 - admissionReviewVersions:
+  - v1
   - v1beta1
   clientConfig:
     service:
@@ -68,6 +75,7 @@ webhooks:
       namespace: service-bindings
   failurePolicy: Fail
   name: servicebindingprojections.webhook.bindings.labs.vmware.com
+  sideEffects: None
 ---
 apiVersion: v1
 kind: Secret

@@ -30,5 +30,5 @@ rebaseRules:
   type: copy
   sources: [existing]
   resourceMatchers:
-  - apiVersionKindMatcher: {apiVersion: admissionregistration.k8s.io/v1beta1, kind: MutatingWebhookConfiguration}
-  - apiVersionKindMatcher: {apiVersion: admissionregistration.k8s.io/v1beta1, kind: ValidatingWebhookConfiguration}
+  - apiVersionKindMatcher: {apiVersion: admissionregistration.k8s.io/v1, kind: MutatingWebhookConfiguration}
+  - apiVersionKindMatcher: {apiVersion: admissionregistration.k8s.io/v1, kind: ValidatingWebhookConfiguration}

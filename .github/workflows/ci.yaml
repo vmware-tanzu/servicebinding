@@ -14,7 +14,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v2.3.2
     - uses: actions/setup-go@v2.1.1
       with:
         go-version: 1.14.x
@@ -30,7 +30,7 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.repository, 'vmware-labs/')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v2.3.2
     - uses: actions/setup-go@v2.1.1
       with:
         go-version: 1.14.x
@@ -78,7 +78,7 @@ jobs:
         - 1.18.6
       fail-fast: false
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v2.3.2
     - name: Install kind
       run: |
         curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.8.1/kind-linux-amd64
@@ -141,7 +141,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v2.3.2
     - name: Get release version
       id: get-version
       run: |

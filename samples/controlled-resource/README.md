@@ -38,7 +38,7 @@ It will contain an environment variable `TARGET` provided by the binding.
 ```
 ...
         Env:
-          Name:   SERVICE_BINDINGS_ROOT
+          Name:   SERVICE_BINDING_ROOT
           Value:  /bindings
           Name:   TARGET
           Value From:

@@ -23,6 +23,8 @@ import (
 const (
 	ServiceBindingProjectionConditionReady                = apis.ConditionReady
 	ServiceBindingProjectionConditionApplicationAvailable = "ApplicationAvailable"
+
+	ServiceBindingRootEnv = "SERVICE_BINDING_ROOT"
 )
 
 var sbpCondSet = apis.NewLivingConditionSet(
@@ -108,7 +110,7 @@ func (b *ServiceBindingProjection) doContainer(ctx context.Context, ps *duckv1.W
 	mountPath := ""
 	// lookup predefined mount path
 	for _, e := range c.Env {
-		if e.Name == "SERVICE_BINDINGS_ROOT" {
+		if e.Name == ServiceBindingRootEnv {
 			mountPath = e.Value
 			break
 		}
@@ -117,7 +119,7 @@ func (b *ServiceBindingProjection) doContainer(ctx context.Context, ps *duckv1.W
 		// default mount path
 		mountPath = "/bindings"
 		c.Env = append(c.Env, corev1.EnvVar{
-			Name:  "SERVICE_BINDINGS_ROOT",
+			Name:  ServiceBindingRootEnv,
 			Value: mountPath,
 		})
 	}

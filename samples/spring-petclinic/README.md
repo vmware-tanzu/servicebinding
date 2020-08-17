@@ -28,7 +28,7 @@ Inspect the PetClinic application as bound:
 kubectl describe deployment spring-petclinic
 ```
 
-If the ServiceBinding is working, a new environment variable (SERVICE_BINDINGS_ROOT), volume and volume mount (binding-49a23274b0590d5057aae1ae621be723716c4dd5) is added to the deployment.
+If the ServiceBinding is working, a new environment variable (SERVICE_BINDING_ROOT), volume and volume mount (binding-49a23274b0590d5057aae1ae621be723716c4dd5) is added to the deployment.
 The describe output will contain:
 
 ```txt
@@ -40,7 +40,7 @@ The describe output will contain:
     Host Port:  <none>
     Environment:
       SPRING_PROFILES_ACTIVE:  mysql
-      SERVICE_BINDINGS_ROOT:   /bindings
+      SERVICE_BINDING_ROOT:    /bindings
     Mounts:
       /bindings/spring-petclinic-db from binding-49a23274b0590d5057aae1ae621be723716c4dd5 (ro)
   Volumes:

@@ -779,7 +779,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -796,7 +796,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -873,7 +873,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 									Name: "my-container",
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -892,7 +892,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 									Name: "my-container",
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -972,7 +972,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -1044,7 +1044,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -1095,7 +1095,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/custom/path",
 										},
 									},
@@ -1118,7 +1118,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/custom/path",
 										},
 									},
@@ -1198,7 +1198,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 											Name: "PRESERVE",
 										},
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 										{
@@ -1318,7 +1318,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -1335,7 +1335,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -1375,7 +1375,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -1392,7 +1392,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Env: []corev1.EnvVar{
 										{
-											Name:  "SERVICE_BINDINGS_ROOT",
+											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
 									},

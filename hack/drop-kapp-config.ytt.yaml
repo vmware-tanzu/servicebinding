@@ -1,0 +1,8 @@
+#! Copyright 2020 VMware, Inc.
+#! SPDX-License-Identifier: Apache-2.0
+
+#@ load("@ytt:overlay", "overlay")
+
+#@overlay/match by=overlay.subset({"apiVersion": "kapp.k14s.io/v1alpha1", "kind": "Config"}),expects="0+"
+#@overlay/remove
+---

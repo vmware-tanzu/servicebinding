@@ -37,7 +37,7 @@ jobs:
     - name: Install ko
       run: |
         cd $(mktemp -d -t ko.XXXX)
-        curl -sL https://github.com/google/ko/releases/download/v0.5.0/ko_0.5.0_Linux_x86_64.tar.gz | tar -xz 
+        curl -sL https://github.com/google/ko/releases/download/v0.5.2/ko_0.5.2_Linux_x86_64.tar.gz | tar -xz 
         sudo mv ./ko /usr/local/bin
         cd -
     - name: Docker login
@@ -142,6 +142,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2.3.2
+    - name: Install ytt
+      run: |
+        curl -Lo ./ytt https://github.com/k14s/ytt/releases/download/v0.30.0/ytt-linux-amd64
+        chmod +x ./ytt
+        sudo mv ./ytt /usr/local/bin
     - name: Get release version
       id: get-version
       run: |
@@ -159,6 +164,12 @@ jobs:
       uses: actions/download-artifact@v2.0.5
       with:
         name: service-bindings.yaml
+    - name: Transform Service Bindings build for alt distributions
+      run: |
+        ytt -f service-bindings.yaml \
+            -f hack/drop-kapp-config.ytt.yaml \
+            --file-mark service-bindings.yaml:type=yaml-plain \
+            > service-bindings-core.yaml
     - name: Upload Service Bindings release
       uses: actions/upload-release-asset@v1.0.2
       env:
@@ -166,5 +177,14 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
         asset_path: service-bindings.yaml
+        asset_name: service-bindings-${{ steps.get-version.outputs.version }}.yaml
+        asset_content_type: application/x-yaml
+    - name: Upload Service Bindings alt release
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: service-bindings-core.yaml
         asset_name: service-bindings-${{ steps.get-version.outputs.version }}.yaml
         asset_content_type: application/x-yaml

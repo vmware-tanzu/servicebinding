@@ -11,6 +11,9 @@ Service Bindings for Kubernetes implements the [Service Binding Specification fo
 
 ## Try it out
 
+Prerequisites:
+- a Kubernetes 1.16+ cluster
+
 Using the [latest release](https://github.com/vmware-labs/service-bindings/releases/latest) is recommended.
 
 ### Build from source

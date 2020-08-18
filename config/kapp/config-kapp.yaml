@@ -15,7 +15,7 @@ rebaseRules:
   sources: [existing]
   resourceMatchers:
   - kindNamespaceNameMatcher: {kind: Secret, namespace: service-bindings, name: webhook-certs}
-- paths: 
+- paths:
   - [metadata, annotations]
   - [webhooks, {allIndexes: true}, clientConfig, caBundle]
   - [webhooks, {allIndexes: true}, clientConfig, service, path]

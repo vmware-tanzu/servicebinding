@@ -782,6 +782,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
 									},
 									VolumeMounts: []corev1.VolumeMount{
 										{
@@ -797,6 +801,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 									Env: []corev1.EnvVar{
 										{
 											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -876,6 +884,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
 									},
 									VolumeMounts: []corev1.VolumeMount{
 										{
@@ -893,6 +905,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 									Env: []corev1.EnvVar{
 										{
 											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -975,6 +991,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
 									},
 									VolumeMounts: []corev1.VolumeMount{
 										{
@@ -1045,6 +1065,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 									Env: []corev1.EnvVar{
 										{
 											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
 											Value: "/bindings",
 										},
 									},
@@ -1119,6 +1143,86 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 									Env: []corev1.EnvVar{
 										{
 											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/custom/path",
+										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/custom/path",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+											MountPath: "/custom/path/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "inject volume at custom path, deprecated var",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/custom/path",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/custom/path",
+										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
 											Value: "/custom/path",
 										},
 									},
@@ -1199,6 +1303,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 										},
 										{
 											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
 											Value: "/bindings",
 										},
 										{
@@ -1338,6 +1446,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
 									},
 									VolumeMounts: []corev1.VolumeMount{
 										{
@@ -1378,6 +1490,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 											Name:  "SERVICE_BINDING_ROOT",
 											Value: "/bindings",
 										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
+											Value: "/bindings",
+										},
 									},
 									VolumeMounts: []corev1.VolumeMount{
 										{
@@ -1393,6 +1509,10 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 									Env: []corev1.EnvVar{
 										{
 											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+										{
+											Name:  "SERVICE_BINDINGS_ROOT",
 											Value: "/bindings",
 										},
 									},

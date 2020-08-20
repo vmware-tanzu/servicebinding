@@ -129,6 +129,7 @@ jobs:
           kubectl logs -l app=spring-petclinic-db -c mysql --tail 1000
         echo "##[endgroup]"
       if: always()
+      continue-on-error: true
     - name: Cleanup Service Bindings
       run: kapp delete -a service-bindings -y
       if: always()

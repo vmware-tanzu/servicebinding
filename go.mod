@@ -6,7 +6,7 @@ require (
 	github.com/google/go-cmp v0.5.1
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.15.0
-	k8s.io/api v0.18.7-rc.0
+	k8s.io/api v0.20.0-alpha.0
 	k8s.io/apimachinery v0.18.7-rc.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.18.8

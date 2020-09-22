@@ -25,9 +25,6 @@ const (
 	ServiceBindingProjectionConditionApplicationAvailable = "ApplicationAvailable"
 
 	ServiceBindingRootEnv = "SERVICE_BINDING_ROOT"
-	// Deprecated: favor ServiceBindingRootEnv, this value will be removed in a
-	// future release
-	DeprecatedServiceBindingsRootEnv = "SERVICE_BINDINGS_ROOT"
 )
 
 var sbpCondSet = apis.NewLivingConditionSet(
@@ -111,29 +108,21 @@ func (b *ServiceBindingProjection) Do(ctx context.Context, ps *duckv1.WithPod) {
 
 func (b *ServiceBindingProjection) doContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, bindingVolume, secretName string) {
 	mountPath := ""
-	env := []corev1.EnvVar{}
 	// lookup predefined mount path
 	for _, e := range c.Env {
-		if e.Name == ServiceBindingRootEnv || e.Name == DeprecatedServiceBindingsRootEnv {
+		if e.Name == ServiceBindingRootEnv {
 			mountPath = e.Value
-		} else {
-			env = append(env, e)
+			break
 		}
 	}
 	if mountPath == "" {
 		// default mount path
 		mountPath = "/bindings"
-	}
-	c.Env = append(env,
-		corev1.EnvVar{
+		c.Env = append(c.Env, corev1.EnvVar{
 			Name:  ServiceBindingRootEnv,
 			Value: mountPath,
-		},
-		corev1.EnvVar{
-			Name:  DeprecatedServiceBindingsRootEnv,
-			Value: mountPath,
-		},
-	)
+		})
+	}
 
 	containerVolumes := sets.NewString()
 	for _, vm := range c.VolumeMounts {

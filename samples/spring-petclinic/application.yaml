@@ -33,7 +33,7 @@ spec:
       containers:
         - name: application
           # built with paketo builder from https://github.com/spring-projects/spring-petclinic
-          image: scothis/petclinic:service-bindings
+          image: scothis/petclinic:service-bindings-20200922
           env:
           # tell the application to use mysql instead of the default embedded database
           - name: SPRING_PROFILES_ACTIVE

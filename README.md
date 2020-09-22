@@ -40,6 +40,7 @@ Samples are located in the [samples directory](./samples), including:
 - [Custom Projection](./samples/custom-projection)
 - [Controlled Resource](./samples/controlled-resource)
 - [Environment Variables and Mappings](./samples/environment-variable-mappings)
+- [Provisioned Service](./samples/provisioned-service)
 
 ## Resources
 

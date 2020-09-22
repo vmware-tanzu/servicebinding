@@ -53,7 +53,7 @@ Metadata:
 Spec:
   Application:
     API Version:  v1
-    Kind:         Secret
+    Kind:         ConfigMap
     Name:         custom
   Binding:
     Name:  custom-projection

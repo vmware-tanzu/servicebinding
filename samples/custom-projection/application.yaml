@@ -1,11 +1,11 @@
 # Copyright 2020 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+
+# replace with the desired application.
 ---
 apiVersion: v1
-kind: Secret
+kind: ConfigMap
 metadata:
   name: custom
-type: Opaque
-stringData:
-  type: custom
+data: {}

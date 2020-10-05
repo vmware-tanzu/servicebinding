@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package v1alpha2
 
 import (
+	"context"
 	time "time"
 
 	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
@@ -50,13 +51,13 @@ func NewFilteredServiceBindingInformer(client versioned.Interface, namespace str
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ServiceV1alpha2().ServiceBindings(namespace).List(options)
+				return client.ServiceV1alpha2().ServiceBindings(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ServiceV1alpha2().ServiceBindings(namespace).Watch(options)
+				return client.ServiceV1alpha2().ServiceBindings(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&servicebindingv1alpha2.ServiceBinding{},

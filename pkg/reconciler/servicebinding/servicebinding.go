@@ -93,7 +93,7 @@ func (r *Reconciler) projectedSecret(ctx context.Context, logger *zap.SugaredLog
 
 	serviceRef := binding.Spec.Service.DeepCopy()
 	serviceRef.Namespace = binding.Namespace
-	providerRef, err := r.resolver.ServiceableFromObjectReference(serviceRef, binding)
+	providerRef, err := r.resolver.ServiceableFromObjectReference(ctx, serviceRef, binding)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (r *Reconciler) projectedSecret(ctx context.Context, logger *zap.SugaredLog
 	projectionName := resourcenames.ProjectedSecret(binding)
 	projection, err := r.secretLister.Secrets(binding.Namespace).Get(projectionName)
 	if apierrs.IsNotFound(err) {
-		projection, err = r.createProjectedSecret(binding, reference)
+		projection, err = r.createProjectedSecret(ctx, binding, reference)
 		if err != nil {
 			recorder.Eventf(binding, corev1.EventTypeWarning, "CreationFailed", "Failed to create projected Secret %q: %v", projectionName, err)
 			return nil, fmt.Errorf("failed to create projected Secret: %w", err)
@@ -127,12 +127,12 @@ func (r *Reconciler) projectedSecret(ctx context.Context, logger *zap.SugaredLog
 	return projection, nil
 }
 
-func (c *Reconciler) createProjectedSecret(binding *servicebindingv1alpha2.ServiceBinding, reference *corev1.Secret) (*corev1.Secret, error) {
+func (c *Reconciler) createProjectedSecret(ctx context.Context, binding *servicebindingv1alpha2.ServiceBinding, reference *corev1.Secret) (*corev1.Secret, error) {
 	projection, err := resources.MakeProjectedSecret(binding, reference)
 	if err != nil {
 		return nil, err
 	}
-	return c.kubeclient.CoreV1().Secrets(binding.Namespace).Create(projection)
+	return c.kubeclient.CoreV1().Secrets(binding.Namespace).Create(ctx, projection, metav1.CreateOptions{})
 }
 
 func projectedSecretSemanticEquals(ctx context.Context, desiredProjection, projection *corev1.Secret) (bool, error) {
@@ -160,7 +160,7 @@ func (c *Reconciler) reconcileProtectedSecret(ctx context.Context, binding *serv
 	// Preserve the rest of the object (e.g. ObjectMeta except for labels).
 	existing.Data = desiredProjection.Data
 	existing.ObjectMeta.Labels = desiredProjection.ObjectMeta.Labels
-	return c.kubeclient.CoreV1().Secrets(binding.Namespace).Update(existing)
+	return c.kubeclient.CoreV1().Secrets(binding.Namespace).Update(ctx, existing, metav1.UpdateOptions{})
 }
 
 func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.SugaredLogger, binding *servicebindingv1alpha2.ServiceBinding) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
@@ -173,7 +173,7 @@ func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.S
 	serviceBindingProjectionName := resourcenames.ServiceBindingProjection(binding)
 	serviceBindingProjection, err := r.serviceBindingProjectionLister.ServiceBindingProjections(binding.Namespace).Get(serviceBindingProjectionName)
 	if apierrs.IsNotFound(err) {
-		serviceBindingProjection, err = r.createServiceBindingProjection(binding)
+		serviceBindingProjection, err = r.createServiceBindingProjection(ctx, binding)
 		if err != nil {
 			recorder.Eventf(binding, corev1.EventTypeWarning, "CreationFailed", "Failed to create ServiceBindingProjection %q: %v", serviceBindingProjectionName, err)
 			return nil, fmt.Errorf("failed to create ServiceBindingProjection: %w", err)
@@ -189,12 +189,12 @@ func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.S
 	return serviceBindingProjection, nil
 }
 
-func (c *Reconciler) createServiceBindingProjection(binding *servicebindingv1alpha2.ServiceBinding) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
+func (c *Reconciler) createServiceBindingProjection(ctx context.Context, binding *servicebindingv1alpha2.ServiceBinding) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
 	serviceBindingProjection, err := resources.MakeServiceBindingProjection(binding)
 	if err != nil {
 		return nil, err
 	}
-	return c.bindingclient.InternalV1alpha2().ServiceBindingProjections(binding.Namespace).Create(serviceBindingProjection)
+	return c.bindingclient.InternalV1alpha2().ServiceBindingProjections(binding.Namespace).Create(ctx, serviceBindingProjection, metav1.CreateOptions{})
 }
 
 func serviceBindingProjectionSemanticEquals(ctx context.Context, desiredServiceBindingProjection, serviceBindingProjection *servicebindinginternalv1alpha2.ServiceBindingProjection) (bool, error) {
@@ -223,5 +223,5 @@ func (c *Reconciler) reconcileServiceBindingProjection(ctx context.Context, bind
 	existing.Spec = desired.Spec
 	existing.ObjectMeta.Labels = desired.ObjectMeta.Labels
 	existing.ObjectMeta.Annotations = desired.ObjectMeta.Annotations
-	return c.bindingclient.InternalV1alpha2().ServiceBindingProjections(binding.Namespace).Update(existing)
+	return c.bindingclient.InternalV1alpha2().ServiceBindingProjections(binding.Namespace).Update(ctx, existing, metav1.UpdateOptions{})
 }

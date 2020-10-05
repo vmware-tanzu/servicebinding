@@ -195,7 +195,7 @@ func TestServiceableResolver_ServiceableFromObjectReference(t *testing.T) {
 			ctx = serviceable.WithDuck(ctx)
 			r := NewServiceableResolver(ctx, func(types.NamespacedName) {})
 
-			actual, err := r.ServiceableFromObjectReference(c.ref, c.parent)
+			actual, err := r.ServiceableFromObjectReference(ctx, c.ref, c.parent)
 			if actualErr := err == nil; actualErr == c.expectedErr {
 				if c.expectedErr {
 					t.Errorf("%s: ServiceableFromObjectReference() expected error", c.name)

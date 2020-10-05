@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
 	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
@@ -50,13 +51,13 @@ func NewFilteredProvisionedServiceInformer(client versioned.Interface, namespace
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.BindingsV1alpha1().ProvisionedServices(namespace).List(options)
+				return client.BindingsV1alpha1().ProvisionedServices(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.BindingsV1alpha1().ProvisionedServices(namespace).Watch(options)
+				return client.BindingsV1alpha1().ProvisionedServices(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&labsv1alpha1.ProvisionedService{},

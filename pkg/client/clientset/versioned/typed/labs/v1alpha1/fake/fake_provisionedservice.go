@@ -8,6 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 package fake
 
 import (
+	"context"
+
 	v1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -28,7 +30,7 @@ var provisionedservicesResource = schema.GroupVersionResource{Group: "bindings.l
 var provisionedservicesKind = schema.GroupVersionKind{Group: "bindings.labs.vmware.com", Version: "v1alpha1", Kind: "ProvisionedService"}
 
 // Get takes name of the provisionedService, and returns the corresponding provisionedService object, and an error if there is any.
-func (c *FakeProvisionedServices) Get(name string, options v1.GetOptions) (result *v1alpha1.ProvisionedService, err error) {
+func (c *FakeProvisionedServices) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ProvisionedService, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(provisionedservicesResource, c.ns, name), &v1alpha1.ProvisionedService{})
 
@@ -39,7 +41,7 @@ func (c *FakeProvisionedServices) Get(name string, options v1.GetOptions) (resul
 }
 
 // List takes label and field selectors, and returns the list of ProvisionedServices that match those selectors.
-func (c *FakeProvisionedServices) List(opts v1.ListOptions) (result *v1alpha1.ProvisionedServiceList, err error) {
+func (c *FakeProvisionedServices) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ProvisionedServiceList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(provisionedservicesResource, provisionedservicesKind, c.ns, opts), &v1alpha1.ProvisionedServiceList{})
 
@@ -61,14 +63,14 @@ func (c *FakeProvisionedServices) List(opts v1.ListOptions) (result *v1alpha1.Pr
 }
 
 // Watch returns a watch.Interface that watches the requested provisionedServices.
-func (c *FakeProvisionedServices) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeProvisionedServices) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(provisionedservicesResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a provisionedService and creates it.  Returns the server's representation of the provisionedService, and an error, if there is any.
-func (c *FakeProvisionedServices) Create(provisionedService *v1alpha1.ProvisionedService) (result *v1alpha1.ProvisionedService, err error) {
+func (c *FakeProvisionedServices) Create(ctx context.Context, provisionedService *v1alpha1.ProvisionedService, opts v1.CreateOptions) (result *v1alpha1.ProvisionedService, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(provisionedservicesResource, c.ns, provisionedService), &v1alpha1.ProvisionedService{})
 
@@ -79,7 +81,7 @@ func (c *FakeProvisionedServices) Create(provisionedService *v1alpha1.Provisione
 }
 
 // Update takes the representation of a provisionedService and updates it. Returns the server's representation of the provisionedService, and an error, if there is any.
-func (c *FakeProvisionedServices) Update(provisionedService *v1alpha1.ProvisionedService) (result *v1alpha1.ProvisionedService, err error) {
+func (c *FakeProvisionedServices) Update(ctx context.Context, provisionedService *v1alpha1.ProvisionedService, opts v1.UpdateOptions) (result *v1alpha1.ProvisionedService, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(provisionedservicesResource, c.ns, provisionedService), &v1alpha1.ProvisionedService{})
 
@@ -91,7 +93,7 @@ func (c *FakeProvisionedServices) Update(provisionedService *v1alpha1.Provisione
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeProvisionedServices) UpdateStatus(provisionedService *v1alpha1.ProvisionedService) (*v1alpha1.ProvisionedService, error) {
+func (c *FakeProvisionedServices) UpdateStatus(ctx context.Context, provisionedService *v1alpha1.ProvisionedService, opts v1.UpdateOptions) (*v1alpha1.ProvisionedService, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(provisionedservicesResource, "status", c.ns, provisionedService), &v1alpha1.ProvisionedService{})
 
@@ -102,7 +104,7 @@ func (c *FakeProvisionedServices) UpdateStatus(provisionedService *v1alpha1.Prov
 }
 
 // Delete takes name of the provisionedService and deletes it. Returns an error if one occurs.
-func (c *FakeProvisionedServices) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeProvisionedServices) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(provisionedservicesResource, c.ns, name), &v1alpha1.ProvisionedService{})
 
@@ -110,15 +112,15 @@ func (c *FakeProvisionedServices) Delete(name string, options *v1.DeleteOptions)
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeProvisionedServices) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(provisionedservicesResource, c.ns, listOptions)
+func (c *FakeProvisionedServices) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(provisionedservicesResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.ProvisionedServiceList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched provisionedService.
-func (c *FakeProvisionedServices) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ProvisionedService, err error) {
+func (c *FakeProvisionedServices) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.ProvisionedService, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(provisionedservicesResource, c.ns, name, pt, data, subresources...), &v1alpha1.ProvisionedService{})
 

@@ -41,7 +41,7 @@ func NewServiceableResolver(ctx context.Context, callback func(types.NamespacedN
 	return ret
 }
 
-func (r *ServiceableResolver) ServiceableFromObjectReference(ref *tracker.Reference, parent interface{}) (*corev1.LocalObjectReference, error) {
+func (r *ServiceableResolver) ServiceableFromObjectReference(ctx context.Context, ref *tracker.Reference, parent interface{}) (*corev1.LocalObjectReference, error) {
 	if ref == nil {
 		return nil, errors.New("ref is nil")
 	}
@@ -49,7 +49,7 @@ func (r *ServiceableResolver) ServiceableFromObjectReference(ref *tracker.Refere
 		return nil, fmt.Errorf("failed to track %+v: %v", ref, err)
 	}
 	gvr, _ := meta.UnsafeGuessKindToResource(ref.GroupVersionKind())
-	_, lister, err := r.informerFactory.Get(gvr)
+	_, lister, err := r.informerFactory.Get(ctx, gvr)
 	if err != nil {
 		return nil, err
 	}

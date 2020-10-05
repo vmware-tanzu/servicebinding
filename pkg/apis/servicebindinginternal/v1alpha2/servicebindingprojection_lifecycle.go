@@ -9,6 +9,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
+	"sort"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -25,6 +26,7 @@ const (
 	ServiceBindingProjectionConditionApplicationAvailable = "ApplicationAvailable"
 
 	ServiceBindingRootEnv = "SERVICE_BINDING_ROOT"
+	bindingVolumePrefix   = "binding-"
 )
 
 var sbpCondSet = apis.NewLivingConditionSet(
@@ -68,45 +70,48 @@ func (b *ServiceBindingProjection) Do(ctx context.Context, ps *duckv1.WithPod) {
 		return
 	}
 
-	existingVolumes := sets.NewString()
-	for _, v := range ps.Spec.Template.Spec.Volumes {
-		existingVolumes.Insert(v.Name)
-	}
+	injectedSecrets, injectedVolumes := b.injectedValues(ps)
 
-	newVolumes := sets.NewString()
 	sb := b.Spec.Binding
 
-	bindingVolume := truncateAt63("binding-%x", sha1.Sum([]byte(sb.Name)))
-	if !existingVolumes.Has(bindingVolume) {
-		ps.Spec.Template.Spec.Volumes = append(ps.Spec.Template.Spec.Volumes, corev1.Volume{
-			Name: bindingVolume,
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName: sb.Name,
-				},
+	volume := corev1.Volume{
+		Name: truncateAt63("%s%x", bindingVolumePrefix, sha1.Sum([]byte(sb.Name))),
+		VolumeSource: corev1.VolumeSource{
+			Secret: &corev1.SecretVolumeSource{
+				SecretName: sb.Name,
 			},
-		})
-		existingVolumes.Insert(bindingVolume)
-		newVolumes.Insert(bindingVolume)
+		},
 	}
+	ps.Spec.Template.Spec.Volumes = append(ps.Spec.Template.Spec.Volumes, volume)
+	injectedSecrets.Insert(volume.Secret.SecretName)
+	injectedVolumes.Insert(volume.Name)
+	sort.SliceStable(ps.Spec.Template.Spec.Volumes, func(i, j int) bool {
+		iname := ps.Spec.Template.Spec.Volumes[i].Name
+		jname := ps.Spec.Template.Spec.Volumes[j].Name
+		// only sort injected volumes
+		if !injectedVolumes.HasAll(iname, jname) {
+			return false
+		}
+		return iname < jname
+	})
+	// track which secret is injected, so it can be removed when no longer used
+	ps.Annotations[b.annotationKey()] = volume.Secret.SecretName
+
 	for i := range ps.Spec.Template.Spec.InitContainers {
 		c := &ps.Spec.Template.Spec.InitContainers[i]
 		if b.isTargetContainer(-1, c) {
-			b.doContainer(ctx, ps, c, bindingVolume, sb.Name)
+			b.doContainer(ctx, ps, c, volume.Name, sb.Name, injectedVolumes, injectedSecrets)
 		}
 	}
 	for i := range ps.Spec.Template.Spec.Containers {
 		c := &ps.Spec.Template.Spec.Containers[i]
 		if b.isTargetContainer(i, c) {
-			b.doContainer(ctx, ps, c, bindingVolume, sb.Name)
+			b.doContainer(ctx, ps, c, volume.Name, sb.Name, injectedVolumes, injectedSecrets)
 		}
 	}
-
-	// track which volumes are injected, so they can be removed when no longer used
-	ps.Annotations[b.annotationKey()] = strings.Join(newVolumes.List(), ",")
 }
 
-func (b *ServiceBindingProjection) doContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, bindingVolume, secretName string) {
+func (b *ServiceBindingProjection) doContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, bindingVolume, secretName string, allInjectedVolumes, allInjectedSecrets sets.String) {
 	mountPath := ""
 	// lookup predefined mount path
 	for _, e := range c.Env {
@@ -124,31 +129,46 @@ func (b *ServiceBindingProjection) doContainer(ctx context.Context, ps *duckv1.W
 		})
 	}
 
-	containerVolumes := sets.NewString()
-	for _, vm := range c.VolumeMounts {
-		containerVolumes.Insert(vm.Name)
-	}
+	// inject metadata
+	c.VolumeMounts = append(c.VolumeMounts, corev1.VolumeMount{
+		Name:      bindingVolume,
+		MountPath: fmt.Sprintf("%s/%s", mountPath, b.Spec.Name),
+		ReadOnly:  true,
+	})
+	sort.SliceStable(c.VolumeMounts, func(i, j int) bool {
+		iname := c.VolumeMounts[i].Name
+		jname := c.VolumeMounts[j].Name
+		// only sort injected volume mounts
+		if !allInjectedVolumes.HasAll(iname, jname) {
+			return false
+		}
+		return iname < jname
+	})
 
-	if !containerVolumes.Has(bindingVolume) {
-		// inject metadata
-		c.VolumeMounts = append(c.VolumeMounts, corev1.VolumeMount{
-			Name:      bindingVolume,
-			MountPath: fmt.Sprintf("%s/%s", mountPath, b.Spec.Name),
-			ReadOnly:  true,
-		})
-	}
-
-	for _, e := range b.Spec.Env {
-		c.Env = append(c.Env, corev1.EnvVar{
-			Name: e.Name,
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: secretName,
+	if len(b.Spec.Env) != 0 {
+		for _, e := range b.Spec.Env {
+			c.Env = append(c.Env, corev1.EnvVar{
+				Name: e.Name,
+				ValueFrom: &corev1.EnvVarSource{
+					SecretKeyRef: &corev1.SecretKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: secretName,
+						},
+						Key: e.Key,
 					},
-					Key: e.Key,
 				},
-			},
+			})
+		}
+		sort.SliceStable(c.Env, func(i, j int) bool {
+			iv := c.Env[i]
+			jv := c.Env[j]
+			// only sort injected env
+			if iv.ValueFrom == nil || iv.ValueFrom.SecretKeyRef == nil ||
+				jv.ValueFrom == nil || jv.ValueFrom.SecretKeyRef == nil ||
+				!allInjectedSecrets.HasAll(iv.ValueFrom.SecretKeyRef.Name, jv.ValueFrom.SecretKeyRef.Name) {
+				return false
+			}
+			return iv.Name < jv.Name
 		})
 	}
 }
@@ -179,36 +199,32 @@ func (b *ServiceBindingProjection) Undo(ctx context.Context, ps *duckv1.WithPod)
 	}
 
 	key := b.annotationKey()
-
-	boundVolumes := sets.NewString(strings.Split(ps.Annotations[key], ",")...)
-	boundSecrets := sets.NewString()
+	removeSecret := ps.Annotations[key]
+	removeVolume := ""
+	delete(ps.Annotations, key)
 
 	preservedVolumes := []corev1.Volume{}
 	for _, v := range ps.Spec.Template.Spec.Volumes {
-		if !boundVolumes.Has(v.Name) {
-			preservedVolumes = append(preservedVolumes, v)
+		if v.Secret != nil && v.Secret.SecretName == removeSecret {
+			removeVolume = v.Name
 			continue
 		}
-		if v.Secret != nil {
-			boundSecrets = boundSecrets.Insert(v.Secret.SecretName)
-		}
+		preservedVolumes = append(preservedVolumes, v)
 	}
 	ps.Spec.Template.Spec.Volumes = preservedVolumes
 
 	for i := range ps.Spec.Template.Spec.InitContainers {
-		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.InitContainers[i], boundVolumes, boundSecrets)
+		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.InitContainers[i], removeSecret, removeVolume)
 	}
 	for i := range ps.Spec.Template.Spec.Containers {
-		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.Containers[i], boundVolumes, boundSecrets)
+		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.Containers[i], removeSecret, removeVolume)
 	}
-
-	delete(ps.Annotations, key)
 }
 
-func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, boundVolumes, boundSecrets sets.String) {
+func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, removeSecret, removeVolume string) {
 	preservedMounts := []corev1.VolumeMount{}
 	for _, vm := range c.VolumeMounts {
-		if !boundVolumes.Has(vm.Name) {
+		if removeVolume != vm.Name {
 			preservedMounts = append(preservedMounts, vm)
 		}
 	}
@@ -216,7 +232,7 @@ func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1
 
 	preservedEnv := []corev1.EnvVar{}
 	for _, e := range c.Env {
-		if e.ValueFrom == nil || e.ValueFrom.SecretKeyRef == nil || !boundSecrets.Has(e.ValueFrom.SecretKeyRef.Name) {
+		if e.ValueFrom == nil || e.ValueFrom.SecretKeyRef == nil || e.ValueFrom.SecretKeyRef.Name != removeSecret {
 			preservedEnv = append(preservedEnv, e)
 		}
 	}
@@ -225,6 +241,22 @@ func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1
 
 func (b *ServiceBindingProjection) annotationKey() string {
 	return truncateAt63("%s-%x", ServiceBindingProjectionAnnotationKey, sha1.Sum([]byte(b.Name)))
+}
+
+func (b *ServiceBindingProjection) injectedValues(ps *duckv1.WithPod) (sets.String, sets.String) {
+	secrets := sets.NewString()
+	volumes := sets.NewString()
+	for k, v := range ps.Annotations {
+		if strings.HasPrefix(k, ServiceBindingProjectionAnnotationKey) {
+			secrets.Insert(v)
+		}
+	}
+	for _, v := range ps.Spec.Template.Spec.Volumes {
+		if v.Secret != nil && secrets.Has(v.Secret.SecretName) {
+			volumes.Insert(v.Name)
+		}
+	}
+	return secrets, volumes
 }
 
 func (bs *ServiceBindingProjectionStatus) InitializeConditions() {

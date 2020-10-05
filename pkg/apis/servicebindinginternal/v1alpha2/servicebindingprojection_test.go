@@ -496,7 +496,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 			seed: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "injected-a,injected-b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "injected-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -504,8 +504,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 						Spec: corev1.PodSpec{
 							Volumes: []corev1.Volume{
 								{Name: "preserve"},
-								{Name: "injected-a"},
-								{Name: "injected-b"},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "injected-secret"}}},
 							},
 						},
 					},
@@ -533,7 +532,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 			seed: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "injected",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "injected-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -556,7 +555,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 								},
 							},
 							Volumes: []corev1.Volume{
-								{Name: "injected"},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "injected-secret"}}},
 							},
 						},
 					},
@@ -595,7 +594,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 			seed: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "injected",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "injected-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -640,14 +639,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 								},
 							},
 							Volumes: []corev1.Volume{
-								{
-									Name: "injected",
-									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "injected-secret",
-										},
-									},
-								},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "injected-secret"}}},
 							},
 						},
 					},
@@ -689,7 +681,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 			seed: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "injected-a,injected-b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "injected-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -697,8 +689,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 						Spec: corev1.PodSpec{
 							Volumes: []corev1.Volume{
 								{Name: "preserve"},
-								{Name: "injected-a"},
-								{Name: "injected-b"},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "injected-secret"}}},
 							},
 						},
 					},
@@ -769,7 +760,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			expected: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -861,7 +852,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			expected: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -957,7 +948,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			expected: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -1034,7 +1025,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			expected: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -1108,7 +1099,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			expected: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -1185,7 +1176,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			expected: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -1253,7 +1244,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			seed: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "injected",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -1261,7 +1252,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 						Spec: corev1.PodSpec{
 							Volumes: []corev1.Volume{
 								{Name: "preserve"},
-								{Name: "injected"},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "my-secret"}}},
 							},
 						},
 					},
@@ -1270,7 +1261,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			expected: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -1308,7 +1299,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			seed: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -1365,7 +1356,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			expected: &duckv1.WithPod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
 					},
 				},
 				Spec: duckv1.WithPodSpec{
@@ -1459,6 +1450,159 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 							},
 							Containers: []corev1.Container{
 								{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "deterministic sorting of injected values with multiple bindings",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name: "my-binding-name",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+					Env: []EnvVar{
+						{
+							Name: "MY_VAR",
+							Key:  "my-key",
+						},
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/projection-4b2c350fb984fc36b6cf39515a2": "other-secret",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+										{
+											Name: "OTHER_VAR",
+											ValueFrom: &corev1.EnvVarSource{
+												SecretKeyRef: &corev1.SecretKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "other-secret",
+													},
+													Key: "my-key",
+												},
+											},
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "binding-a9a23274b0590d5057aae1ae621be723716c4dd5",
+											MountPath: "/bindings/other-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "binding-a9a23274b0590d5057aae1ae621be723716c4dd5",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "other-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.service.binding/projection-4b2c350fb984fc36b6cf39515a2": "other-secret",
+						"internal.service.binding/projection-16384e6a11df69776193b6a877b": "my-secret",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+										{
+											Name: "MY_VAR",
+											ValueFrom: &corev1.EnvVarSource{
+												SecretKeyRef: &corev1.SecretKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "my-secret",
+													},
+													Key: "my-key",
+												},
+											},
+										},
+										{
+											Name: "OTHER_VAR",
+											ValueFrom: &corev1.EnvVarSource{
+												SecretKeyRef: &corev1.SecretKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "other-secret",
+													},
+													Key: "my-key",
+												},
+											},
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+										{
+											Name:      "binding-a9a23274b0590d5057aae1ae621be723716c4dd5",
+											MountPath: "/bindings/other-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "my-secret",
+										},
+									},
+								},
+								{
+									Name: "binding-a9a23274b0590d5057aae1ae621be723716c4dd5",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "other-secret",
+										},
+									},
+								},
 							},
 						},
 					},

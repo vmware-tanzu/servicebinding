@@ -113,7 +113,7 @@ func TestReconcile(t *testing.T) {
 					Namespace: namespace,
 					Name:      "my-application",
 					Annotations: map[string]string{
-						"internal.service.binding/projection-e9ead9b18f311f72f9c7a54af76": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-e9ead9b18f311f72f9c7a54af76": "my-secret",
 					},
 				},
 				Spec: appsv1.DeploymentSpec{
@@ -220,7 +220,7 @@ func TestReconcile(t *testing.T) {
 					Namespace: namespace,
 					Name:      "my-application",
 					Annotations: map[string]string{
-						"internal.service.binding/projection-e9ead9b18f311f72f9c7a54af76": "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+						"internal.service.binding/projection-e9ead9b18f311f72f9c7a54af76": "my-secret",
 					},
 				},
 				// will also remove injected PodTemplateSpec items, but the

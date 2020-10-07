@@ -91,6 +91,25 @@ func TestServiceableResolver_ServiceableFromObjectReference(t *testing.T) {
 			},
 		},
 		{
+			name: "lookup secret",
+			seed: []runtime.Object{},
+			parent: &servicebindingv1alpha2.ServiceBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "my-namespace",
+					Name:      "my-binding",
+				},
+			},
+			ref: &tracker.Reference{
+				APIVersion: "v1",
+				Kind:       "Secret",
+				Namespace:  "my-namespace",
+				Name:       "my-secret",
+			},
+			expected: &corev1.LocalObjectReference{
+				Name: "my-secret",
+			},
+		},
+		{
 			name: "track error",
 			seed: []runtime.Object{
 				&unstructured.Unstructured{

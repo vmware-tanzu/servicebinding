@@ -45,6 +45,9 @@ func (r *ServiceableResolver) ServiceableFromObjectReference(ctx context.Context
 	if ref == nil {
 		return nil, errors.New("ref is nil")
 	}
+	if ref.APIVersion == "v1" && ref.Kind == "Secret" {
+		return &corev1.LocalObjectReference{Name: ref.Name}, nil
+	}
 	if err := r.tracker.TrackReference(*ref, parent); err != nil {
 		return nil, fmt.Errorf("failed to track %+v: %v", ref, err)
 	}

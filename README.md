@@ -40,12 +40,13 @@ Samples are located in the [samples directory](./samples), including:
 - [Custom Projection](./samples/custom-projection)
 - [Controlled Resource](./samples/controlled-resource)
 - [Environment Variables and Mappings](./samples/environment-variable-mappings)
+- [Provisioned Service](./samples/provisioned-service)
 
 ## Resources
 
 ### ServiceBinding (service.binding/v1alpha2)
 
-The `ServiceBinding` resource shape and behavior is defined upstream. In addition to the [core specification](https://github.com/k8s-service-bindings/spec#service-binding), the [Custom Projection](https://github.com/k8s-service-bindings/spec/blob/master/README.md#custom-projection) and [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec#role-based-access-control-rbac) extensions are also supported by this implementation.
+The `ServiceBinding` resource shape and behavior is defined upstream. In addition to the [core specification](https://github.com/k8s-service-bindings/spec#service-binding), the [Direct Secret Reference](https://github.com/k8s-service-bindings/spec/blob/master/README.md#direct-secret-reference), [Custom Projection](https://github.com/k8s-service-bindings/spec/blob/master/README.md#custom-projection) and [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec#role-based-access-control-rbac) extensions are also supported by this implementation.
 
 ```
 apiVersion: service.binding/v1alpha2

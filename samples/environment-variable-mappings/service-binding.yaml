@@ -11,9 +11,10 @@ spec:
     apiVersion: batch/v1
     kind: Job
     name: mappings
+  # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
   service:
-    apiVersion: bindings.labs.vmware.com/v1alpha1
-    kind: ProvisionedService
+    apiVersion: v1
+    kind: Secret
     name: mappings
   mappings:
   - name: uri

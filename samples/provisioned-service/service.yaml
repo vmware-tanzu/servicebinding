@@ -1,0 +1,20 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: bindings.labs.vmware.com/v1alpha1
+kind: ProvisionedService
+metadata:
+  name: provisioned-service
+spec:
+  binding:
+    name: provisioned-service
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: provisioned-service
+type: Opaque
+stringData:
+  target: "service binding"

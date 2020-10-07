@@ -2,15 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: bindings.labs.vmware.com/v1alpha1
-kind: ProvisionedService
-metadata:
-  name: spring-petclinic-db
-spec:
-  binding:
-    name: spring-petclinic-db
-
----
 apiVersion: v1
 kind: Secret
 metadata:

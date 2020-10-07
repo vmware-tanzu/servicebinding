@@ -1,0 +1,43 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: provisioned-service
+spec:
+  ports:
+  - port: 8080
+  selector:
+    app: provisioned-service
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: provisioned-service
+  labels:
+    app: provisioned-service
+spec:
+  selector:
+    matchLabels:
+      app: provisioned-service
+  template:
+    metadata:
+      labels:
+        app: provisioned-service
+    spec:
+      containers:
+        - name: application
+          # from https://knative.dev/docs/serving/samples/hello-world/helloworld-go/
+          image: gcr.io/knative-samples/helloworld-go
+          env:
+          - name: PORT
+            value: "8080"
+          livenessProbe:
+            httpGet:
+              port: 8080
+          readinessProbe:
+            httpGet:
+              port: 8080

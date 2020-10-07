@@ -199,14 +199,14 @@ func (b *ServiceBindingProjection) Undo(ctx context.Context, ps *duckv1.WithPod)
 	}
 
 	key := b.annotationKey()
-	removeSecret := ps.Annotations[key]
-	removeVolume := ""
+	removeSecrets := sets.NewString(ps.Annotations[key], b.Spec.Binding.Name)
+	removeVolumes := sets.NewString()
 	delete(ps.Annotations, key)
 
 	preservedVolumes := []corev1.Volume{}
 	for _, v := range ps.Spec.Template.Spec.Volumes {
-		if v.Secret != nil && v.Secret.SecretName == removeSecret {
-			removeVolume = v.Name
+		if v.Secret != nil && removeSecrets.Has(v.Secret.SecretName) {
+			removeVolumes.Insert(v.Name)
 			continue
 		}
 		preservedVolumes = append(preservedVolumes, v)
@@ -214,17 +214,17 @@ func (b *ServiceBindingProjection) Undo(ctx context.Context, ps *duckv1.WithPod)
 	ps.Spec.Template.Spec.Volumes = preservedVolumes
 
 	for i := range ps.Spec.Template.Spec.InitContainers {
-		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.InitContainers[i], removeSecret, removeVolume)
+		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.InitContainers[i], removeSecrets, removeVolumes)
 	}
 	for i := range ps.Spec.Template.Spec.Containers {
-		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.Containers[i], removeSecret, removeVolume)
+		b.undoContainer(ctx, ps, &ps.Spec.Template.Spec.Containers[i], removeSecrets, removeVolumes)
 	}
 }
 
-func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, removeSecret, removeVolume string) {
+func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1.WithPod, c *corev1.Container, removeSecrets, removeVolumes sets.String) {
 	preservedMounts := []corev1.VolumeMount{}
 	for _, vm := range c.VolumeMounts {
-		if removeVolume != vm.Name {
+		if !removeVolumes.Has(vm.Name) {
 			preservedMounts = append(preservedMounts, vm)
 		}
 	}
@@ -232,7 +232,7 @@ func (b *ServiceBindingProjection) undoContainer(ctx context.Context, ps *duckv1
 
 	preservedEnv := []corev1.EnvVar{}
 	for _, e := range c.Env {
-		if e.ValueFrom == nil || e.ValueFrom.SecretKeyRef == nil || e.ValueFrom.SecretKeyRef.Name != removeSecret {
+		if e.ValueFrom == nil || e.ValueFrom.SecretKeyRef == nil || !removeSecrets.Has(e.ValueFrom.SecretKeyRef.Name) {
 			preservedEnv = append(preservedEnv, e)
 		}
 	}

@@ -669,6 +669,104 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 			},
 		},
 		{
+			name: "remove injected values based on binding secret, even if annotation is missing",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Binding: corev1.LocalObjectReference{
+						Name: "injected-secret",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name: "INJECTED",
+											ValueFrom: &corev1.EnvVarSource{
+												SecretKeyRef: &corev1.SecretKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "injected-secret",
+													},
+												},
+											},
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+										{Name: "injected"},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name: "INJECTED",
+											ValueFrom: &corev1.EnvVarSource{
+												SecretKeyRef: &corev1.SecretKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "injected-secret",
+													},
+												},
+											},
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+										{Name: "injected"},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "injected-secret"}}},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{Name: "PRESERVE"},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{Name: "PRESERVE"},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "undoes previous bindings even if a custom projections",
 			binding: &ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{

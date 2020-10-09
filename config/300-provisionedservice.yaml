@@ -8,6 +8,7 @@ metadata:
   labels:
     bindings.labs.vmware.com/release: devel
     bindings.labs.vmware.com/crd-install: "true"
+    service.binding/provisioned-service: "true"
 spec:
   group: bindings.labs.vmware.com
   names:

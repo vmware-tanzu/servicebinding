@@ -7,7 +7,18 @@
 [![codecov](https://codecov.io/gh/vmware-labs/service-bindings/branch/main/graph/badge.svg)](https://codecov.io/gh/vmware-labs/service-bindings)
 
 
-Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://github.com/k8s-service-bindings/spec). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC2](https://github.com/k8s-service-bindings/spec/tree/1.0.0-rc2)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
+Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://github.com/k8s-service-bindings/spec). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC2++](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
+
+This implementation provides support for:
+- [Provisioned Service](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#provisioned-service)
+- [Application Projection](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#application-projection)
+- [Service Binding](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#service-binding)
+- Extensions including:
+  - [Custom Projection](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#custom-projection)
+  - [Direct Secret Reference](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#direct-secret-reference)
+  - [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#role-based-access-control-rbac)
+
+The `Binding Secret Generation Strategies` extension is not supported.
 
 ## Try it out
 
@@ -46,7 +57,7 @@ Samples are located in the [samples directory](./samples), including:
 
 ### ServiceBinding (service.binding/v1alpha2)
 
-The `ServiceBinding` resource shape and behavior is defined upstream. In addition to the [core specification](https://github.com/k8s-service-bindings/spec#service-binding), the [Direct Secret Reference](https://github.com/k8s-service-bindings/spec/blob/master/README.md#direct-secret-reference), [Custom Projection](https://github.com/k8s-service-bindings/spec/blob/master/README.md#custom-projection) and [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec#role-based-access-control-rbac) extensions are also supported by this implementation.
+The `ServiceBinding` resource shape and behavior is defined by the spec.
 
 ```
 apiVersion: service.binding/v1alpha2

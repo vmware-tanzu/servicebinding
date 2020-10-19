@@ -6,7 +6,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: spring-petclinic-db
-type: Opaque
+type: service.binding/mysql
 stringData:
   type: mysql
   provider: mariadb

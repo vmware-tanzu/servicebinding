@@ -55,5 +55,11 @@ func MakeProjectedSecret(binding *servicebindingv1alpha2.ServiceBinding, referen
 		projection.Data[m.Name] = buf.Bytes()
 	}
 
+	if _, ok := projection.Data["type"]; ok {
+		projection.Type = corev1.SecretType(fmt.Sprintf("service.binding/%s", projection.Data["type"]))
+	} else {
+		projection.Type = corev1.SecretTypeOpaque
+	}
+
 	return projection, nil
 }

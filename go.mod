@@ -3,7 +3,7 @@ module github.com/vmware-labs/service-bindings
 go 1.15
 
 require (
-	github.com/google/go-cmp v0.5.2
+	github.com/google/go-cmp v0.5.3
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.16.0
 	k8s.io/api v0.19.3

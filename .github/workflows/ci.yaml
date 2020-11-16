@@ -93,7 +93,7 @@ jobs:
     - name: Create cluster
       run: kind create cluster --wait 5m --image kindest/node:v${{ matrix.k8s }}
     - name: Download staged Service Bindings build
-      uses: actions/download-artifact@v2.0.5
+      uses: actions/download-artifact@v2.0.6
       if: needs.stage.result == 'success'
       with:
         name: service-bindings.yaml
@@ -158,7 +158,7 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: true
     - name: Download staged Service Bindings build
-      uses: actions/download-artifact@v2.0.5
+      uses: actions/download-artifact@v2.0.6
       with:
         name: service-bindings.yaml
     - name: Upload Service Bindings release

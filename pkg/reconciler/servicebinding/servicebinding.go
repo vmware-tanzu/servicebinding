@@ -136,7 +136,8 @@ func (c *Reconciler) createProjectedSecret(ctx context.Context, binding *service
 }
 
 func projectedSecretSemanticEquals(ctx context.Context, desiredProjection, projection *corev1.Secret) (bool, error) {
-	return equality.Semantic.DeepEqual(desiredProjection.Data, projection.Data) &&
+	return equality.Semantic.DeepEqual(desiredProjection.Type, projection.Type) &&
+		equality.Semantic.DeepEqual(desiredProjection.Data, projection.Data) &&
 		equality.Semantic.DeepEqual(desiredProjection.ObjectMeta.Labels, projection.ObjectMeta.Labels) &&
 		equality.Semantic.DeepEqual(desiredProjection.ObjectMeta.Annotations, projection.ObjectMeta.Annotations), nil
 }
@@ -157,8 +158,10 @@ func (c *Reconciler) reconcileProtectedSecret(ctx context.Context, binding *serv
 		return projection, nil
 	}
 
-	// Preserve the rest of the object (e.g. ObjectMeta except for labels).
+	// Preserve the rest of the object (e.g. ObjectMeta except for labels and annotations).
 	existing.Data = desiredProjection.Data
+	existing.Type = desiredProjection.Type
+	existing.ObjectMeta.Annotations = desiredProjection.ObjectMeta.Annotations
 	existing.ObjectMeta.Labels = desiredProjection.ObjectMeta.Labels
 	return c.kubeclient.CoreV1().Secrets(binding.Namespace).Update(ctx, existing, metav1.UpdateOptions{})
 }

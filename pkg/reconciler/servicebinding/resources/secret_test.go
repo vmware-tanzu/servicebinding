@@ -49,6 +49,7 @@ func TestMakeProjectedSecret(t *testing.T) {
 						},
 					},
 				},
+				Type: corev1.SecretTypeOpaque,
 			},
 		},
 		{
@@ -82,6 +83,7 @@ func TestMakeProjectedSecret(t *testing.T) {
 						},
 					},
 				},
+				Type: corev1.SecretTypeOpaque,
 				Data: map[string][]byte{
 					"username": []byte("root"),
 					"password": []byte("password1"),
@@ -123,6 +125,7 @@ func TestMakeProjectedSecret(t *testing.T) {
 						},
 					},
 				},
+				Type: corev1.SecretType("service.binding/mysql"),
 				Data: map[string][]byte{
 					"username": []byte("root"),
 					"password": []byte("password1"),
@@ -174,6 +177,7 @@ func TestMakeProjectedSecret(t *testing.T) {
 						},
 					},
 				},
+				Type: corev1.SecretTypeOpaque,
 				Data: map[string][]byte{
 					"username":  []byte("root"),
 					"password":  []byte("password1"),

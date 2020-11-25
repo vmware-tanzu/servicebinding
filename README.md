@@ -52,6 +52,7 @@ Samples are located in the [samples directory](./samples), including:
 - [Controlled Resource](./samples/controlled-resource)
 - [Environment Variables and Mappings](./samples/environment-variable-mappings)
 - [Provisioned Service](./samples/provisioned-service)
+- [Multiple Bindings](./samples/multi-binding)
 
 ## Resources
 

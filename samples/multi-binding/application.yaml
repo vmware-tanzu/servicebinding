@@ -1,0 +1,17 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: multi-binding
+spec:
+  template:
+    spec:
+      containers:
+      - name: application
+        image: ubuntu:bionic
+        command: ["env"]
+      enableServiceLinks: false
+      restartPolicy: OnFailure

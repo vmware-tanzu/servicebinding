@@ -1,0 +1,20 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: multi-binding-1
+type: Opaque
+stringData:
+  number: "1"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: multi-binding-2
+type: Opaque
+stringData:
+  number: "2"

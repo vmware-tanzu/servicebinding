@@ -73,7 +73,6 @@ jobs:
     strategy:
       matrix:
         k8s:
-        - 1.16.15
         - 1.17.11
         - 1.18.8
         - 1.19.1
@@ -115,6 +114,13 @@ jobs:
       run: kapp deploy -a service-bindings -f service-bindings.yaml -y
     - name: Deploy Spring Petclinic
       run: kapp deploy -a spring-petclinic -f samples/spring-petclinic -y
+    - name: Collect Service Binding diagnostics
+      run: |
+        echo "##[group]Service Binding manager logs"
+          kubectl logs -n service-bindings -l app=manager -c manager --tail 1000
+        echo "##[endgroup]"
+      if: always()
+      continue-on-error: true
     - name: Collect Spring Petclinic diagnostics
       run: |
         echo "##[group]Petclinic deployment"

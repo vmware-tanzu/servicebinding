@@ -23,7 +23,7 @@ The `Binding Secret Generation Strategies` extension is not supported.
 ## Try it out
 
 Prerequisites:
-- a Kubernetes 1.16+ cluster
+- a Kubernetes 1.17+ cluster
 
 Using the [latest release](https://github.com/vmware-labs/service-bindings/releases/latest) is recommended.
 

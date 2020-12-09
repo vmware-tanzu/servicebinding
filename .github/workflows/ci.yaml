@@ -75,7 +75,8 @@ jobs:
         k8s:
         - 1.17.11
         - 1.18.8
-        - 1.19.1
+        - 1.19.4
+        - 1.20.0
       fail-fast: false
     steps:
     - uses: actions/checkout@v2.3.4

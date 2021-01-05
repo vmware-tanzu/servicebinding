@@ -61,7 +61,7 @@ jobs:
       env:
         KO_DOCKER_REPO: docker.io/vmware
     - name: Upload Service Bindings build
-      uses: actions/upload-artifact@v2.2.1
+      uses: actions/upload-artifact@v2.2.2
       with:
         name: service-bindings.yaml
         path: service-bindings.yaml

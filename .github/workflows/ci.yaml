@@ -37,7 +37,7 @@ jobs:
     - name: Install ko
       run: |
         cd $(mktemp -d -t ko.XXXX)
-        curl -sL https://github.com/google/ko/releases/download/v0.5.2/ko_0.5.2_Linux_x86_64.tar.gz | tar -xz
+        curl -sL https://github.com/google/ko/releases/download/v0.8.1/ko_0.8.1_Linux_x86_64.tar.gz | tar -xz
         sudo mv ./ko /usr/local/bin
         cd -
     - name: Docker login
@@ -57,7 +57,7 @@ jobs:
         readonly git_timestamp=$(TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd")
         readonly slug=${version}-${git_timestamp}-${git_sha:0:16}
 
-        ko resolve -t ${slug} --strict -B -f config | sed -e "s|bindings.labs.vmware.com/release: devel|bindings.labs.vmware.com/release: ${slug}|" > service-bindings.yaml
+        ko resolve -t ${slug} -B -f config | sed -e "s|bindings.labs.vmware.com/release: devel|bindings.labs.vmware.com/release: ${slug}|" > service-bindings.yaml
       env:
         KO_DOCKER_REPO: docker.io/vmware
     - name: Upload Service Bindings build
@@ -73,21 +73,21 @@ jobs:
     strategy:
       matrix:
         k8s:
-        - 1.17.11
-        - 1.18.8
-        - 1.19.4
-        - 1.20.0
+        - 1.17.17
+        - 1.18.15
+        - 1.19.7
+        - 1.20.2
       fail-fast: false
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Install kind
       run: |
-        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.8.1/kind-linux-amd64
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin
     - name: Install kapp
       run: |
-        curl -Lo ./kapp https://github.com/k14s/kapp/releases/download/v0.31.0/kapp-linux-amd64
+        curl -Lo ./kapp https://github.com/vmware-tanzu/carvel-kapp/releases/download/v0.35.0/kapp-linux-amd64
         chmod +x ./kapp
         sudo mv ./kapp /usr/local/bin
     - name: Create cluster
@@ -105,11 +105,11 @@ jobs:
         set -o pipefail
 
         cd $(mktemp -d -t ko.XXXX)
-        curl -sL https://github.com/google/ko/releases/download/v0.5.0/ko_0.5.0_Linux_x86_64.tar.gz | tar -xz
+        curl -sL https://github.com/google/ko/releases/download/v0.8.1/ko_0.8.1_Linux_x86_64.tar.gz | tar -xz
         sudo mv ./ko /usr/local/bin
         cd -
 
-        ko resolve -L --strict -B -f config > service-bindings.yaml
+        ko resolve -L -B -f config > service-bindings.yaml
         cat service-bindings.yaml | grep -oh 'ko.local[^\w]*' | xargs -L 1 kind load docker-image
     - name: Deploy Service Bindings
       run: kapp deploy -a service-bindings -f service-bindings.yaml -y

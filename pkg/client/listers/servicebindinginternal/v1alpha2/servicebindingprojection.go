@@ -15,8 +15,10 @@ import (
 )
 
 // ServiceBindingProjectionLister helps list ServiceBindingProjections.
+// All objects returned here must be treated as read-only.
 type ServiceBindingProjectionLister interface {
 	// List lists all ServiceBindingProjections in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.ServiceBindingProjection, err error)
 	// ServiceBindingProjections returns an object that can list and get ServiceBindingProjections.
 	ServiceBindingProjections(namespace string) ServiceBindingProjectionNamespaceLister
@@ -47,10 +49,13 @@ func (s *serviceBindingProjectionLister) ServiceBindingProjections(namespace str
 }
 
 // ServiceBindingProjectionNamespaceLister helps list and get ServiceBindingProjections.
+// All objects returned here must be treated as read-only.
 type ServiceBindingProjectionNamespaceLister interface {
 	// List lists all ServiceBindingProjections in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.ServiceBindingProjection, err error)
 	// Get retrieves the ServiceBindingProjection from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.ServiceBindingProjection, error)
 	ServiceBindingProjectionNamespaceListerExpansion
 }

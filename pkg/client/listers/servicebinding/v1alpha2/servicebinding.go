@@ -15,8 +15,10 @@ import (
 )
 
 // ServiceBindingLister helps list ServiceBindings.
+// All objects returned here must be treated as read-only.
 type ServiceBindingLister interface {
 	// List lists all ServiceBindings in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.ServiceBinding, err error)
 	// ServiceBindings returns an object that can list and get ServiceBindings.
 	ServiceBindings(namespace string) ServiceBindingNamespaceLister
@@ -47,10 +49,13 @@ func (s *serviceBindingLister) ServiceBindings(namespace string) ServiceBindingN
 }
 
 // ServiceBindingNamespaceLister helps list and get ServiceBindings.
+// All objects returned here must be treated as read-only.
 type ServiceBindingNamespaceLister interface {
 	// List lists all ServiceBindings in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.ServiceBinding, err error)
 	// Get retrieves the ServiceBinding from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.ServiceBinding, error)
 	ServiceBindingNamespaceListerExpansion
 }

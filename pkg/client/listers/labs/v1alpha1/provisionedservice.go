@@ -15,8 +15,10 @@ import (
 )
 
 // ProvisionedServiceLister helps list ProvisionedServices.
+// All objects returned here must be treated as read-only.
 type ProvisionedServiceLister interface {
 	// List lists all ProvisionedServices in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.ProvisionedService, err error)
 	// ProvisionedServices returns an object that can list and get ProvisionedServices.
 	ProvisionedServices(namespace string) ProvisionedServiceNamespaceLister
@@ -47,10 +49,13 @@ func (s *provisionedServiceLister) ProvisionedServices(namespace string) Provisi
 }
 
 // ProvisionedServiceNamespaceLister helps list and get ProvisionedServices.
+// All objects returned here must be treated as read-only.
 type ProvisionedServiceNamespaceLister interface {
 	// List lists all ProvisionedServices in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.ProvisionedService, err error)
 	// Get retrieves the ProvisionedService from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.ProvisionedService, error)
 	ProvisionedServiceNamespaceListerExpansion
 }

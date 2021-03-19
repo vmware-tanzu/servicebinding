@@ -113,7 +113,14 @@ jobs:
     - name: Deploy Service Bindings
       run: kapp deploy -a service-bindings -f service-bindings.yaml -y
     - name: Deploy Spring Petclinic
-      run: kapp deploy -a spring-petclinic -f samples/spring-petclinic -y
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        kapp deploy -a spring-petclinic-db -f samples/spring-petclinic/service.yaml -y
+        kapp deploy -a spring-petclinic-binding -f samples/spring-petclinic/service-binding.yaml -y
+        kapp deploy -a spring-petclinic -f samples/spring-petclinic/application.yaml -y
     - name: Collect diagnostics
       run: |
         echo "##[group]Service Binding manager logs"
@@ -142,6 +149,15 @@ jobs:
         echo "##[endgroup]"
       if: always()
       continue-on-error: true
+    - name: Cleanup Spring Petclinic
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        kapp delete -a spring-petclinic-db -y
+        kapp delete -a spring-petclinic-binding -y
+        kapp delete -a spring-petclinic -y
     - name: Cleanup Service Bindings
       run: kapp delete -a service-bindings -y
       if: always()

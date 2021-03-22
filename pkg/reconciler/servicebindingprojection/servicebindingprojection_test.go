@@ -10,14 +10,12 @@ import (
 	"fmt"
 	"testing"
 
-	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
+	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	clientgotesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/record"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/client/injection/ducks/duck/v1/podspecable"
@@ -28,7 +26,7 @@ import (
 	"knative.dev/pkg/webhook/psbinding"
 
 	// register injection fakes
-	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebindinginternal/v1alpha2/servicebindingprojection/fake"
+	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection/fake"
 	_ "knative.dev/pkg/client/injection/ducks/duck/v1/podspecable/fake"
 	_ "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace/fake"
 	_ "knative.dev/pkg/injection/clients/dynamicclient/fake"
@@ -70,18 +68,18 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
 					Finalizers: []string{
-						"servicebindingprojections.internal.service.binding",
+						"servicebindingprojections.internal.bindings.labs.vmware.com",
 					},
 					Generation: 1,
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name: name,
-					Application: servicebindinginternalv1alpha2.ApplicationReference{
+					Application: labsinternalv1alpha1.ApplicationReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -92,16 +90,16 @@ func TestReconcile(t *testing.T) {
 						Name: "my-secret",
 					},
 				},
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						ObservedGeneration: 1,
 						Conditions: duckv1.Conditions{
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionApplicationAvailable,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionApplicationAvailable,
 								Status: corev1.ConditionTrue,
 							},
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 						},
@@ -113,7 +111,7 @@ func TestReconcile(t *testing.T) {
 					Namespace: namespace,
 					Name:      "my-application",
 					Annotations: map[string]string{
-						"internal.service.binding/projection-e9ead9b18f311f72f9c7a54af76": "my-secret",
+						"internal.bindings.labs.vmware.com/projection-e9ead9b18f311f72f9c7a54af76427b50d02e2e3": "my-secret",
 					},
 				},
 				Spec: appsv1.DeploymentSpec{
@@ -134,137 +132,22 @@ func TestReconcile(t *testing.T) {
 				},
 			},
 		},
-	}, {
-		Name: "nop - ignore custom projections",
-		Key:  key,
-		Objects: []runtime.Object{
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name,
-					Annotations: map[string]string{
-						"projection.service.binding/type": "Custom",
-					},
-					Generation: 1,
-				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
-					Name: name,
-					Application: servicebindinginternalv1alpha2.ApplicationReference{
-						Reference: tracker.Reference{
-							APIVersion: "apps/v1",
-							Kind:       "Deployment",
-							Name:       "my-application",
-						},
-					},
-					Binding: corev1.LocalObjectReference{
-						Name: "my-secret",
-					},
-				},
-			},
-		},
-	}, {
-		Name: "undo previous binding that is now custom",
-		Key:  key,
-		Objects: []runtime.Object{
-			&corev1.Namespace{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: namespace,
-					Labels: map[string]string{
-						"bindings.knative.dev/include": "true",
-					},
-				},
-			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name,
-					Annotations: map[string]string{
-						"projection.service.binding/type": "Custom",
-					},
-					Finalizers: []string{
-						"servicebindingprojections.internal.service.binding",
-					},
-					Generation: 1,
-				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
-					Name: name,
-					Application: servicebindinginternalv1alpha2.ApplicationReference{
-						Reference: tracker.Reference{
-							APIVersion: "apps/v1",
-							Kind:       "Deployment",
-							Name:       "my-application",
-						},
-					},
-					Binding: corev1.LocalObjectReference{
-						Name: "my-secret",
-					},
-				},
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionApplicationAvailable,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-						},
-					},
-				},
-			},
-			&appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      "my-application",
-					Annotations: map[string]string{
-						"internal.service.binding/projection-e9ead9b18f311f72f9c7a54af76": "my-secret",
-					},
-				},
-				// will also remove injected PodTemplateSpec items, but the
-				// patch bytes are not ordered deterministically so we're
-				// artificially limiting the patch to a single item.
-			},
-		},
-		WantPatches: []clientgotesting.PatchActionImpl{
-			{
-				ActionImpl: clientgotesting.ActionImpl{
-					Namespace: namespace,
-				},
-				Name:      "my-application",
-				PatchType: types.JSONPatchType,
-				Patch:     []byte(`[{"op":"remove","path":"/metadata/annotations"}]`),
-			},
-			{
-				ActionImpl: clientgotesting.ActionImpl{
-					Namespace: namespace,
-				},
-				Name:      name,
-				PatchType: types.MergePatchType,
-				Patch:     []byte(`{"metadata":{"finalizers":[],"resourceVersion":""}}`),
-			},
-		},
 	}}
 
 	table.Test(t, MakeFactory(func(ctx context.Context, listers *Listers, cmw configmap.Watcher) controller.Reconciler {
 		ctx = podspecable.WithDuck(ctx)
 
-		c := &ConditionalReconciler{
-			Delegate: &psbinding.BaseReconciler{
-				GVR: servicebindinginternalv1alpha2.SchemeGroupVersion.WithResource("servicebindingprojections"),
-				Get: func(namespace string, name string) (psbinding.Bindable, error) {
-					return listers.GetServiceBindingProjectionLister().ServiceBindingProjections(namespace).Get(name)
-				},
-				DynamicClient: dynamicclient.Get(ctx),
-				Recorder: record.NewBroadcaster().NewRecorder(
-					scheme.Scheme, corev1.EventSource{Component: controllerAgentName}),
-				NamespaceLister: listers.GetNamespaceLister(),
-				Tracker:         GetTracker(ctx),
-				Factory:         podspecable.Get(ctx),
+		c := &psbinding.BaseReconciler{
+			GVR: labsinternalv1alpha1.SchemeGroupVersion.WithResource("servicebindingprojections"),
+			Get: func(namespace string, name string) (psbinding.Bindable, error) {
+				return listers.GetServiceBindingProjectionLister().ServiceBindingProjections(namespace).Get(name)
 			},
-			Lister: listers.GetServiceBindingProjectionLister(),
+			DynamicClient: dynamicclient.Get(ctx),
+			Recorder: record.NewBroadcaster().NewRecorder(
+				scheme.Scheme, corev1.EventSource{Component: controllerAgentName}),
+			NamespaceLister: listers.GetNamespaceLister(),
+			Tracker:         GetTracker(ctx),
+			Factory:         podspecable.Get(ctx),
 		}
 		return c
 	}))

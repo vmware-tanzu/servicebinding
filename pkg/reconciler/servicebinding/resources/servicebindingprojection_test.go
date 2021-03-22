@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
-	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/ptr"
@@ -21,7 +21,7 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 	tests := []struct {
 		name        string
 		binding     *servicebindingv1alpha2.ServiceBinding
-		expected    *servicebindinginternalv1alpha2.ServiceBindingProjection
+		expected    *labsinternalv1alpha1.ServiceBindingProjection
 		expectedErr bool
 	}{
 		{
@@ -31,9 +31,8 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 					Namespace: "my-namespace",
 					Name:      "my-binding",
 					Annotations: map[string]string{
-						"projection.service.bindings/type": "Custom",
-						"service.bindings/include":         "me",
-						"ignore":                           "me",
+						"service.bindings/include": "me",
+						"ignore":                   "me",
 					},
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
@@ -58,13 +57,12 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 					},
 				},
 			},
-			expected: &servicebindinginternalv1alpha2.ServiceBindingProjection{
+			expected: &labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "my-namespace",
 					Name:      "my-binding",
 					Annotations: map[string]string{
-						"projection.service.bindings/type": "Custom",
-						"service.bindings/include":         "me",
+						"service.bindings/include": "me",
 					},
 					Labels: map[string]string{
 						"service.binding/servicebinding": "my-binding",
@@ -79,16 +77,16 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name: "my-binding",
-					Application: servicebindinginternalv1alpha2.ApplicationReference{
+					Application: labsinternalv1alpha1.ApplicationReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
 							Name:       "my-app",
 						},
 					},
-					Env: []servicebindinginternalv1alpha2.EnvVar{
+					Env: []labsinternalv1alpha1.EnvVar{
 						{
 							Name: "MY_VAR",
 							Key:  "my-key",

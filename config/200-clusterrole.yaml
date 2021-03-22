@@ -45,13 +45,13 @@ metadata:
     bindings.labs.vmware.com/release: devel
     service.binding/controller: "true"
 rules:
-  - apiGroups: ["bindings.labs.vmware.com"]
-    resources: ["*"]
-    verbs: ["*"]
   - apiGroups: ["service.binding"]
     resources: ["*"]
     verbs: ["*"]
-  - apiGroups: ["internal.service.binding"]
+  - apiGroups: ["bindings.labs.vmware.com"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["internal.bindings.labs.vmware.com"]
     resources: ["*"]
     verbs: ["*"]
 ---

@@ -10,8 +10,8 @@ import (
 
 	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
 	bindingclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client"
+	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection"
 	servicebindinginformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha2/servicebinding"
-	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebindinginternal/v1alpha2/servicebindingprojection"
 	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha2/servicebinding"
 	"github.com/vmware-labs/service-bindings/pkg/resolver"
 	corev1 "k8s.io/api/core/v1"

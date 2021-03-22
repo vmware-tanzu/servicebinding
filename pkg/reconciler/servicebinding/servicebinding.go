@@ -9,11 +9,11 @@ import (
 	"context"
 	"fmt"
 
+	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
-	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	bindingclientset "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned"
 	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha2/servicebinding"
-	servicebindinginternalv1alpha2listers "github.com/vmware-labs/service-bindings/pkg/client/listers/servicebindinginternal/v1alpha2"
+	labsinternalv1alpha1listers "github.com/vmware-labs/service-bindings/pkg/client/listers/labsinternal/v1alpha1"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources"
 	resourcenames "github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources/names"
 	"github.com/vmware-labs/service-bindings/pkg/resolver"
@@ -42,7 +42,7 @@ type Reconciler struct {
 	kubeclient                     kubernetes.Interface
 	bindingclient                  bindingclientset.Interface
 	secretLister                   corev1listers.SecretLister
-	serviceBindingProjectionLister servicebindinginternalv1alpha2listers.ServiceBindingProjectionLister
+	serviceBindingProjectionLister labsinternalv1alpha1listers.ServiceBindingProjectionLister
 
 	resolver *resolver.ServiceableResolver
 	tracker  tracker.Interface
@@ -166,7 +166,7 @@ func (c *Reconciler) reconcileProtectedSecret(ctx context.Context, binding *serv
 	return c.kubeclient.CoreV1().Secrets(binding.Namespace).Update(ctx, existing, metav1.UpdateOptions{})
 }
 
-func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.SugaredLogger, binding *servicebindingv1alpha2.ServiceBinding) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
+func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.SugaredLogger, binding *servicebindingv1alpha2.ServiceBinding) (*labsinternalv1alpha1.ServiceBindingProjection, error) {
 	recorder := controller.GetEventRecorder(ctx)
 
 	if binding.Status.Binding == nil {
@@ -192,21 +192,21 @@ func (r *Reconciler) serviceBindingProjection(ctx context.Context, logger *zap.S
 	return serviceBindingProjection, nil
 }
 
-func (c *Reconciler) createServiceBindingProjection(ctx context.Context, binding *servicebindingv1alpha2.ServiceBinding) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
+func (c *Reconciler) createServiceBindingProjection(ctx context.Context, binding *servicebindingv1alpha2.ServiceBinding) (*labsinternalv1alpha1.ServiceBindingProjection, error) {
 	serviceBindingProjection, err := resources.MakeServiceBindingProjection(binding)
 	if err != nil {
 		return nil, err
 	}
-	return c.bindingclient.InternalV1alpha2().ServiceBindingProjections(binding.Namespace).Create(ctx, serviceBindingProjection, metav1.CreateOptions{})
+	return c.bindingclient.InternalV1alpha1().ServiceBindingProjections(binding.Namespace).Create(ctx, serviceBindingProjection, metav1.CreateOptions{})
 }
 
-func serviceBindingProjectionSemanticEquals(ctx context.Context, desiredServiceBindingProjection, serviceBindingProjection *servicebindinginternalv1alpha2.ServiceBindingProjection) (bool, error) {
+func serviceBindingProjectionSemanticEquals(ctx context.Context, desiredServiceBindingProjection, serviceBindingProjection *labsinternalv1alpha1.ServiceBindingProjection) (bool, error) {
 	return equality.Semantic.DeepEqual(desiredServiceBindingProjection.Spec, serviceBindingProjection.Spec) &&
 		equality.Semantic.DeepEqual(desiredServiceBindingProjection.ObjectMeta.Labels, serviceBindingProjection.ObjectMeta.Labels) &&
 		equality.Semantic.DeepEqual(desiredServiceBindingProjection.ObjectMeta.Annotations, serviceBindingProjection.ObjectMeta.Annotations), nil
 }
 
-func (c *Reconciler) reconcileServiceBindingProjection(ctx context.Context, binding *servicebindingv1alpha2.ServiceBinding, projection *servicebindinginternalv1alpha2.ServiceBindingProjection) (*servicebindinginternalv1alpha2.ServiceBindingProjection, error) {
+func (c *Reconciler) reconcileServiceBindingProjection(ctx context.Context, binding *servicebindingv1alpha2.ServiceBinding, projection *labsinternalv1alpha1.ServiceBindingProjection) (*labsinternalv1alpha1.ServiceBindingProjection, error) {
 	existing := projection.DeepCopy()
 	// In the case of an upgrade, there can be default values set that don't exist pre-upgrade.
 	// We are setting the up-to-date default values here so an update won't be triggered if the only
@@ -226,5 +226,5 @@ func (c *Reconciler) reconcileServiceBindingProjection(ctx context.Context, bind
 	existing.Spec = desired.Spec
 	existing.ObjectMeta.Labels = desired.ObjectMeta.Labels
 	existing.ObjectMeta.Annotations = desired.ObjectMeta.Annotations
-	return c.bindingclient.InternalV1alpha2().ServiceBindingProjections(binding.Namespace).Update(ctx, existing, metav1.UpdateOptions{})
+	return c.bindingclient.InternalV1alpha1().ServiceBindingProjections(binding.Namespace).Update(ctx, existing, metav1.UpdateOptions{})
 }

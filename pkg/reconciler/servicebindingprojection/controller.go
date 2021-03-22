@@ -8,8 +8,8 @@ package servicebindingprojection
 import (
 	"context"
 
-	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
-	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebindinginternal/v1alpha2/servicebindingprojection"
+	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
+	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -41,8 +41,8 @@ func NewController(
 	dc := dynamicclient.Get(ctx)
 
 	psInformerFactory := podspecable.Get(ctx)
-	d := &psbinding.BaseReconciler{
-		GVR: servicebindinginternalv1alpha2.SchemeGroupVersion.WithResource("servicebindingprojections"),
+	c := &psbinding.BaseReconciler{
+		GVR: labsinternalv1alpha1.SchemeGroupVersion.WithResource("servicebindingprojections"),
 		Get: func(namespace string, name string) (psbinding.Bindable, error) {
 			return serviceBindingProjectionInformer.Lister().ServiceBindingProjections(namespace).Get(name)
 		},
@@ -51,10 +51,6 @@ func NewController(
 			scheme.Scheme, corev1.EventSource{Component: controllerAgentName}),
 		NamespaceLister: nsInformer.Lister(),
 	}
-	c := &ConditionalReconciler{
-		Delegate: d,
-		Lister:   serviceBindingProjectionInformer.Lister(),
-	}
 
 	impl := controller.NewImpl(c, logger, "ServiceBindingProjections")
 
@@ -62,11 +58,11 @@ func NewController(
 
 	serviceBindingProjectionInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
-	d.Tracker = tracker.New(impl.EnqueueKey, controller.GetTrackerLease(ctx))
-	d.Factory = &duck.CachedInformerFactory{
+	c.Tracker = tracker.New(impl.EnqueueKey, controller.GetTrackerLease(ctx))
+	c.Factory = &duck.CachedInformerFactory{
 		Delegate: &duck.EnqueueInformerFactory{
 			Delegate:     psInformerFactory,
-			EventHandler: controller.HandleAll(d.Tracker.OnChanged),
+			EventHandler: controller.HandleAll(c.Tracker.OnChanged),
 		},
 	}
 	return impl

@@ -12,8 +12,8 @@ import (
 	"time"
 
 	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
+	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
-	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	servicebindingsclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client"
 	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha2/serviceable"
 	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha2/servicebinding"
@@ -33,8 +33,8 @@ import (
 
 	// register injection fakes
 	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha2/serviceable/fake"
+	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection/fake"
 	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha2/servicebinding/fake"
-	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebindinginternal/v1alpha2/servicebindingprojection/fake"
 	_ "knative.dev/pkg/client/injection/kube/informers/core/v1/secret/fake"
 	_ "knative.dev/pkg/injection/clients/dynamicclient/fake"
 
@@ -170,7 +170,7 @@ func TestReconcile(t *testing.T) {
 				Type: corev1.SecretTypeOpaque,
 				Data: serviceSecret.Data,
 			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
@@ -187,18 +187,18 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
 						Name: name + "-projection",
 					},
 				},
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 						},
@@ -234,7 +234,7 @@ func TestReconcile(t *testing.T) {
 			},
 		},
 		WantCreates: []runtime.Object{
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
@@ -251,7 +251,7 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
@@ -344,7 +344,7 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
@@ -358,7 +358,7 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
@@ -386,7 +386,7 @@ func TestReconcile(t *testing.T) {
 		},
 		WantUpdates: []clientgotesting.UpdateActionImpl{
 			{
-				Object: &servicebindinginternalv1alpha2.ServiceBindingProjection{
+				Object: &labsinternalv1alpha1.ServiceBindingProjection{
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: namespace,
 						Name:      name,
@@ -403,7 +403,7 @@ func TestReconcile(t *testing.T) {
 							},
 						},
 					},
-					Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+					Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 						Name:        name,
 						Application: applicationRef,
 						Binding: corev1.LocalObjectReference{
@@ -532,7 +532,7 @@ func TestReconcile(t *testing.T) {
 				Type: corev1.SecretTypeOpaque,
 				Data: serviceSecret.Data,
 			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
@@ -549,18 +549,18 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
 						Name: name + "-projection",
 					},
 				},
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 						},
@@ -612,7 +612,7 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
@@ -629,18 +629,18 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
 						Name: name + "-projection",
 					},
 				},
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 						},
@@ -744,7 +744,7 @@ func TestReconcile(t *testing.T) {
 		},
 		WantErr: true,
 		WantCreates: []runtime.Object{
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
@@ -761,7 +761,7 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
@@ -831,7 +831,7 @@ func TestReconcile(t *testing.T) {
 				Type: corev1.SecretTypeOpaque,
 				Data: serviceSecret.Data,
 			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
@@ -848,18 +848,18 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
 						Name: name + "-projection",
 					},
 				},
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 						},
@@ -958,7 +958,7 @@ func TestReconcile(t *testing.T) {
 				Type: corev1.SecretTypeOpaque,
 				Data: serviceSecret.Data,
 			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
@@ -972,18 +972,18 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
 						Name: name + "-projection",
 					},
 				},
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 						},
@@ -997,7 +997,7 @@ func TestReconcile(t *testing.T) {
 		WantErr: true,
 		WantUpdates: []clientgotesting.UpdateActionImpl{
 			{
-				Object: &servicebindinginternalv1alpha2.ServiceBindingProjection{
+				Object: &labsinternalv1alpha1.ServiceBindingProjection{
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: namespace,
 						Name:      name,
@@ -1014,18 +1014,18 @@ func TestReconcile(t *testing.T) {
 							},
 						},
 					},
-					Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+					Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 						Name:        name,
 						Application: applicationRef,
 						Binding: corev1.LocalObjectReference{
 							Name: name + "-projection",
 						},
 					},
-					Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+					Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 						Status: duckv1.Status{
 							Conditions: duckv1.Conditions{
 								{
-									Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+									Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 									Status: corev1.ConditionTrue,
 								},
 							},
@@ -1084,7 +1084,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Data: serviceSecret.Data,
 			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
@@ -1101,18 +1101,18 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
 						Name: name + "-projection",
 					},
 				},
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 						},
@@ -1184,23 +1184,23 @@ func TestReconcile(t *testing.T) {
 				Type: corev1.SecretTypeOpaque,
 				Data: serviceSecret.Data,
 			},
-			&servicebindinginternalv1alpha2.ServiceBindingProjection{
+			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Name:      name,
 				},
-				Spec: servicebindinginternalv1alpha2.ServiceBindingProjectionSpec{
+				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
 						Name: name + "-projection",
 					},
 				},
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 						},

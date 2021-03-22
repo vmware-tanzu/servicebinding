@@ -12,7 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
-	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
+	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
@@ -436,7 +436,7 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 	tests := []struct {
 		name       string
 		seed       *ServiceBindingStatus
-		projection *servicebindinginternalv1alpha2.ServiceBindingProjection
+		projection *labsinternalv1alpha1.ServiceBindingProjection
 		expected   *duckv1.Status
 	}{
 		{
@@ -448,18 +448,18 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 		{
 			name:       "default",
 			seed:       &ServiceBindingStatus{},
-			projection: &servicebindinginternalv1alpha2.ServiceBindingProjection{},
+			projection: &labsinternalv1alpha1.ServiceBindingProjection{},
 			expected:   &duckv1.Status{},
 		},
 		{
 			name: "ready",
 			seed: &ServiceBindingStatus{},
-			projection: &servicebindinginternalv1alpha2.ServiceBindingProjection{
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+			projection: &labsinternalv1alpha1.ServiceBindingProjection{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type:   servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 						},
@@ -482,12 +482,12 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 		{
 			name: "not ready",
 			seed: &ServiceBindingStatus{},
-			projection: &servicebindinginternalv1alpha2.ServiceBindingProjection{
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+			projection: &labsinternalv1alpha1.ServiceBindingProjection{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type:    servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type:    labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status:  corev1.ConditionFalse,
 								Message: "TheMessage",
 								Reason:  "a reason",
@@ -516,12 +516,12 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 		{
 			name: "unkown",
 			seed: &ServiceBindingStatus{},
-			projection: &servicebindinginternalv1alpha2.ServiceBindingProjection{
-				Status: servicebindinginternalv1alpha2.ServiceBindingProjectionStatus{
+			projection: &labsinternalv1alpha1.ServiceBindingProjection{
+				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							{
-								Type: servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady,
+								Type: labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 							},
 						},
 					},

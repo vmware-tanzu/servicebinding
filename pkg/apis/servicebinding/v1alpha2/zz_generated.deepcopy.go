@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
 package v1alpha2
 
 import (
-	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
+	v1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	tracker "knative.dev/pkg/tracker"
@@ -98,7 +98,7 @@ func (in *ServiceBindingSpec) DeepCopyInto(out *ServiceBindingSpec) {
 	*out = *in
 	if in.Application != nil {
 		in, out := &in.Application, &out.Application
-		*out = new(servicebindinginternalv1alpha2.ApplicationReference)
+		*out = new(v1alpha1.ApplicationReference)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Service != nil {
@@ -108,7 +108,7 @@ func (in *ServiceBindingSpec) DeepCopyInto(out *ServiceBindingSpec) {
 	}
 	if in.Env != nil {
 		in, out := &in.Env, &out.Env
-		*out = make([]servicebindinginternalv1alpha2.EnvVar, len(*in))
+		*out = make([]v1alpha1.EnvVar, len(*in))
 		copy(*out, *in)
 	}
 	if in.Mappings != nil {

@@ -14,7 +14,6 @@ This implementation provides support for:
 - [Application Projection](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#application-projection)
 - [Service Binding](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#service-binding)
 - Extensions including:
-  - [Custom Projection](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#custom-projection)
   - [Direct Secret Reference](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#direct-secret-reference)
   - [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#role-based-access-control-rbac)
 
@@ -48,7 +47,6 @@ kapp delete -a service-bindings
 Samples are located in the [samples directory](./samples), including:
 
 - [Spring PetClinic with MySQL](./samples/spring-petclinic)
-- [Custom Projection](./samples/custom-projection)
 - [Controlled Resource](./samples/controlled-resource)
 - [Environment Variables and Mappings](./samples/environment-variable-mappings)
 - [Provisioned Service](./samples/provisioned-service)

@@ -15,8 +15,8 @@ import (
 	versioned "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned"
 	internalinterfaces "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/internalinterfaces"
 	labs "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/labs"
+	labsinternal "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/labsinternal"
 	servicebinding "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/servicebinding"
-	servicebindinginternal "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/servicebindinginternal"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -164,18 +164,18 @@ type SharedInformerFactory interface {
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
 	Bindings() labs.Interface
+	Internal() labsinternal.Interface
 	Service() servicebinding.Interface
-	Internal() servicebindinginternal.Interface
 }
 
 func (f *sharedInformerFactory) Bindings() labs.Interface {
 	return labs.New(f, f.namespace, f.tweakListOptions)
 }
 
-func (f *sharedInformerFactory) Service() servicebinding.Interface {
-	return servicebinding.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Internal() labsinternal.Interface {
+	return labsinternal.New(f, f.namespace, f.tweakListOptions)
 }
 
-func (f *sharedInformerFactory) Internal() servicebindinginternal.Interface {
-	return servicebindinginternal.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Service() servicebinding.Interface {
+	return servicebinding.New(f, f.namespace, f.tweakListOptions)
 }

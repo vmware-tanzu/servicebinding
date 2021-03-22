@@ -10,7 +10,7 @@ import (
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
-	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
+	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 )
 
 const (
@@ -36,11 +36,11 @@ func (bs *ServiceBindingStatus) InitializeConditions() {
 	sbCondSet.Manage(bs).InitializeConditions()
 }
 
-func (bs *ServiceBindingStatus) PropagateServiceBindingProjectionStatus(bp *servicebindinginternalv1alpha2.ServiceBindingProjection) {
+func (bs *ServiceBindingStatus) PropagateServiceBindingProjectionStatus(bp *labsinternalv1alpha1.ServiceBindingProjection) {
 	if bp == nil {
 		return
 	}
-	sbpready := bp.Status.GetCondition(servicebindinginternalv1alpha2.ServiceBindingProjectionConditionReady)
+	sbpready := bp.Status.GetCondition(labsinternalv1alpha1.ServiceBindingProjectionConditionReady)
 	if sbpready == nil {
 		return
 	}

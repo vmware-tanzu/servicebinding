@@ -17,7 +17,7 @@ import (
 	"knative.dev/pkg/kmeta"
 	"knative.dev/pkg/tracker"
 
-	servicebindinginternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
+	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 )
 
 const (
@@ -69,9 +69,9 @@ type ServiceBindingSpec struct {
 	Mappings []Mapping `json:"mappings,omitempty"`
 }
 
-type ApplicationReference = servicebindinginternalv1alpha2.ApplicationReference
+type ApplicationReference = labsinternalv1alpha1.ApplicationReference
 
-type EnvVar = servicebindinginternalv1alpha2.EnvVar
+type EnvVar = labsinternalv1alpha1.EnvVar
 
 type Mapping struct {
 	Name  string `json:"name"`

@@ -10,8 +10,8 @@ package scheme
 import (
 	duckv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha2"
 	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
+	internalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
-	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebindinginternal/v1alpha2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -25,8 +25,8 @@ var ParameterCodec = runtime.NewParameterCodec(Scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
 	duckv1alpha2.AddToScheme,
 	bindingsv1alpha1.AddToScheme,
+	internalv1alpha1.AddToScheme,
 	servicev1alpha2.AddToScheme,
-	internalv1alpha2.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

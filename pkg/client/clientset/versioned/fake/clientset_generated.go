@@ -13,10 +13,10 @@ import (
 	fakeduckv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha2/fake"
 	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1"
 	fakebindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1/fake"
+	internalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labsinternal/v1alpha1"
+	fakeinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labsinternal/v1alpha1/fake"
 	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha2"
 	fakeservicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha2/fake"
-	internalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebindinginternal/v1alpha2"
-	fakeinternalv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebindinginternal/v1alpha2/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -81,12 +81,12 @@ func (c *Clientset) BindingsV1alpha1() bindingsv1alpha1.BindingsV1alpha1Interfac
 	return &fakebindingsv1alpha1.FakeBindingsV1alpha1{Fake: &c.Fake}
 }
 
+// InternalV1alpha1 retrieves the InternalV1alpha1Client
+func (c *Clientset) InternalV1alpha1() internalv1alpha1.InternalV1alpha1Interface {
+	return &fakeinternalv1alpha1.FakeInternalV1alpha1{Fake: &c.Fake}
+}
+
 // ServiceV1alpha2 retrieves the ServiceV1alpha2Client
 func (c *Clientset) ServiceV1alpha2() servicev1alpha2.ServiceV1alpha2Interface {
 	return &fakeservicev1alpha2.FakeServiceV1alpha2{Fake: &c.Fake}
-}
-
-// InternalV1alpha2 retrieves the InternalV1alpha2Client
-func (c *Clientset) InternalV1alpha2() internalv1alpha2.InternalV1alpha2Interface {
-	return &fakeinternalv1alpha2.FakeInternalV1alpha2{Fake: &c.Fake}
 }

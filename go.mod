@@ -9,6 +9,6 @@ require (
 	k8s.io/api v0.19.7
 	k8s.io/apimachinery v0.19.7
 	k8s.io/client-go v0.19.7
-	k8s.io/code-generator v0.19.7
+	k8s.io/code-generator v0.21.0
 	knative.dev/pkg v0.0.0-20210216013737-584933f8280b // pin to branch release-0.21
 )

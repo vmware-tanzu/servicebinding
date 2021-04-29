@@ -8,7 +8,7 @@ metadata:
   namespace: service-bindings
   labels:
     bindings.labs.vmware.com/release: devel
-    bindings.labs.vmware.com/exclude: "true"
+    knative.dev.bindings.labs.vmware.com/exclude: "true"
 spec:
   replicas: 1
   selector:
@@ -23,7 +23,7 @@ spec:
         app: manager
         role: manager
         bindings.labs.vmware.com/release: devel
-        bindings.labs.vmware.com/exclude: "true"
+        knative.dev.bindings.labs.vmware.com/exclude: "true"
     spec:
       serviceAccountName: controller
       containers:

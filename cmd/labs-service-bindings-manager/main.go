@@ -37,10 +37,13 @@ import (
 )
 
 var (
+	// TODO(scothis) restore labels after https://github.com/vmware-labs/service-bindings/issues/130
 	//BindingExcludeLabel can be applied to exclude resource from webhook
-	BindingExcludeLabel = "bindings.labs.vmware.com/exclude"
+	// BindingExcludeLabel = "bindings.labs.vmware.com/exclude"
+	BindingExcludeLabel = "knative.dev.bindings.labs.vmware.com/exclude"
 	//BindingIncludeLabel can be applied to include resource in webhook
-	BindingIncludeLabel = "bindings.labs.vmware.com/include"
+	// BindingIncludeLabel = "bindings.labs.vmware.com/include"
+	BindingIncludeLabel = "knative.dev.bindings.labs.vmware.com/include"
 
 	ExclusionSelector = metav1.LabelSelector{
 		MatchExpressions: []metav1.LabelSelectorRequirement{{

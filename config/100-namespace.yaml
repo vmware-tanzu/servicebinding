@@ -7,4 +7,4 @@ metadata:
   name: service-bindings
   labels:
     bindings.labs.vmware.com/release: devel
-    bindings.labs.vmware.com/exclude: "true"
+    knative.dev.bindings.labs.vmware.com/exclude: "true"

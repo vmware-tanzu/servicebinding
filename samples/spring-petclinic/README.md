@@ -46,7 +46,7 @@ The describe output will contain:
   Volumes:
    binding-49a23274b0590d5057aae1ae621be723716c4dd5:
     Type:        Secret (a volume populated by a Secret)
-    SecretName:  spring-petclinic-db-projection
+    SecretName:  spring-petclinic-db
     Optional:    false
 ...
 ```

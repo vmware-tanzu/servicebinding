@@ -504,7 +504,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 						Spec: corev1.PodSpec{
 							Volumes: []corev1.Volume{
 								{Name: "preserve"},
-								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "injected-secret"}}},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Projected: &corev1.ProjectedVolumeSource{Sources: []corev1.VolumeProjection{{Secret: &corev1.SecretProjection{LocalObjectReference: corev1.LocalObjectReference{Name: "injected-secret"}}}}}}},
 							},
 						},
 					},
@@ -555,7 +555,75 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 								},
 							},
 							Volumes: []corev1.Volume{
-								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "injected-secret"}}},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Projected: &corev1.ProjectedVolumeSource{Sources: []corev1.VolumeProjection{{Secret: &corev1.SecretProjection{LocalObjectReference: corev1.LocalObjectReference{Name: "injected-secret"}}}}}}},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "remove injected container volumemounts, type and provider annotations",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+			},
+			seed: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17": "injected-secret",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						ObjectMeta: metav1.ObjectMeta{
+							Annotations: map[string]string{
+								"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type":     "my-type",
+								"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider": "my-provider",
+							},
+						},
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+										{Name: "injected"},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									VolumeMounts: []corev1.VolumeMount{
+										{Name: "preserve"},
+										{Name: "injected"},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Projected: &corev1.ProjectedVolumeSource{Sources: []corev1.VolumeProjection{{Secret: &corev1.SecretProjection{LocalObjectReference: corev1.LocalObjectReference{Name: "injected-secret"}}}}}}},
 							},
 						},
 					},
@@ -639,7 +707,109 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 								},
 							},
 							Volumes: []corev1.Volume{
-								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "injected-secret"}}},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Projected: &corev1.ProjectedVolumeSource{Sources: []corev1.VolumeProjection{{Secret: &corev1.SecretProjection{LocalObjectReference: corev1.LocalObjectReference{Name: "injected-secret"}}}}}}},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{Name: "PRESERVE"},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{Name: "PRESERVE"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "remove injected environment variables, type and provider mapping",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+			},
+			seed: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17": "injected-secret",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						ObjectMeta: metav1.ObjectMeta{
+							Annotations: map[string]string{
+								"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type":     "injected-type",
+								"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider": "injected-provider",
+							},
+						},
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name: "INJECTED_TYPE",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type']",
+												},
+											},
+										},
+										{
+											Name: "INJECTED_PROVIDER",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider']",
+												},
+											},
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name: "INJECTED_TYPE",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type']",
+												},
+											},
+										},
+										{
+											Name: "INJECTED_PROVIDER",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider']",
+												},
+											},
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Projected: &corev1.ProjectedVolumeSource{Sources: []corev1.VolumeProjection{{Secret: &corev1.SecretProjection{LocalObjectReference: corev1.LocalObjectReference{Name: "injected-secret"}}}}}}},
 							},
 						},
 					},
@@ -731,7 +901,7 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 								},
 							},
 							Volumes: []corev1.Volume{
-								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "injected-secret"}}},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Projected: &corev1.ProjectedVolumeSource{Sources: []corev1.VolumeProjection{{Secret: &corev1.SecretProjection{LocalObjectReference: corev1.LocalObjectReference{Name: "injected-secret"}}}}}}},
 							},
 						},
 					},
@@ -758,6 +928,94 @@ func TestServiceBindingProjection_Undo(t *testing.T) {
 									},
 									VolumeMounts: []corev1.VolumeMount{
 										{Name: "preserve"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "remove injected environment variables, type and provider mapping, even if annotation is missing",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name: "INJECTED_TYPE",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type']",
+												},
+											},
+										},
+										{
+											Name: "INJECTED_PROVIDER",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider']",
+												},
+											},
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name: "INJECTED_TYPE",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type']",
+												},
+											},
+										},
+										{
+											Name: "INJECTED_PROVIDER",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider']",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{Name: "PRESERVE"},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{Name: "PRESERVE"},
 									},
 								},
 							},
@@ -863,8 +1121,141 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "inject volume into each container with overridden type and provider",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name:     "my-binding-name",
+					Type:     "my-type",
+					Provider: "my-provider",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{},
+							},
+							Containers: []corev1.Container{
+								{},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17": "my-secret",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						ObjectMeta: metav1.ObjectMeta{
+							Annotations: map[string]string{
+								"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type":     "my-type",
+								"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider": "my-provider",
+							},
+						},
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+									VolumeSource: corev1.VolumeSource{
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+												{
+													DownwardAPI: &corev1.DownwardAPIProjection{
+														Items: []corev1.DownwardAPIVolumeFile{
+															{
+																FieldRef: &corev1.ObjectFieldSelector{
+																	FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type']",
+																},
+																Path: "type",
+															},
+														},
+													},
+												},
+												{
+													DownwardAPI: &corev1.DownwardAPIProjection{
+														Items: []corev1.DownwardAPIVolumeFile{
+															{
+																FieldRef: &corev1.ObjectFieldSelector{
+																	FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider']",
+																},
+																Path: "provider",
+															},
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -959,8 +1350,16 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1039,8 +1438,16 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1113,8 +1520,16 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1185,8 +1600,16 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1197,7 +1620,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 			},
 		},
 		{
-			name: "inject custom envvars",
+			name: "inject envvars",
 			binding: &ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "my-binding",
@@ -1276,8 +1699,171 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "inject envvars, with overridden type and provider",
+			binding: &ServiceBindingProjection{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-binding",
+				},
+				Spec: ServiceBindingProjectionSpec{
+					Name:     "my-binding-name",
+					Type:     "my-type",
+					Provider: "my-provider",
+					Binding: corev1.LocalObjectReference{
+						Name: "my-secret",
+					},
+					Env: []EnvVar{
+						{
+							Name: "MY_VAR",
+							Key:  "my-key",
+						},
+						{
+							Name: "MY_TYPE",
+							Key:  "type",
+						},
+						{
+							Name: "MY_PROVIDER",
+							Key:  "provider",
+						},
+					},
+				},
+			},
+			seed: &duckv1.WithPod{
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &duckv1.WithPod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17": "my-secret",
+					},
+				},
+				Spec: duckv1.WithPodSpec{
+					Template: duckv1.PodSpecable{
+						ObjectMeta: metav1.ObjectMeta{
+							Annotations: map[string]string{
+								"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type":     "my-type",
+								"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider": "my-provider",
+							},
+						},
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Env: []corev1.EnvVar{
+										{
+											Name: "PRESERVE",
+										},
+										{
+											Name:  "SERVICE_BINDING_ROOT",
+											Value: "/bindings",
+										},
+										{
+											Name: "MY_PROVIDER",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider']",
+												},
+											},
+										},
+										{
+											Name: "MY_TYPE",
+											ValueFrom: &corev1.EnvVarSource{
+												FieldRef: &corev1.ObjectFieldSelector{
+													FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type']",
+												},
+											},
+										},
+										{
+											Name: "MY_VAR",
+											ValueFrom: &corev1.EnvVarSource{
+												SecretKeyRef: &corev1.SecretKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "my-secret",
+													},
+													Key: "my-key",
+												},
+											},
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+											MountPath: "/bindings/my-binding-name",
+											ReadOnly:  true,
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
+									VolumeSource: corev1.VolumeSource{
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+												{
+													DownwardAPI: &corev1.DownwardAPIProjection{
+														Items: []corev1.DownwardAPIVolumeFile{
+															{
+																FieldRef: &corev1.ObjectFieldSelector{
+																	FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-type']",
+																},
+																Path: "type",
+															},
+														},
+													},
+												},
+												{
+													DownwardAPI: &corev1.DownwardAPIProjection{
+														Items: []corev1.DownwardAPIVolumeFile{
+															{
+																FieldRef: &corev1.ObjectFieldSelector{
+																	FieldPath: "metadata.annotations['internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17-provider']",
+																},
+																Path: "provider",
+															},
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1311,7 +1897,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 						Spec: corev1.PodSpec{
 							Volumes: []corev1.Volume{
 								{Name: "preserve"},
-								{Name: "injected", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "my-secret"}}},
+								{Name: "injected", VolumeSource: corev1.VolumeSource{Projected: &corev1.ProjectedVolumeSource{Sources: []corev1.VolumeProjection{{Secret: &corev1.SecretProjection{LocalObjectReference: corev1.LocalObjectReference{Name: "my-secret"}}}}}}},
 							},
 						},
 					},
@@ -1331,8 +1917,16 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1402,8 +1996,16 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1459,8 +2061,16 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1533,8 +2143,16 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-a9a23274b0590d5057aae1ae621be723716c4dd5",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "other-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "other-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1604,16 +2222,32 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
 								{
 									Name: "binding-a9a23274b0590d5057aae1ae621be723716c4dd5",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "other-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "other-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},

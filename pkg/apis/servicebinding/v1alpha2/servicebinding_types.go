@@ -63,20 +63,11 @@ type ServiceBindingSpec struct {
 	// Env projects keys from the binding secret into the application as
 	// environment variables
 	Env []EnvVar `json:"env,omitempty"`
-
-	// Mappings create new binding secret keys from literal values or templated
-	// from existing keys
-	Mappings []Mapping `json:"mappings,omitempty"`
 }
 
 type ApplicationReference = labsinternalv1alpha1.ApplicationReference
 
 type EnvVar = labsinternalv1alpha1.EnvVar
-
-type Mapping struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
 
 type ServiceBindingStatus struct {
 	duckv1.Status `json:",inline"`
@@ -156,42 +147,9 @@ func (b *ServiceBinding) Validate(ctx context.Context) (errs *apis.FieldError) {
 		}
 	}
 
-	mappingSet := map[string][]int{}
-	for i, m := range b.Spec.Mappings {
-		errs = errs.Also(
-			m.Validate(ctx).ViaFieldIndex("mappings", i).ViaField("spec"),
-		)
-		if _, ok := mappingSet[m.Name]; !ok {
-			mappingSet[m.Name] = []int{}
-		}
-		mappingSet[m.Name] = append(mappingSet[m.Name], i)
-	}
-	// look for conflicting names
-	for _, v := range mappingSet {
-		if len(v) != 1 {
-			paths := make([]string, len(v))
-			for pi, i := range v {
-				paths[i] = fmt.Sprintf("spec.mappings[%d].name", pi)
-			}
-			errs = errs.Also(
-				apis.ErrMultipleOneOf(paths...),
-			)
-		}
-	}
-
 	if b.Status.Annotations != nil {
 		errs = errs.Also(
 			apis.ErrDisallowedFields("status.annotations"),
-		)
-	}
-
-	return errs
-}
-
-func (m Mapping) Validate(ctx context.Context) (errs *apis.FieldError) {
-	if m.Name == "" {
-		errs = errs.Also(
-			apis.ErrMissingField("name"),
 		)
 	}
 

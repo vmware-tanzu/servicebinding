@@ -121,8 +121,16 @@ func TestReconcile(t *testing.T) {
 								{
 									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
 									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "my-secret",
+										Projected: &corev1.ProjectedVolumeSource{
+											Sources: []corev1.VolumeProjection{
+												{
+													Secret: &corev1.SecretProjection{
+														LocalObjectReference: corev1.LocalObjectReference{
+															Name: "my-secret",
+														},
+													},
+												},
+											},
 										},
 									},
 								},

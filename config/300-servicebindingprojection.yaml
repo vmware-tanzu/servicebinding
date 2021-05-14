@@ -107,6 +107,10 @@ spec:
                 type: array
               name:
                 type: string
+              provider:
+                type: string
+              type:
+                type: string
             required:
             - application
             - binding

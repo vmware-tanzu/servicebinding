@@ -44,7 +44,7 @@ It will contain an environment variable `TARGET` provided by the binding.
           Value From:
             Secret Key Ref:
               Key:   target
-              Name:  controlled-resource-projection
+              Name:  controlled-resource
 ...
 ```
 

@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/stretchr/testify/assert"
 	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -261,33 +260,6 @@ func TestServiceBinding_Validate(t *testing.T) {
 				),
 			),
 		},
-		{
-			name: "disallow status annotations",
-			seed: &ServiceBinding{
-				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
-						Reference: tracker.Reference{
-							APIVersion: "apps/v1",
-							Kind:       "Deployment",
-							Name:       "my-app",
-						},
-					},
-					Service: &tracker.Reference{
-						APIVersion: "bindings.labs.vmware.com/v1alpha1",
-						Kind:       "ProvisionedService",
-						Name:       "my-service",
-					},
-				},
-				Status: ServiceBindingStatus{
-					Status: duckv1.Status{
-						Annotations: map[string]string{},
-					},
-				},
-			},
-			expected: (&apis.FieldError{}).Also(
-				apis.ErrDisallowedFields("status.annotations"),
-			),
-		},
 	}
 	for _, c := range tests {
 		t.Run(c.name, func(t *testing.T) {
@@ -299,77 +271,48 @@ func TestServiceBinding_Validate(t *testing.T) {
 	}
 }
 
-func TestServiceBinding_GetStatus(t *testing.T) {
-	tests := []struct {
-		name     string
-		seed     *ServiceBinding
-		expected *duckv1.Status
-	}{
-		{
-			name:     "empty",
-			seed:     &ServiceBinding{},
-			expected: &duckv1.Status{},
-		},
-		{
-			name: "status",
-			seed: &ServiceBinding{
-				Status: ServiceBindingStatus{
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   apis.ConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-						},
-					},
-				},
-			},
-			expected: &duckv1.Status{
-				ObservedGeneration: 1,
-				Conditions: duckv1.Conditions{
-					{
-						Type:   apis.ConditionReady,
-						Status: corev1.ConditionTrue,
-					},
-				},
-			},
-		},
-	}
-	for _, c := range tests {
-		t.Run(c.name, func(t *testing.T) {
-			actual := c.seed.GetStatus()
-			if diff := cmp.Diff(c.expected, actual); diff != "" {
-				t.Errorf("%s: GetStatus() (-expected, +actual): %s", c.name, diff)
-			}
-		})
-	}
-}
-
-func TestServiceBinding_GetConditionSet(t *testing.T) {
-	expected := sbCondSet
-	actual := (&ServiceBinding{}).GetConditionSet()
-	assert.Exactly(t, expected, actual)
-}
-
 func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing.T) {
+	now := metav1.Now()
+
 	tests := []struct {
 		name       string
 		seed       *ServiceBindingStatus
 		projection *labsinternalv1alpha1.ServiceBindingProjection
-		expected   *duckv1.Status
+		expected   *ServiceBindingStatus
 	}{
 		{
 			name:       "empty",
 			seed:       &ServiceBindingStatus{},
 			projection: nil,
-			expected:   &duckv1.Status{},
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{Type: ServiceBindingConditionReady},
+					{Type: ServiceBindingConditionServiceAvailable},
+					{Type: ServiceBindingConditionProjectionReady},
+				},
+			},
 		},
 		{
 			name:       "default",
 			seed:       &ServiceBindingStatus{},
 			projection: &labsinternalv1alpha1.ServiceBindingProjection{},
-			expected:   &duckv1.Status{},
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               ServiceBindingConditionReady,
+						Status:             metav1.ConditionUnknown,
+						Reason:             "ProjectionReadyUnknown",
+						LastTransitionTime: now,
+					},
+					{Type: ServiceBindingConditionServiceAvailable},
+					{
+						Type:               ServiceBindingConditionProjectionReady,
+						Status:             metav1.ConditionUnknown,
+						Reason:             "Unknown",
+						LastTransitionTime: now,
+					},
+				},
+			},
 		},
 		{
 			name: "ready",
@@ -386,15 +329,22 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 					},
 				},
 			},
-			expected: &duckv1.Status{
-				Conditions: duckv1.Conditions{
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
 					{
-						Type:   ServiceBindingConditionProjectionReady,
-						Status: corev1.ConditionTrue,
+						Type:               ServiceBindingConditionReady,
+						Status:             metav1.ConditionUnknown,
+						Reason:             "Unknown",
+						LastTransitionTime: now,
 					},
 					{
-						Type:   ServiceBindingConditionReady,
-						Status: corev1.ConditionUnknown,
+						Type: ServiceBindingConditionServiceAvailable,
+					},
+					{
+						Type:               ServiceBindingConditionProjectionReady,
+						Status:             metav1.ConditionTrue,
+						Reason:             "Projected",
+						LastTransitionTime: now,
 					},
 				},
 			},
@@ -409,32 +359,37 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 							{
 								Type:    labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status:  corev1.ConditionFalse,
-								Message: "TheMessage",
-								Reason:  "a reason",
+								Reason:  "TheReason",
+								Message: "the message",
 							},
 						},
 					},
 				},
 			},
-			expected: &duckv1.Status{
-				Conditions: duckv1.Conditions{
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
 					{
-						Type:    ServiceBindingConditionProjectionReady,
-						Status:  corev1.ConditionFalse,
-						Message: "TheMessage",
-						Reason:  "a reason",
+						Type:               ServiceBindingConditionReady,
+						Status:             metav1.ConditionFalse,
+						Reason:             "ProjectionReadyTheReason",
+						Message:            "the message",
+						LastTransitionTime: now,
 					},
 					{
-						Type:    ServiceBindingConditionReady,
-						Status:  corev1.ConditionFalse,
-						Message: "TheMessage",
-						Reason:  "a reason",
+						Type: ServiceBindingConditionServiceAvailable,
+					},
+					{
+						Type:               ServiceBindingConditionProjectionReady,
+						Status:             metav1.ConditionFalse,
+						Reason:             "TheReason",
+						Message:            "the message",
+						LastTransitionTime: now,
 					},
 				},
 			},
 		},
 		{
-			name: "unkown",
+			name: "unknown",
 			seed: &ServiceBindingStatus{},
 			projection: &labsinternalv1alpha1.ServiceBindingProjection{
 				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
@@ -447,15 +402,22 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 					},
 				},
 			},
-			expected: &duckv1.Status{
-				Conditions: duckv1.Conditions{
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
 					{
-						Type:   ServiceBindingConditionProjectionReady,
-						Status: corev1.ConditionUnknown,
+						Type:               ServiceBindingConditionReady,
+						Status:             metav1.ConditionUnknown,
+						Reason:             "ProjectionReadyUnknown",
+						LastTransitionTime: now,
 					},
 					{
-						Type:   ServiceBindingConditionReady,
-						Status: corev1.ConditionUnknown,
+						Type: ServiceBindingConditionServiceAvailable,
+					},
+					{
+						Type:               ServiceBindingConditionProjectionReady,
+						Status:             metav1.ConditionUnknown,
+						Reason:             "Unknown",
+						LastTransitionTime: now,
 					},
 				},
 			},
@@ -464,8 +426,9 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 	for _, c := range tests {
 		t.Run(c.name, func(t *testing.T) {
 			actual := c.seed.DeepCopy()
-			actual.PropagateServiceBindingProjectionStatus(c.projection)
-			if diff := cmp.Diff(c.expected, &actual.Status, cmpopts.IgnoreTypes(apis.VolatileTime{})); diff != "" {
+			actual.InitializeConditions()
+			actual.PropagateServiceBindingProjectionStatus(c.projection, now)
+			if diff := cmp.Diff(c.expected, actual); diff != "" {
 				t.Errorf("%s: PropagateServiceBindingProjectionStatus() (-expected, +actual): %s", c.name, diff)
 			}
 		})
@@ -473,51 +436,59 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 }
 
 func TestServiceBindingStatus_MarkServiceAvailable(t *testing.T) {
+	now := metav1.Now()
 	expected := &ServiceBindingStatus{
-		Status: duckv1.Status{
-			Conditions: duckv1.Conditions{
-				{
-					Type:   ServiceBindingConditionReady,
-					Status: corev1.ConditionUnknown,
-				},
-				{
-					Type:   ServiceBindingConditionServiceAvailable,
-					Status: corev1.ConditionTrue,
-				},
+		Conditions: []metav1.Condition{
+			{
+				Type:               ServiceBindingConditionReady,
+				Status:             metav1.ConditionUnknown,
+				Reason:             "Unknown",
+				LastTransitionTime: now,
 			},
+			{
+				Type:               ServiceBindingConditionServiceAvailable,
+				Status:             metav1.ConditionTrue,
+				Reason:             "Available",
+				LastTransitionTime: now,
+			},
+			{Type: ServiceBindingConditionProjectionReady},
 		},
 	}
 	actual := &ServiceBindingStatus{}
-	actual.MarkServiceAvailable()
+	actual.InitializeConditions()
+	actual.MarkServiceAvailable(now)
 
-	if diff := cmp.Diff(expected, actual, cmpopts.IgnoreTypes(apis.VolatileTime{})); diff != "" {
+	if diff := cmp.Diff(expected, actual); diff != "" {
 		t.Errorf("MarkServiceAvailable() (-expected, +actual): %s", diff)
 	}
 }
 
 func TestServiceBindingStatus_MarkServiceUnavailable(t *testing.T) {
+	now := metav1.Now()
 	expected := &ServiceBindingStatus{
-		Status: duckv1.Status{
-			Conditions: duckv1.Conditions{
-				{
-					Type:    ServiceBindingConditionReady,
-					Status:  corev1.ConditionFalse,
-					Reason:  "TheReason",
-					Message: "a message",
-				},
-				{
-					Type:    ServiceBindingConditionServiceAvailable,
-					Status:  corev1.ConditionFalse,
-					Reason:  "TheReason",
-					Message: "a message",
-				},
+		Conditions: []metav1.Condition{
+			{
+				Type:               ServiceBindingConditionReady,
+				Status:             metav1.ConditionFalse,
+				Reason:             "ServiceAvailableTheReason",
+				Message:            "the message",
+				LastTransitionTime: now,
 			},
+			{
+				Type:               ServiceBindingConditionServiceAvailable,
+				Status:             metav1.ConditionFalse,
+				Reason:             "TheReason",
+				Message:            "the message",
+				LastTransitionTime: now,
+			},
+			{Type: ServiceBindingConditionProjectionReady},
 		},
 	}
 	actual := &ServiceBindingStatus{}
-	actual.MarkServiceUnavailable("TheReason", "a message")
+	actual.InitializeConditions()
+	actual.MarkServiceUnavailable("TheReason", "the message", now)
 
-	if diff := cmp.Diff(expected, actual, cmpopts.IgnoreTypes(apis.VolatileTime{})); diff != "" {
+	if diff := cmp.Diff(expected, actual); diff != "" {
 		t.Errorf("MarkServiceUnavailable() (-expected, +actual): %s", diff)
 	}
 }
@@ -532,59 +503,44 @@ func TestServiceBindingStatus_InitializeConditions(t *testing.T) {
 			name: "empty",
 			seed: &ServiceBindingStatus{},
 			expected: &ServiceBindingStatus{
-				Status: duckv1.Status{
-					Conditions: duckv1.Conditions{
-						{
-							Type:   ServiceBindingConditionProjectionReady,
-							Status: corev1.ConditionUnknown,
-						},
-						{
-							Type:   ServiceBindingConditionReady,
-							Status: corev1.ConditionUnknown,
-						},
-						{
-							Type:   ServiceBindingConditionServiceAvailable,
-							Status: corev1.ConditionUnknown,
-						},
-					},
+				Conditions: []metav1.Condition{
+					{Type: ServiceBindingConditionReady},
+					{Type: ServiceBindingConditionServiceAvailable},
+					{Type: ServiceBindingConditionProjectionReady},
 				},
 			},
 		},
 		{
 			name: "preserve",
 			seed: &ServiceBindingStatus{
-				Status: duckv1.Status{
-					Conditions: duckv1.Conditions{
-						{
-							Type:   ServiceBindingConditionReady,
-							Status: corev1.ConditionTrue,
-						},
-						{
-							Type:   ServiceBindingConditionProjectionReady,
-							Status: corev1.ConditionTrue,
-						},
-						{
-							Type:   ServiceBindingConditionServiceAvailable,
-							Status: corev1.ConditionTrue,
-						},
+				Conditions: []metav1.Condition{
+					{
+						Type:   ServiceBindingConditionProjectionReady,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:   ServiceBindingConditionReady,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:   ServiceBindingConditionServiceAvailable,
+						Status: metav1.ConditionTrue,
 					},
 				},
 			},
 			expected: &ServiceBindingStatus{
-				Status: duckv1.Status{
-					Conditions: duckv1.Conditions{
-						{
-							Type:   ServiceBindingConditionReady,
-							Status: corev1.ConditionTrue,
-						},
-						{
-							Type:   ServiceBindingConditionProjectionReady,
-							Status: corev1.ConditionTrue,
-						},
-						{
-							Type:   ServiceBindingConditionServiceAvailable,
-							Status: corev1.ConditionTrue,
-						},
+				Conditions: []metav1.Condition{
+					{
+						Type:   ServiceBindingConditionReady,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:   ServiceBindingConditionServiceAvailable,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:   ServiceBindingConditionProjectionReady,
+						Status: metav1.ConditionTrue,
 					},
 				},
 			},
@@ -594,8 +550,229 @@ func TestServiceBindingStatus_InitializeConditions(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			actual := c.seed.DeepCopy()
 			actual.InitializeConditions()
-			if diff := cmp.Diff(c.expected, actual, cmpopts.IgnoreTypes(apis.VolatileTime{})); diff != "" {
+			if diff := cmp.Diff(c.expected, actual, cmpopts.IgnoreTypes(metav1.Time{})); diff != "" {
 				t.Errorf("%s: InitializeConditions() (-expected, +actual): %s", c.name, diff)
+			}
+		})
+	}
+}
+
+func TestServiceBindingStatus_aggregateReadyCondition(t *testing.T) {
+	now := metav1.Now()
+	tests := []struct {
+		name     string
+		seed     *ServiceBindingStatus
+		expected *ServiceBindingStatus
+	}{
+		{
+			name: "empty",
+			seed: &ServiceBindingStatus{},
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               ServiceBindingConditionReady,
+						Status:             "Unknown",
+						Reason:             "Unknown",
+						LastTransitionTime: now,
+					},
+					{Type: ServiceBindingConditionServiceAvailable},
+					{Type: ServiceBindingConditionProjectionReady},
+				},
+			},
+		},
+		{
+			name: "Ready True",
+			seed: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:   ServiceBindingConditionServiceAvailable,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:   ServiceBindingConditionProjectionReady,
+						Status: metav1.ConditionTrue,
+					},
+				},
+			},
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               ServiceBindingConditionReady,
+						Status:             metav1.ConditionTrue,
+						Reason:             "Ready",
+						LastTransitionTime: now,
+					},
+					{
+						Type:   ServiceBindingConditionServiceAvailable,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:   ServiceBindingConditionProjectionReady,
+						Status: metav1.ConditionTrue,
+					},
+				},
+			},
+		},
+		{
+			name: "ServiceAvailable False",
+			seed: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:    ServiceBindingConditionServiceAvailable,
+						Status:  metav1.ConditionFalse,
+						Reason:  "TheReason",
+						Message: "the message",
+					},
+					{
+						Type:   ServiceBindingConditionProjectionReady,
+						Status: metav1.ConditionTrue,
+					},
+				},
+			},
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               ServiceBindingConditionReady,
+						Status:             metav1.ConditionFalse,
+						Reason:             "ServiceAvailableTheReason",
+						Message:            "the message",
+						LastTransitionTime: now,
+					},
+					{
+						Type:    ServiceBindingConditionServiceAvailable,
+						Status:  metav1.ConditionFalse,
+						Reason:  "TheReason",
+						Message: "the message",
+					},
+					{
+						Type:   ServiceBindingConditionProjectionReady,
+						Status: metav1.ConditionTrue,
+					},
+				},
+			},
+		},
+		{
+			name: "ServiceAvailable Unknown",
+			seed: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:    ServiceBindingConditionServiceAvailable,
+						Status:  metav1.ConditionUnknown,
+						Reason:  "TheReason",
+						Message: "the message",
+					},
+					{
+						Type:   ServiceBindingConditionProjectionReady,
+						Status: metav1.ConditionTrue,
+					},
+				},
+			},
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               ServiceBindingConditionReady,
+						Status:             metav1.ConditionUnknown,
+						Reason:             "ServiceAvailableTheReason",
+						Message:            "the message",
+						LastTransitionTime: now,
+					},
+					{
+						Type:    ServiceBindingConditionServiceAvailable,
+						Status:  metav1.ConditionUnknown,
+						Reason:  "TheReason",
+						Message: "the message",
+					},
+					{
+						Type:   ServiceBindingConditionProjectionReady,
+						Status: metav1.ConditionTrue,
+					},
+				},
+			},
+		},
+		{
+			name: "ProjectionReady False",
+			seed: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:   ServiceBindingConditionServiceAvailable,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:    ServiceBindingConditionProjectionReady,
+						Status:  metav1.ConditionFalse,
+						Reason:  "TheReason",
+						Message: "the message",
+					},
+				},
+			},
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               ServiceBindingConditionReady,
+						Status:             metav1.ConditionFalse,
+						Reason:             "ProjectionReadyTheReason",
+						Message:            "the message",
+						LastTransitionTime: now,
+					},
+					{
+						Type:   ServiceBindingConditionServiceAvailable,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:    ServiceBindingConditionProjectionReady,
+						Status:  metav1.ConditionFalse,
+						Reason:  "TheReason",
+						Message: "the message",
+					},
+				},
+			},
+		},
+		{
+			name: "ProjectionReady Unknown",
+			seed: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:   ServiceBindingConditionServiceAvailable,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:    ServiceBindingConditionProjectionReady,
+						Status:  metav1.ConditionUnknown,
+						Reason:  "TheReason",
+						Message: "the message",
+					},
+				},
+			},
+			expected: &ServiceBindingStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               ServiceBindingConditionReady,
+						Status:             metav1.ConditionUnknown,
+						Reason:             "ProjectionReadyTheReason",
+						Message:            "the message",
+						LastTransitionTime: now,
+					},
+					{
+						Type:   ServiceBindingConditionServiceAvailable,
+						Status: metav1.ConditionTrue,
+					},
+					{
+						Type:    ServiceBindingConditionProjectionReady,
+						Status:  metav1.ConditionUnknown,
+						Reason:  "TheReason",
+						Message: "the message",
+					},
+				},
+			},
+		},
+	}
+	for _, c := range tests {
+		t.Run(c.name, func(t *testing.T) {
+			actual := c.seed.DeepCopy()
+			actual.InitializeConditions()
+			actual.aggregateReadyCondition(now)
+			if diff := cmp.Diff(c.expected, actual); diff != "" {
+				t.Errorf("%s: aggregateReadyCondition() (-expected, +actual): %s", c.name, diff)
 			}
 		})
 	}

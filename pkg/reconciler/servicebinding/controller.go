@@ -14,6 +14,7 @@ import (
 	servicebindinginformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha2/servicebinding"
 	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha2/servicebinding"
 	"github.com/vmware-labs/service-bindings/pkg/resolver"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
@@ -34,6 +35,7 @@ func NewController(
 	r := &Reconciler{
 		bindingclient:                  bindingclient.Get(ctx),
 		serviceBindingProjectionLister: serviceBindingProjectionInformer.Lister(),
+		now:                            metav1.Now,
 	}
 	impl := servicebindingreconciler.NewImpl(ctx, r)
 	r.resolver = resolver.NewServiceableResolver(ctx, impl.EnqueueKey)

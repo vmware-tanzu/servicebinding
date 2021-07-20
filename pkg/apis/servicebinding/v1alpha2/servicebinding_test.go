@@ -182,32 +182,6 @@ func TestServiceBinding_Validate(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name: "valid, mappings",
-			seed: &ServiceBinding{
-				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
-						Reference: tracker.Reference{
-							APIVersion: "apps/v1",
-							Kind:       "Deployment",
-							Name:       "my-app",
-						},
-					},
-					Service: &tracker.Reference{
-						APIVersion: "bindings.labs.vmware.com/v1alpha1",
-						Kind:       "ProvisionedService",
-						Name:       "my-service",
-					},
-					Mappings: []Mapping{
-						{
-							Name:  "my-key",
-							Value: "my value",
-						},
-					},
-				},
-			},
-			expected: nil,
-		},
-		{
 			name: "disallow namespaces",
 			seed: &ServiceBinding{
 				Spec: ServiceBindingSpec{
@@ -284,60 +258,6 @@ func TestServiceBinding_Validate(t *testing.T) {
 				apis.ErrMultipleOneOf(
 					"spec.env[0].name",
 					"spec.env[1].name",
-				),
-			),
-		},
-		{
-			name: "empty mapping",
-			seed: &ServiceBinding{
-				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
-						Reference: tracker.Reference{
-							APIVersion: "apps/v1",
-							Kind:       "Deployment",
-							Name:       "my-app",
-						},
-					},
-					Service: &tracker.Reference{
-						APIVersion: "bindings.labs.vmware.com/v1alpha1",
-						Kind:       "ProvisionedService",
-						Name:       "my-service",
-					},
-					Mappings: []Mapping{
-						{},
-					},
-				},
-			},
-			expected: (&apis.FieldError{}).Also(
-				apis.ErrMissingField("spec.mappings[0].name"),
-			),
-		},
-		{
-			name: "duplicate mappings",
-			seed: &ServiceBinding{
-				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
-						Reference: tracker.Reference{
-							APIVersion: "apps/v1",
-							Kind:       "Deployment",
-							Name:       "my-app",
-						},
-					},
-					Service: &tracker.Reference{
-						APIVersion: "bindings.labs.vmware.com/v1alpha1",
-						Kind:       "ProvisionedService",
-						Name:       "my-service",
-					},
-					Mappings: []Mapping{
-						{Name: "my-mapping", Value: "value-1"},
-						{Name: "my-mapping", Value: "value-2"},
-					},
-				},
-			},
-			expected: (&apis.FieldError{}).Also(
-				apis.ErrMultipleOneOf(
-					"spec.mappings[0].name",
-					"spec.mappings[1].name",
 				),
 			),
 		},

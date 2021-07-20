@@ -5,20 +5,23 @@
 apiVersion: service.binding/v1alpha2
 kind: ServiceBinding
 metadata:
-  name: mappings
+  name: overridden-type-provider
+  labels:
+    sample: overridden-type-provider
 spec:
+  type: overridden-type
+  provider: overridden-provider
   application:
     apiVersion: batch/v1
     kind: Job
-    name: mappings
+    name: overridden-type-provider
   # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
   service:
     apiVersion: v1
     kind: Secret
-    name: mappings
-  mappings:
-  - name: uri
-    value: "https://{{ urlquery .username }}:{{ urlquery .password }}@{{ .host }}"
+    name: overridden-type-provider
   env:
-  - name: GAME_SERVER
-    key: uri
+  - name: BOUND_TYPE
+    key: type
+  - name: BOUND_PROVIDER
+    key: provider

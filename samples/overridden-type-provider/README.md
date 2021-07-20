@@ -1,7 +1,7 @@
-# Multi-bindings
+# Overridden Type and Provider
 
-Often an application needs to consume more than one service.
-In that case, multiple service binding resources can each bind a distinct service to the same application.
+When projected into the application workload, the binding must contain a `type` entry and should contain a `provider` entry.
+If the Secret doesn't contain a type or provider, or contains the wrong values, they can be overridden for the binding.
 
 In this sample, we'll use a [Kubernetes Job][kubernetes-jobs] to dump the environment to the logs and exit.
 
@@ -17,13 +17,13 @@ We need to make sure the `ServiceBinding`s are fully configured before the appli
 Apply the `ProvisionedService` and `ServiceBinding`:
 
 ```sh
-kubectl apply -f ./samples/multi-binding/service.yaml -f ./samples/multi-binding/service-binding.yaml
+kubectl apply -f ./samples/overridden-type-provider/service.yaml -f ./samples/overridden-type-provider/service-binding.yaml
 ```
 
 Check on the status of the `ServiceBinding`:
 
 ```sh
-kubectl get servicebinding -l multi-binding=true -oyaml
+kubectl get servicebinding -l sample=overridden-type-provider -oyaml
 ```
 
 For each service binding, the `ServiceAvailable` condition should be `True` and the `ProjectionReady` condition `False`.
@@ -32,12 +32,12 @@ For each service binding, the `ServiceAvailable` condition should be `True` and 
 ...
   conditions:
   - lastTransitionTime: "2020-08-03T15:25:45Z"
-    message: jobs.batch "multi-binding" not found
+    message: jobs.batch "overridden-type-provider" not found
     reason: ApplicationMissing
     status: "False"
     type: ProjectionReady
   - lastTransitionTime: "2020-08-03T15:25:45Z"
-    message: jobs.batch "multi-binding" not found
+    message: jobs.batch "overridden-type-provider" not found
     reason: ApplicationMissing
     status: "False"
     type: Ready
@@ -49,7 +49,7 @@ For each service binding, the `ServiceAvailable` condition should be `True` and 
 Create the application `Job`:
 
 ```sh
-kubectl apply -f ./samples/multi-binding/application.yaml
+kubectl apply -f ./samples/overridden-type-provider/application.yaml
 ```
 
 ## Understand
@@ -57,15 +57,15 @@ kubectl apply -f ./samples/multi-binding/application.yaml
 Each `ServiceBinding` resource defines an environment variable that is projected into the application in addition to the binding volume mount.
 
 ```sh
-kubectl describe job multi-binding
+kubectl describe job overridden-type-provider
 ```
 
 ```
 ...
 Environment:
   SERVICE_BINDING_ROOT:  /bindings
-  MULTI_BINDING_1:       <set to the key 'number' in secret 'multi-binding-1'>  Optional: false
-  MULTI_BINDING_2:       <set to the key 'number' in secret 'multi-binding-2'>  Optional: false
+  BOUND_PROVIDER:         (v1:metadata.annotations['internal.bindings.labs.vmware.com/projection-717760b0e7853de4a23bffadf9d02d6109c6ad2e-provider'])
+  BOUND_TYPE:             (v1:metadata.annotations['internal.bindings.labs.vmware.com/projection-717760b0e7853de4a23bffadf9d02d6109c6ad2e-type'])
 ...
 ```
 
@@ -75,20 +75,20 @@ We should see our injected environment variable as well as other variable common
 Inspect the logs from the job:
 
 ```sh
-kubectl logs -l job-name=multi-binding
+kubectl logs -l job-name=overridden-type-provider
 ```
 
 ```
 ...
 SERVICE_BINDING_ROOT=/bindings
-MULTI_BINDING_1=1
-MULTI_BINDING_2=2
+BOUND_PROVIDER=overridden-provider
+BOUND_TYPE=overridden-type
 ...
 ```
 
 ## Play
 
-Try adding yet another binding targeting the same Job.
+Try changing the `.spec.type` or `.spec.provider` fields on the ServiceBinding, or return them to the original values (empty string).
 Remember that Jobs are immutable after they are created, so you'll need to delete and recreate the Job to see the additional binding.
 
 Alternatively, define a `Deployment` and update each binding to target the new Deployment.

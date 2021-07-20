@@ -29,6 +29,8 @@ func MakeServiceBindingProjection(binding *servicebindingv1alpha2.ServiceBinding
 		},
 		Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 			Name:        binding.Spec.Name,
+			Type:        binding.Spec.Type,
+			Provider:    binding.Spec.Provider,
 			Binding:     *binding.Status.Binding,
 			Application: *binding.Spec.Application,
 			Env:         binding.Spec.Env,

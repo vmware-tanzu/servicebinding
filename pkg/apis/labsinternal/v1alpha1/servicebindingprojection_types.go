@@ -51,6 +51,14 @@ var (
 type ServiceBindingProjectionSpec struct {
 	// Name of the service binding on disk, defaults to this resource's name
 	Name string `json:"name"`
+	// Type of the provisioned service. The value is exposed directly as the
+	// `type` in the mounted binding
+	// +optional
+	Type string `json:"type,omitempty"`
+	// Provider of the provisioned service. The value is exposed directly as the
+	// `provider` in the mounted binding
+	// +optional
+	Provider string `json:"provider,omitempty"`
 
 	// Binding reference to the service binding's projected secret
 	Binding corev1.LocalObjectReference `json:"binding"`

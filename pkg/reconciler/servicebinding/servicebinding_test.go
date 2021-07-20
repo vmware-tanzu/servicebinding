@@ -24,7 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientgotesting "k8s.io/client-go/testing"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
@@ -35,7 +34,6 @@ import (
 	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha2/serviceable/fake"
 	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection/fake"
 	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha2/servicebinding/fake"
-	_ "knative.dev/pkg/client/injection/kube/informers/core/v1/secret/fake"
 	_ "knative.dev/pkg/injection/clients/dynamicclient/fake"
 
 	. "github.com/vmware-labs/service-bindings/pkg/reconciler/testing"
@@ -57,16 +55,7 @@ func TestReconcile(t *testing.T) {
 	name := "my-binding"
 	key := fmt.Sprintf("%s/%s", namespace, name)
 	now := metav1.NewTime(time.Now())
-	serviceSecret := corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: namespace,
-			Name:      "my-secret",
-		},
-		Data: map[string][]byte{
-			"username": []byte("root"),
-			"password": []byte("password!"),
-		},
-	}
+	secretName := "my-secret"
 	provisionedService := &labsv1alpha1.ProvisionedService{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
@@ -74,7 +63,7 @@ func TestReconcile(t *testing.T) {
 		},
 		Status: labsv1alpha1.ProvisionedServiceStatus{
 			Binding: corev1.LocalObjectReference{
-				Name: serviceSecret.Name,
+				Name: secretName,
 			},
 		},
 	}
@@ -115,7 +104,6 @@ func TestReconcile(t *testing.T) {
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			serviceSecret.DeepCopy(),
 			&servicebindingv1alpha2.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
@@ -129,7 +117,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 					Status: duckv1.Status{
 						ObservedGeneration: 1,
@@ -149,26 +137,6 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-			},
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Type: corev1.SecretTypeOpaque,
-				Data: serviceSecret.Data,
 			},
 			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
@@ -191,7 +159,7 @@ func TestReconcile(t *testing.T) {
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 				},
 				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
@@ -210,11 +178,10 @@ func TestReconcile(t *testing.T) {
 			Eventf(corev1.EventTypeNormal, "Reconciled", "ServiceBinding reconciled: %q", key),
 		},
 	}, {
-		Name: "creates projected secret and servicebindingprojection",
+		Name: "creates servicebindingprojection",
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			serviceSecret.DeepCopy(),
 			&servicebindingv1alpha2.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
@@ -228,7 +195,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 				},
 			},
@@ -255,29 +222,9 @@ func TestReconcile(t *testing.T) {
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 				},
-			},
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Type: corev1.SecretTypeOpaque,
-				Data: serviceSecret.Data,
 			},
 		},
 		WantStatusUpdates: []clientgotesting.UpdateActionImpl{{
@@ -294,7 +241,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 					Status: duckv1.Status{
 						ObservedGeneration: 1,
@@ -317,16 +264,14 @@ func TestReconcile(t *testing.T) {
 			},
 		}},
 		WantEvents: []string{
-			Eventf(corev1.EventTypeNormal, "Created", "Created projected Secret %q", name+"-projection"),
 			Eventf(corev1.EventTypeNormal, "Created", "Created ServiceBindingProjection %q", name),
 			Eventf(corev1.EventTypeNormal, "Reconciled", "ServiceBinding reconciled: %q", key),
 		},
 	}, {
-		Name: "updates projected secret and servicebindingprojection",
+		Name: "updates servicebindingprojection",
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			serviceSecret.DeepCopy(),
 			&servicebindingv1alpha2.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
@@ -340,7 +285,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 				},
 			},
@@ -362,26 +307,9 @@ func TestReconcile(t *testing.T) {
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 				},
-			},
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Type: corev1.SecretTypeOpaque,
-				Data: serviceSecret.Data,
 			},
 		},
 		WantUpdates: []clientgotesting.UpdateActionImpl{
@@ -407,31 +335,9 @@ func TestReconcile(t *testing.T) {
 						Name:        name,
 						Application: applicationRef,
 						Binding: corev1.LocalObjectReference{
-							Name: name + "-projection",
+							Name: secretName,
 						},
 					},
-				},
-			},
-			{
-				Object: &corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Namespace: namespace,
-						Name:      name + "-projection",
-						Labels: map[string]string{
-							"service.binding/servicebinding": "my-binding",
-						},
-						OwnerReferences: []metav1.OwnerReference{
-							{
-								APIVersion:         "service.binding/v1alpha2",
-								Kind:               "ServiceBinding",
-								Name:               name,
-								BlockOwnerDeletion: ptr.Bool(true),
-								Controller:         ptr.Bool(true),
-							},
-						},
-					},
-					Type: corev1.SecretTypeOpaque,
-					Data: serviceSecret.Data,
 				},
 			},
 		},
@@ -449,7 +355,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 					Status: duckv1.Status{
 						ObservedGeneration: 1,
@@ -491,7 +397,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 					Status: duckv1.Status{
 						ObservedGeneration: 1,
@@ -511,26 +417,6 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-			},
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Type: corev1.SecretTypeOpaque,
-				Data: serviceSecret.Data,
 			},
 			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
@@ -553,7 +439,7 @@ func TestReconcile(t *testing.T) {
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 				},
 				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
@@ -573,117 +459,10 @@ func TestReconcile(t *testing.T) {
 			Eventf(corev1.EventTypeWarning, "InternalError", "failed to get resource for bindings.labs.vmware.com/v1alpha1, Resource=provisionedservices: provisionedservices.bindings.labs.vmware.com %q not found", serviceRef.Name),
 		},
 	}, {
-		Name: "error creating projected secret",
-		Key:  key,
-		Objects: []runtime.Object{
-			provisionedService.DeepCopy(),
-			serviceSecret.DeepCopy(),
-			&servicebindingv1alpha2.ServiceBinding{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace:  namespace,
-					Name:       name,
-					Generation: 1,
-				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
-				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
-					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
-					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
-						},
-					},
-				},
-			},
-			&labsinternalv1alpha1.ServiceBindingProjection{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name,
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
-					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
-					},
-				},
-				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
-					Status: duckv1.Status{
-						Conditions: duckv1.Conditions{
-							{
-								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-						},
-					},
-				},
-			},
-		},
-		WithReactors: []clientgotesting.ReactionFunc{
-			InduceFailure("create", "secrets"),
-		},
-		WantErr: true,
-		WantCreates: []runtime.Object{
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Type: corev1.SecretTypeOpaque,
-				Data: serviceSecret.Data,
-			},
-		},
-		WantEvents: []string{
-			Eventf(corev1.EventTypeWarning, "CreationFailed", "Failed to create projected Secret %q: inducing failure for create secrets", name+"-projection"),
-			Eventf(corev1.EventTypeWarning, "InternalError", "failed to create projected Secret: inducing failure for create secrets"),
-		},
-	}, {
 		Name: "error creating servicebindingprojection",
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			serviceSecret.DeepCopy(),
 			&servicebindingv1alpha2.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
@@ -697,7 +476,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 					Status: duckv1.Status{
 						ObservedGeneration: 1,
@@ -717,26 +496,6 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 				},
-			},
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Type: corev1.SecretTypeOpaque,
-				Data: serviceSecret.Data,
 			},
 		},
 		WithReactors: []clientgotesting.ReactionFunc{
@@ -765,7 +524,7 @@ func TestReconcile(t *testing.T) {
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 				},
 			},
@@ -775,11 +534,10 @@ func TestReconcile(t *testing.T) {
 			Eventf(corev1.EventTypeWarning, "InternalError", "failed to create ServiceBindingProjection: inducing failure for create servicebindingprojections"),
 		},
 	}, {
-		Name: "error updating projected secret",
+		Name: "error updating servicebindingprojection",
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			serviceSecret.DeepCopy(),
 			&servicebindingv1alpha2.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
@@ -793,7 +551,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 					Status: duckv1.Status{
 						ObservedGeneration: 1,
@@ -814,150 +572,6 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 			},
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Type: corev1.SecretTypeOpaque,
-				Data: serviceSecret.Data,
-			},
-			&labsinternalv1alpha1.ServiceBindingProjection{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name,
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
-					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
-					},
-				},
-				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
-					Status: duckv1.Status{
-						Conditions: duckv1.Conditions{
-							{
-								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-						},
-					},
-				},
-			},
-		},
-		WithReactors: []clientgotesting.ReactionFunc{
-			InduceFailure("update", "secrets"),
-		},
-		WantErr: true,
-		WantUpdates: []clientgotesting.UpdateActionImpl{
-			{
-				Object: &corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Namespace: namespace,
-						Name:      name + "-projection",
-						Labels: map[string]string{
-							"service.binding/servicebinding": "my-binding",
-						},
-						OwnerReferences: []metav1.OwnerReference{
-							{
-								APIVersion:         "service.binding/v1alpha2",
-								Kind:               "ServiceBinding",
-								Name:               name,
-								BlockOwnerDeletion: ptr.Bool(true),
-								Controller:         ptr.Bool(true),
-							},
-						},
-					},
-					Type: corev1.SecretTypeOpaque,
-					Data: serviceSecret.Data,
-				},
-			},
-		},
-		WantEvents: []string{
-			Eventf(corev1.EventTypeWarning, "InternalError", "failed to reconcile projected Secret: inducing failure for update secrets"),
-		},
-	}, {
-		Name: "error updating servicebidningprojection",
-		Key:  key,
-		Objects: []runtime.Object{
-			provisionedService.DeepCopy(),
-			serviceSecret.DeepCopy(),
-			&servicebindingv1alpha2.ServiceBinding{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace:  namespace,
-					Name:       name,
-					Generation: 1,
-				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
-				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
-					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
-					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
-						},
-					},
-				},
-			},
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Type: corev1.SecretTypeOpaque,
-				Data: serviceSecret.Data,
-			},
 			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
@@ -976,7 +590,7 @@ func TestReconcile(t *testing.T) {
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 				},
 				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
@@ -1018,7 +632,7 @@ func TestReconcile(t *testing.T) {
 						Name:        name,
 						Application: applicationRef,
 						Binding: corev1.LocalObjectReference{
-							Name: name + "-projection",
+							Name: secretName,
 						},
 					},
 					Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
@@ -1038,98 +652,10 @@ func TestReconcile(t *testing.T) {
 			Eventf(corev1.EventTypeWarning, "InternalError", "failed to reconcile ServiceBindingProjection: inducing failure for update servicebindingprojections"),
 		},
 	}, {
-		Name: "error projected secret is not owned by us",
-		Key:  key,
-		Objects: []runtime.Object{
-			provisionedService.DeepCopy(),
-			serviceSecret.DeepCopy(),
-			&servicebindingv1alpha2.ServiceBinding{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace:  namespace,
-					Name:       name,
-					Generation: 1,
-				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
-				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
-					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
-					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
-						},
-					},
-				},
-			},
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-				},
-				Data: serviceSecret.Data,
-			},
-			&labsinternalv1alpha1.ServiceBindingProjection{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name,
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
-					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
-					},
-				},
-				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
-					Status: duckv1.Status{
-						Conditions: duckv1.Conditions{
-							{
-								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-						},
-					},
-				},
-			},
-		},
-		WantErr: true,
-		WantEvents: []string{
-			Eventf(corev1.EventTypeWarning, "InternalError", "ServiceBinding %q does not own projected Secret: %q", name, name+"-projection"),
-		},
-	}, {
 		Name: "error servicebindingprojection is not owned by us",
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			serviceSecret.DeepCopy(),
 			&servicebindingv1alpha2.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
@@ -1143,7 +669,7 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 					Status: duckv1.Status{
 						ObservedGeneration: 1,
@@ -1164,26 +690,6 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 			},
-			&corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      name + "-projection",
-					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         "service.binding/v1alpha2",
-							Kind:               "ServiceBinding",
-							Name:               name,
-							BlockOwnerDeletion: ptr.Bool(true),
-							Controller:         ptr.Bool(true),
-						},
-					},
-				},
-				Type: corev1.SecretTypeOpaque,
-				Data: serviceSecret.Data,
-			},
 			&labsinternalv1alpha1.ServiceBindingProjection{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
@@ -1193,7 +699,7 @@ func TestReconcile(t *testing.T) {
 					Name:        name,
 					Application: applicationRef,
 					Binding: corev1.LocalObjectReference{
-						Name: name + "-projection",
+						Name: secretName,
 					},
 				},
 				Status: labsinternalv1alpha1.ServiceBindingProjectionStatus{
@@ -1218,10 +724,8 @@ func TestReconcile(t *testing.T) {
 		ctx = serviceable.WithDuck(ctx)
 
 		r := &Reconciler{
-			kubeclient:                     kubeclient.Get(ctx),
 			bindingclient:                  servicebindingsclient.Get(ctx),
 			resolver:                       resolver.NewServiceableResolver(ctx, func(types.NamespacedName) {}),
-			secretLister:                   listers.GetSecretLister(),
 			serviceBindingProjectionLister: listers.GetServiceBindingProjectionLister(),
 			tracker:                        GetTracker(ctx),
 		}

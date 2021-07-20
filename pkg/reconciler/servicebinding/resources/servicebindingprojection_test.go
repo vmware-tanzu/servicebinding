@@ -36,7 +36,9 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 					},
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name: "my-binding",
+					Name:     "my-binding",
+					Type:     "my-type",
+					Provider: "my-provider",
 					Application: &servicebindingv1alpha2.ApplicationReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
@@ -78,7 +80,9 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 					},
 				},
 				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name: "my-binding",
+					Name:     "my-binding",
+					Type:     "my-type",
+					Provider: "my-provider",
 					Application: labsinternalv1alpha1.ApplicationReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",

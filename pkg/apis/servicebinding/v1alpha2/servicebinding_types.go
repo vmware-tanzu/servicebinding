@@ -70,8 +70,20 @@ type ApplicationReference = labsinternalv1alpha1.ApplicationReference
 type EnvVar = labsinternalv1alpha1.EnvVar
 
 type ServiceBindingStatus struct {
-	duckv1.Status `json:",inline"`
-	Binding       *corev1.LocalObjectReference `json:"binding,omitempty"`
+	// ObservedGeneration is the 'Generation' of the ServiceBinding that
+	// was last processed by the controller.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// Conditions the latest available observations of a ServiceBinding's current state.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// Binding is a reference to the Secret being bound.
+	// +optional
+	Binding *corev1.LocalObjectReference `json:"binding,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -145,12 +157,6 @@ func (b *ServiceBinding) Validate(ctx context.Context) (errs *apis.FieldError) {
 				apis.ErrMultipleOneOf(paths...),
 			)
 		}
-	}
-
-	if b.Status.Annotations != nil {
-		errs = errs.Also(
-			apis.ErrDisallowedFields("status.annotations"),
-		)
 	}
 
 	return errs

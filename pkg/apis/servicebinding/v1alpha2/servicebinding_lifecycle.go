@@ -6,7 +6,9 @@ SPDX-License-Identifier: Apache-2.0
 package v1alpha2
 
 import (
-	corev1 "k8s.io/api/core/v1"
+	"fmt"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
@@ -14,51 +16,120 @@ import (
 )
 
 const (
-	ServiceBindingConditionReady            = apis.ConditionReady
-	ServiceBindingConditionProjectionReady  = "ProjectionReady"
+	ServiceBindingConditionReady            = "Ready"
 	ServiceBindingConditionServiceAvailable = "ServiceAvailable"
+	ServiceBindingConditionProjectionReady  = "ProjectionReady"
 )
-
-var sbCondSet = apis.NewLivingConditionSet(
-	ServiceBindingConditionProjectionReady,
-	ServiceBindingConditionServiceAvailable,
-)
-
-func (b *ServiceBinding) GetStatus() *duckv1.Status {
-	return &b.Status.Status
-}
-
-func (b *ServiceBinding) GetConditionSet() apis.ConditionSet {
-	return sbCondSet
-}
 
 func (bs *ServiceBindingStatus) InitializeConditions() {
-	sbCondSet.Manage(bs).InitializeConditions()
+	ready := metav1.Condition{Type: ServiceBindingConditionReady}
+	serviceAvailable := metav1.Condition{Type: ServiceBindingConditionServiceAvailable}
+	projectionReady := metav1.Condition{Type: ServiceBindingConditionProjectionReady}
+	for _, c := range bs.Conditions {
+		switch c.Type {
+		case ServiceBindingConditionReady:
+			ready = c
+		case ServiceBindingConditionServiceAvailable:
+			serviceAvailable = c
+		case ServiceBindingConditionProjectionReady:
+			projectionReady = c
+		}
+	}
+	bs.Conditions = []metav1.Condition{ready, serviceAvailable, projectionReady}
 }
 
-func (bs *ServiceBindingStatus) PropagateServiceBindingProjectionStatus(bp *labsinternalv1alpha1.ServiceBindingProjection) {
+func (bs *ServiceBindingStatus) MarkServiceAvailable(now metav1.Time) {
+	if bs.Conditions[1].Status != metav1.ConditionTrue {
+		bs.Conditions[1].LastTransitionTime = now
+	}
+	bs.Conditions[1].Status = metav1.ConditionTrue
+	bs.Conditions[1].Reason = "Available"
+	bs.Conditions[1].Message = ""
+
+	bs.aggregateReadyCondition(now)
+}
+
+func (bs *ServiceBindingStatus) MarkServiceUnavailable(reason string, message string, now metav1.Time) {
+	if bs.Conditions[1].Status != metav1.ConditionFalse {
+		bs.Conditions[1].LastTransitionTime = now
+	}
+	bs.Conditions[1].Status = metav1.ConditionFalse
+	bs.Conditions[1].Reason = reason
+	bs.Conditions[1].Message = message
+
+	bs.aggregateReadyCondition(now)
+}
+
+func (bs *ServiceBindingStatus) PropagateServiceBindingProjectionStatus(bp *labsinternalv1alpha1.ServiceBindingProjection, now metav1.Time) {
 	if bp == nil {
 		return
 	}
 	sbpready := bp.Status.GetCondition(labsinternalv1alpha1.ServiceBindingProjectionConditionReady)
 	if sbpready == nil {
-		return
+		sbpready = &apis.Condition{}
 	}
-	switch sbpready.Status {
-	case corev1.ConditionTrue:
-		sbCondSet.Manage(bs).MarkTrueWithReason(ServiceBindingConditionProjectionReady, sbpready.Reason, sbpready.Message)
-	case corev1.ConditionFalse:
-		sbCondSet.Manage(bs).MarkFalse(ServiceBindingConditionProjectionReady, sbpready.Reason, sbpready.Message)
-	default:
-		sbCondSet.Manage(bs).MarkUnknown(ServiceBindingConditionProjectionReady, sbpready.Reason, sbpready.Message)
+
+	newStatus := metav1.ConditionStatus(sbpready.Status)
+	if newStatus == "" {
+		newStatus = metav1.ConditionUnknown
+	}
+
+	if bs.Conditions[2].Status != newStatus {
+		bs.Conditions[2].LastTransitionTime = now
+	}
+	bs.Conditions[2].Status = newStatus
+	if sbpready.Reason != "" {
+		bs.Conditions[2].Reason = sbpready.Reason
+	} else if bs.Conditions[2].Status == metav1.ConditionTrue {
+		bs.Conditions[2].Reason = "Projected"
+	} else {
+		bs.Conditions[2].Reason = "Unknown"
+	}
+	bs.Conditions[2].Message = sbpready.Message
+
+	bs.aggregateReadyCondition(now)
+}
+
+func (bs *ServiceBindingStatus) aggregateReadyCondition(now metav1.Time) {
+	currentStatus := bs.Conditions[0].Status
+	if bs.Conditions[1].Status == metav1.ConditionTrue && bs.Conditions[2].Status == metav1.ConditionTrue {
+		bs.Conditions[0].Status = metav1.ConditionTrue
+		bs.Conditions[0].Reason = "Ready"
+		bs.Conditions[0].Message = ""
+	} else if bs.Conditions[1].Status == metav1.ConditionFalse {
+		bs.Conditions[0].Status = metav1.ConditionFalse
+		bs.Conditions[0].Reason = fmt.Sprintf("%s%s", ServiceBindingConditionServiceAvailable, bs.Conditions[1].Reason)
+		bs.Conditions[0].Message = bs.Conditions[1].Message
+	} else if bs.Conditions[2].Status == metav1.ConditionFalse {
+		bs.Conditions[0].Status = metav1.ConditionFalse
+		bs.Conditions[0].Reason = fmt.Sprintf("%s%s", ServiceBindingConditionProjectionReady, bs.Conditions[2].Reason)
+		bs.Conditions[0].Message = bs.Conditions[2].Message
+	} else if bs.Conditions[1].Status == metav1.ConditionUnknown {
+		bs.Conditions[0].Status = metav1.ConditionUnknown
+		bs.Conditions[0].Reason = fmt.Sprintf("%s%s", ServiceBindingConditionServiceAvailable, bs.Conditions[1].Reason)
+		bs.Conditions[0].Message = bs.Conditions[1].Message
+	} else if bs.Conditions[2].Status == metav1.ConditionUnknown {
+		bs.Conditions[0].Status = metav1.ConditionUnknown
+		bs.Conditions[0].Reason = fmt.Sprintf("%s%s", ServiceBindingConditionProjectionReady, bs.Conditions[2].Reason)
+		bs.Conditions[0].Message = bs.Conditions[2].Message
+	} else {
+		bs.Conditions[0].Status = metav1.ConditionUnknown
+		bs.Conditions[0].Reason = "Unknown"
+		bs.Conditions[0].Message = ""
+	}
+
+	// update time when the status changes
+	if bs.Conditions[0].Status != currentStatus {
+		bs.Conditions[0].LastTransitionTime = now
 	}
 }
 
-func (bs *ServiceBindingStatus) MarkServiceAvailable() {
-	sbCondSet.Manage(bs).MarkTrue(ServiceBindingConditionServiceAvailable)
+// required for knative, not used
+func (b *ServiceBinding) GetStatus() *duckv1.Status {
+	return &duckv1.Status{}
 }
 
-func (bs *ServiceBindingStatus) MarkServiceUnavailable(reason string, message string) {
-	sbCondSet.Manage(bs).MarkFalse(
-		ServiceBindingConditionServiceAvailable, reason, message)
+// required for knative, not used
+func (b *ServiceBinding) GetConditionSet() apis.ConditionSet {
+	return apis.NewLivingConditionSet()
 }

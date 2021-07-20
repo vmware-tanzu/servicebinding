@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
 	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
@@ -54,7 +53,6 @@ func TestReconcile(t *testing.T) {
 	namespace := "my-namespace"
 	name := "my-binding"
 	key := fmt.Sprintf("%s/%s", namespace, name)
-	now := metav1.NewTime(time.Now())
 	secretName := "my-secret"
 	provisionedService := &labsv1alpha1.ProvisionedService{
 		ObjectMeta: metav1.ObjectMeta{
@@ -78,6 +76,11 @@ func TestReconcile(t *testing.T) {
 			Kind:       "Deployment",
 			Name:       "my-application",
 		},
+	}
+
+	now := metav1.Now()
+	nowFunc := func() metav1.Time {
+		return now
 	}
 
 	table := TableTest{{
@@ -116,24 +119,25 @@ func TestReconcile(t *testing.T) {
 					Service:     &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
+					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
+					Conditions: []metav1.Condition{
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Status: metav1.ConditionTrue,
+							Reason: "Ready",
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Status: metav1.ConditionTrue,
+							Reason: "Available",
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Status: metav1.ConditionTrue,
+							Reason: "Projected",
 						},
 					},
 				},
@@ -240,24 +244,28 @@ func TestReconcile(t *testing.T) {
 					Service:     &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
+					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionUnknown,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionUnknown,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
+					Conditions: []metav1.Condition{
+						{
+							Type:               servicebindingv1alpha2.ServiceBindingConditionReady,
+							Status:             metav1.ConditionUnknown,
+							Reason:             "ProjectionReadyUnknown",
+							LastTransitionTime: now,
+						},
+						{
+							Type:               servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Status:             metav1.ConditionTrue,
+							Reason:             "Available",
+							LastTransitionTime: now,
+						},
+						{
+							Type:               servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Status:             metav1.ConditionUnknown,
+							Reason:             "Unknown",
+							LastTransitionTime: now,
 						},
 					},
 				},
@@ -354,24 +362,28 @@ func TestReconcile(t *testing.T) {
 					Service:     &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
+					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionUnknown,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionUnknown,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
+					Conditions: []metav1.Condition{
+						{
+							Type:               servicebindingv1alpha2.ServiceBindingConditionReady,
+							Status:             metav1.ConditionUnknown,
+							Reason:             "ProjectionReadyUnknown",
+							LastTransitionTime: now,
+						},
+						{
+							Type:               servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Status:             metav1.ConditionTrue,
+							Reason:             "Available",
+							LastTransitionTime: now,
+						},
+						{
+							Type:               servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Status:             metav1.ConditionUnknown,
+							Reason:             "Unknown",
+							LastTransitionTime: now,
 						},
 					},
 				},
@@ -396,24 +408,22 @@ func TestReconcile(t *testing.T) {
 					Service:     &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
+					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
+					Conditions: []metav1.Condition{
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Status: metav1.ConditionTrue,
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Status: metav1.ConditionTrue,
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Status: metav1.ConditionTrue,
 						},
 					},
 				},
@@ -475,24 +485,24 @@ func TestReconcile(t *testing.T) {
 					Service:     &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
+					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
+					Conditions: []metav1.Condition{
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Status: metav1.ConditionTrue,
+							Reason: "Ready",
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Status: metav1.ConditionTrue,
+							Reason: "Available",
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Status: metav1.ConditionTrue,
 						},
 					},
 				},
@@ -550,24 +560,24 @@ func TestReconcile(t *testing.T) {
 					Service:     &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
+					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
+					Conditions: []metav1.Condition{
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Status: metav1.ConditionTrue,
+							Reason: "Ready",
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Status: metav1.ConditionTrue,
+							Reason: "Available",
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Status: metav1.ConditionTrue,
 						},
 					},
 				},
@@ -668,24 +678,24 @@ func TestReconcile(t *testing.T) {
 					Service:     &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
+					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
-					Status: duckv1.Status{
-						ObservedGeneration: 1,
-						Conditions: duckv1.Conditions{
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
-								Status: corev1.ConditionTrue,
-							},
-							{
-								Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
-								Status: corev1.ConditionTrue,
-							},
+					Conditions: []metav1.Condition{
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Status: metav1.ConditionTrue,
+							Reason: "Ready",
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Status: metav1.ConditionTrue,
+							Reason: "Available",
+						},
+						{
+							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Status: metav1.ConditionTrue,
 						},
 					},
 				},
@@ -728,6 +738,7 @@ func TestReconcile(t *testing.T) {
 			resolver:                       resolver.NewServiceableResolver(ctx, func(types.NamespacedName) {}),
 			serviceBindingProjectionLister: listers.GetServiceBindingProjectionLister(),
 			tracker:                        GetTracker(ctx),
+			now:                            nowFunc,
 		}
 
 		return servicebindingreconciler.NewReconciler(ctx, logging.FromContext(ctx), servicebindingsclient.Get(ctx),

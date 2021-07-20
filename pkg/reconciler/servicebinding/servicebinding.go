@@ -42,6 +42,7 @@ type Reconciler struct {
 
 	resolver *resolver.ServiceableResolver
 	tracker  tracker.Interface
+	now      func() metav1.Time
 }
 
 // Check that our Reconciler implements Interface
@@ -58,6 +59,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, binding *servicebindingv
 	}
 
 	binding.Status.InitializeConditions()
+	now := r.now()
 
 	secretRef, err := r.provisionedSecret(ctx, logger, binding)
 	if err != nil {
@@ -68,7 +70,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, binding *servicebindingv
 		binding.Status.Binding = &corev1.LocalObjectReference{
 			Name: secretRef.Name,
 		}
-		binding.Status.MarkServiceAvailable()
+		binding.Status.MarkServiceAvailable(now)
 	}
 
 	serviceBindingProjection, err := r.serviceBindingProjection(ctx, logger, binding)
@@ -76,7 +78,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, binding *servicebindingv
 		return err
 	}
 	if serviceBindingProjection != nil {
-		binding.Status.PropagateServiceBindingProjectionStatus(serviceBindingProjection)
+		binding.Status.PropagateServiceBindingProjectionStatus(serviceBindingProjection, now)
 	}
 
 	binding.Status.ObservedGeneration = binding.Generation

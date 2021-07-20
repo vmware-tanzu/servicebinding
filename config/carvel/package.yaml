@@ -1,0 +1,19 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: service-bindings.labs.vmware.com.${version}
+spec:
+  refName: service-bindings.labs.vmware.com
+  version: ${version}
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: ${image}
+      template:
+      - kbld:
+          paths:
+          - service-bindings.yaml
+          - .imgpkg/images.yml
+      deploy:
+      - kapp: {}

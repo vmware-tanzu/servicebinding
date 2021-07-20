@@ -27,25 +27,37 @@ jobs:
 
   stage:
     needs: test
-    if: github.event_name == 'push' && startsWith(github.repository, 'vmware-labs/')
     runs-on: ubuntu-latest
+    env:
+      REGISTRY_NAME: registry.local
+      REGISTRY_PORT: 80
+      KO_DOCKER_REPO: registry.local/service-bindings
+      BUNDLE: registry.local/service-bindings/bundle
     steps:
     - uses: actions/checkout@v2.3.4
     - uses: actions/setup-go@v2.1.3
       with:
         go-version: 1.15.x
+    - uses: vmware-tanzu/carvel-setup-action@v1
     - name: Install ko
       run: |
         cd $(mktemp -d -t ko.XXXX)
         curl -sL https://github.com/google/ko/releases/download/v0.8.1/ko_0.8.1_Linux_x86_64.tar.gz | tar -xz
         sudo mv ./ko /usr/local/bin
         cd -
-    - name: Docker login
+    - name: Setup local registry
       run: |
-        echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-      env:
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        # Run a registry.
+        docker run \
+          -d --restart=always -p "127.0.0.1:${REGISTRY_PORT}:5000" --name local-registry \
+          registry:2
+
+        # Make the $REGISTRY_NAME -> 127.0.0.1
+        echo "127.0.0.1 $REGISTRY_NAME" | sudo tee -a /etc/hosts
     - name: Stage
       run: |
         set -o errexit
@@ -57,18 +69,31 @@ jobs:
         readonly git_timestamp=$(TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd")
         readonly slug=${version}-${git_timestamp}-${git_sha:0:16}
 
-        ko resolve -t ${slug} -B -f config | sed -e "s|bindings.labs.vmware.com/release: devel|bindings.labs.vmware.com/release: ${slug}|" > service-bindings.yaml
-      env:
-        KO_DOCKER_REPO: docker.io/vmware
+        mkdir -p bundle/.imgpkg
+        cp LICENSE "bundle/LICENSE"
+        cp NOTICE "bundle/NOTICE"
+        cp VERSION "bundle/VERSION"
+        cp -r samples "bundle/samples"
+
+        echo "##[group]Build Service Bindings"
+          ko resolve -t ${slug} -B -f config \
+            | sed -e "s|bindings.labs.vmware.com/release: devel|bindings.labs.vmware.com/release: ${slug}|" \
+            > "bundle/service-bindings.yaml"
+          kbld -f "bundle/service-bindings.yaml" --imgpkg-lock-output "bundle/.imgpkg/images.yml" 
+        echo "##[endgroup]"
+
+        echo "##[group]Create bundle"
+          imgpkg push -f "bundle" -b "${BUNDLE}"
+          imgpkg copy -b "${BUNDLE}" --to-tar bundle/service-bindings-bundle.tar
+        echo "##[endgroup]"
     - name: Upload Service Bindings build
       uses: actions/upload-artifact@v2.2.4
       with:
-        name: service-bindings.yaml
-        path: service-bindings.yaml
+        name: service-bindings-bundle.tar
+        path: bundle/service-bindings-bundle.tar
 
   acceptance:
     needs: stage
-    if: "!( cancelled() || failure() )"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -77,37 +102,77 @@ jobs:
         - 1.19.7
         - 1.20.2
       fail-fast: false
+    env:
+      REGISTRY_PORT: 5000
+      BUNDLE: localhost:5000/service-bindings/bundle
     steps:
     - uses: actions/checkout@v2.3.4
+    - uses: vmware-tanzu/carvel-setup-action@v1
     - name: Install kind
       run: |
-        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+        cd $(mktemp -d -t kind.XXXX)
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin
-    - uses: vmware-tanzu/carvel-setup-action@v1
-    - name: Create cluster
-      run: kind create cluster --wait 5m --image kindest/node:v${{ matrix.k8s }}
-    - name: Download staged Service Bindings build
-      uses: actions/download-artifact@v2.0.10
-      if: needs.stage.result == 'success'
-      with:
-        name: service-bindings.yaml
-    - name: Build Service Bindings locally
-      if: needs.stage.result != 'success'
+        cd -
+    - name: Setup local registry
       run: |
         set -o errexit
         set -o nounset
         set -o pipefail
 
-        cd $(mktemp -d -t ko.XXXX)
-        curl -sL https://github.com/google/ko/releases/download/v0.8.1/ko_0.8.1_Linux_x86_64.tar.gz | tar -xz
-        sudo mv ./ko /usr/local/bin
-        cd -
+        # Run a registry.
+        docker run \
+          -d --restart=always -p "127.0.0.1:${REGISTRY_PORT}:5000" --name local-registry \
+          registry:2
+    - name: Create Cluster
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
 
-        ko resolve -L -B -f config > service-bindings.yaml
-        cat service-bindings.yaml | grep -oh 'ko.local[^\w]*' | xargs -L 1 kind load docker-image
+        # create a cluster with the local registry enabled in containerd
+        cat <<EOF | kind create cluster --config=-
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${REGISTRY_PORT}"]
+            endpoint = ["http://local-registry:${REGISTRY_PORT}"]
+        EOF
+
+        # connect the registry to the cluster network
+        docker network connect kind local-registry
+
+        # Document the local registry
+        # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
+        cat <<EOF | kubectl apply -f -
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: local-registry-hosting
+          namespace: kube-public
+        data:
+          localRegistryHosting.v1: |
+            host: "localhost:${REGISTRY_PORT}"
+            help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
+        EOF
+    - name: Download staged Service Bindings build
+      uses: actions/download-artifact@v2.0.10
+      with:
+        name: service-bindings-bundle.tar
     - name: Deploy Service Bindings
-      run: kapp deploy -a service-bindings -f service-bindings.yaml -y
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        imgpkg copy --tar service-bindings-bundle.tar --to-repo "${BUNDLE}"
+        mkdir -p bundle
+        imgpkg pull -b "${BUNDLE}" -o bundle
+
+        kapp deploy -a service-bindings -y \
+          -f <(kbld -f bundle/service-bindings.yaml -f bundle/.imgpkg/images.yml)
     - name: Deploy Spring Petclinic
       run: |
         set -o errexit
@@ -167,6 +232,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2.3.4
+    - uses: vmware-tanzu/carvel-setup-action@v1
+    - name: Install crane
+      run: |
+        cd $(mktemp -d -t kind.XXXX)
+        curl -L https://github.com/google/go-containerregistry/releases/download/v0.5.1/go-containerregistry_Linux_x86_64.tar.gz | tar -xz
+        chmod +x ./crane
+        sudo mv ./crane /usr/local/bin
+        cd -
+    - name: Docker login
+      run: |
+        echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      env:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
     - name: Get release version
       id: get-version
       run: |
@@ -183,8 +262,48 @@ jobs:
     - name: Download staged Service Bindings build
       uses: actions/download-artifact@v2.0.10
       with:
-        name: service-bindings.yaml
-    - name: Upload Service Bindings release
+        name: service-bindings-bundle.tar
+    - name: Relocate bundle to public registry
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        version="${{ steps.get-version.outputs.version }}"
+        repo="vmware/labs-service-bindings-manager"
+        repo_tag="${repo}:${version}"
+
+        imgpkg copy --tar service-bindings-bundle.tar --to-repo "${repo}"
+        crane tag "${repo}" "${version}"
+        repo_digest="${repo_tag}@$(crane digest "${repo_tag}")"
+
+        mkdir -p bundle
+        imgpkg pull -b "${repo_digest}" -o bundle
+        kbld -f bundle/service-bindings.yaml -f bundle/.imgpkg/images.yml > service-bindings.yaml
+
+        cat config/carvel/package.yaml \
+          | sed -e "s|\${version}|${{ steps.get-version.outputs.version }}|" \
+          | sed -e "s|\${image}|${repo_digest}|" \
+          > "service-bindings-package.yaml"
+    - name: Upload Service Bindings release bundle
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: service-bindings-bundle.tar
+        asset_name: service-bindings-bundle-${{ steps.get-version.outputs.version }}.tar
+        asset_content_type: application/x-yaml
+    - name: Upload Service Bindings package yaml
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: service-bindings-package.yaml
+        asset_name: service-bindings-package-${{ steps.get-version.outputs.version }}.yaml
+        asset_content_type: application/x-yaml
+    - name: Upload Service Bindings release yaml
       uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

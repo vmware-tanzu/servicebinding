@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/tracker"
@@ -1277,8 +1276,8 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 						Name: "my-secret",
 					},
 					Application: ApplicationReference{
-						Containers: []intstr.IntOrString{
-							intstr.FromString("my-container"),
+						Containers: []string{
+							"my-container",
 						},
 					},
 				},
@@ -1331,94 +1330,6 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 								{},
 								{
 									Name: "my-container",
-									Env: []corev1.EnvVar{
-										{
-											Name:  "SERVICE_BINDING_ROOT",
-											Value: "/bindings",
-										},
-									},
-									VolumeMounts: []corev1.VolumeMount{
-										{
-											Name:      "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
-											MountPath: "/bindings/my-binding-name",
-											ReadOnly:  true,
-										},
-									},
-								},
-							},
-							Volumes: []corev1.Volume{
-								{
-									Name: "binding-5c5a15a8b0b3e154d77746945e563ba40100681b",
-									VolumeSource: corev1.VolumeSource{
-										Projected: &corev1.ProjectedVolumeSource{
-											Sources: []corev1.VolumeProjection{
-												{
-													Secret: &corev1.SecretProjection{
-														LocalObjectReference: corev1.LocalObjectReference{
-															Name: "my-secret",
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "inject volume into a container by index",
-			binding: &ServiceBindingProjection{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "my-binding",
-				},
-				Spec: ServiceBindingProjectionSpec{
-					Name: "my-binding-name",
-					Binding: corev1.LocalObjectReference{
-						Name: "my-secret",
-					},
-					Application: ApplicationReference{
-						Containers: []intstr.IntOrString{
-							intstr.FromInt(1),
-						},
-					},
-				},
-			},
-			seed: &duckv1.WithPod{
-				Spec: duckv1.WithPodSpec{
-					Template: duckv1.PodSpecable{
-						Spec: corev1.PodSpec{
-							InitContainers: []corev1.Container{
-								{},
-								{},
-							},
-							Containers: []corev1.Container{
-								{},
-								{},
-							},
-						},
-					},
-				},
-			},
-			expected: &duckv1.WithPod{
-				ObjectMeta: metav1.ObjectMeta{
-					Annotations: map[string]string{
-						"internal.bindings.labs.vmware.com/projection-16384e6a11df69776193b6a877bfbe80bab09a17": "my-secret",
-					},
-				},
-				Spec: duckv1.WithPodSpec{
-					Template: duckv1.PodSpecable{
-						Spec: corev1.PodSpec{
-							InitContainers: []corev1.Container{
-								{},
-								{},
-							},
-							Containers: []corev1.Container{
-								{},
-								{
 									Env: []corev1.EnvVar{
 										{
 											Name:  "SERVICE_BINDING_ROOT",

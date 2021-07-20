@@ -12,7 +12,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/apis"
 	"knative.dev/pkg/apis/duck"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -75,9 +74,8 @@ type ApplicationReference struct {
 	tracker.Reference
 
 	// Containers to target within the application. If not set, all containers
-	// will be injected. Containers may be specified by index or name.
-	// InitContainers may only be specified by name.
-	Containers []intstr.IntOrString `json:"containers,omitempty"`
+	// will be injected.
+	Containers []string `json:"containers,omitempty"`
 }
 
 type EnvVar struct {

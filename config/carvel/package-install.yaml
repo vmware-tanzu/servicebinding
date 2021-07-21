@@ -1,0 +1,110 @@
+# Copyright 2021 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  namespace: ${namespace}
+  name: service-bindings
+  annotations:
+    kapp.k14s.io/change-group: service-bindings.labs.vmware.com/install
+    kapp.k14s.io/change-rule: "upsert after upserting service-bindings.labs.vmware.com/install-rbac"
+spec:
+  serviceAccountName: ${service_account}
+  packageRef:
+    refName: service-bindings.labs.vmware.com
+    versionSelection:
+      constraints: ${version}
+      prereleases: {}
+
+---
+apiVersion: kapp.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.29.0
+waitRules:
+- supportsObservedGeneration: true
+  conditionMatchers:
+  - type: ReconcileFailed
+    status: "True"
+    failure: true
+  - type: ReconcileSucceeded
+    status: "True"
+    success: true
+  resourceMatchers:
+  - apiVersionKindMatcher:
+      apiVersion: packaging.carvel.dev/v1alpha1
+      kind: PackageInstall
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: ${namespace}
+  name: ${service_account}
+  annotations:
+    kapp.k14s.io/change-group: service-bindings.labs.vmware.com/install-rbac
+    kapp.k14s.io/change-rule: "delete after deleting service-bindings.labs.vmware.com/install"
+
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ${role}
+  annotations:
+    kapp.k14s.io/change-group: service-bindings.labs.vmware.com/install-rbac
+    kapp.k14s.io/change-rule: "delete after deleting service-bindings.labs.vmware.com/install"
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    - namespaces
+    - secrets
+    - serviceaccounts
+    - services
+    verbs:
+    - "*"
+  - apiGroups:
+    - apps
+    resources:
+    - deployments
+    verbs:
+    - "*"
+  - apiGroups:
+    - admissionregistration.k8s.io
+    resources:
+    - mutatingwebhookconfigurations
+    - validatingwebhookconfigurations
+    verbs:
+    - "*"
+  - apiGroups:
+    - apiextensions.k8s.io
+    resources:
+    - customresourcedefinitions
+    verbs:
+    - "*"
+  - apiGroups:
+    - rbac.authorization.k8s.io
+    resources:
+    - clusterrolebindings
+    - clusterroles
+    verbs:
+    - "*"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${role}-${namespace}-${service_account}
+  annotations:
+    kapp.k14s.io/change-group: service-bindings.labs.vmware.com/install-rbac
+    kapp.k14s.io/change-rule: "delete after deleting service-bindings.labs.vmware.com/install"
+subjects:
+  - kind: ServiceAccount
+    name: ${service_account}
+    namespace: ${namespace}
+roleRef:
+  kind: ClusterRole
+  name: ${role}
+  apiGroup: rbac.authorization.k8s.io

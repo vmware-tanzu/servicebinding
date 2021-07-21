@@ -103,8 +103,9 @@ jobs:
         - 1.20.2
       fail-fast: false
     env:
+      REGISTRY_NAME: registry.local
       REGISTRY_PORT: 5000
-      BUNDLE: localhost:5000/service-bindings/bundle
+      BUNDLE: registry.local:5000/service-bindings/bundle
     steps:
     - uses: actions/checkout@v2.3.4
     - uses: vmware-tanzu/carvel-setup-action@v1
@@ -123,8 +124,11 @@ jobs:
 
         # Run a registry.
         docker run \
-          -d --restart=always -p "127.0.0.1:${REGISTRY_PORT}:5000" --name local-registry \
+          -d --restart=always -p "${REGISTRY_PORT}:5000" --name local-registry \
           registry:2
+
+        # Make the $REGISTRY_NAME -> local-registry
+        echo "$(hostname -I | cut -d' ' -f1) $REGISTRY_NAME" | sudo tee -a /etc/hosts
     - name: Create Cluster
       run: |
         set -o errexit
@@ -137,8 +141,11 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${REGISTRY_PORT}"]
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REGISTRY_NAME}:${REGISTRY_PORT}"]
             endpoint = ["http://local-registry:${REGISTRY_PORT}"]
+        nodes:
+        - role: control-plane
+          image: kindest/node:v${{ matrix.k8s }}
         EOF
 
         # connect the registry to the cluster network
@@ -161,18 +168,40 @@ jobs:
       uses: actions/download-artifact@v2.0.10
       with:
         name: service-bindings-bundle.tar
-    - name: Deploy Service Bindings
+    - name: Install kapp-controller
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        kapp deploy -a kapp-controller -y -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml
+    - name: Deploy Service Bindings Package
       run: |
         set -o errexit
         set -o nounset
         set -o pipefail
 
         imgpkg copy --tar service-bindings-bundle.tar --to-repo "${BUNDLE}"
-        mkdir -p bundle
-        imgpkg pull -b "${BUNDLE}" -o bundle
+        kapp deploy -a service-bindings-package -y \
+          -f <( \
+            cat config/carvel/package.yaml \
+              | sed -e "s|\${version}|$(cat VERSION)|" \
+              | sed -e "s|\${image}|${BUNDLE}|" \
+          )
+    - name: Deploy Service Bindings
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
 
         kapp deploy -a service-bindings -y \
-          -f <(kbld -f bundle/service-bindings.yaml -f bundle/.imgpkg/images.yml)
+          -f <( \
+            cat config/carvel/package-install.yaml \
+              | sed -e "s|\${version}|$(cat VERSION)|" \
+              | sed -e "s|\${namespace}|default|" \
+              | sed -e "s|\${service_account}|service-binding-kc|" \
+              | sed -e "s|\${role}|service-binding-kc|" \
+          )
     - name: Deploy Spring Petclinic
       run: |
         set -o errexit
@@ -184,6 +213,21 @@ jobs:
         kapp deploy -a spring-petclinic -f samples/spring-petclinic/application.yaml -y
     - name: Collect diagnostics
       run: |
+        echo "##[group]Describe nodes"
+          kubectl describe nodes
+        echo "##[endgroup]"
+        echo "##[group]Describe pods"
+          kubectl describe pods
+        echo "##[endgroup]"
+        echo "##[group]All resources"
+          kubectl get all,secrets --all-namespaces
+        echo "##[endgroup]"
+        echo "##[group]Packages"
+          kubectl get package -A -oyaml
+        echo "##[endgroup]"
+        echo "##[group]Package Installs"
+          kubectl get packageinstall -A -oyaml
+        echo "##[endgroup]"
         echo "##[group]Service Binding manager logs"
           kubectl logs -n service-bindings -l app=manager -c manager --tail 1000
         echo "##[endgroup]"
@@ -199,15 +243,6 @@ jobs:
         echo "##[group]MySQL logs"
           kubectl logs -l app=spring-petclinic-db -c mysql --tail 1000
         echo "##[endgroup]"
-        echo "##[group]All resources"
-          kubectl get all,secrets --all-namespaces
-        echo "##[endgroup]"
-        echo "##[group]Describe pods"
-          kubectl describe pods
-        echo "##[endgroup]"
-        echo "##[group]Describe nodes"
-          kubectl describe nodes
-        echo "##[endgroup]"
       if: always()
       continue-on-error: true
     - name: Cleanup Spring Petclinic
@@ -221,6 +256,12 @@ jobs:
         kapp delete -a spring-petclinic -y
     - name: Cleanup Service Bindings
       run: kapp delete -a service-bindings -y
+      if: always()
+    - name: Cleanup Service Bindings Package
+      run: kapp delete -a service-bindings-package -y
+      if: always()
+    - name: Cleanup kapp-controller
+      run: kapp delete -a kapp-controller -y
       if: always()
     - name: Cleanup cluster
       run: kind delete cluster

@@ -7,17 +7,19 @@
 [![codecov](https://codecov.io/gh/vmware-labs/service-bindings/branch/main/graph/badge.svg)](https://codecov.io/gh/vmware-labs/service-bindings)
 
 
-Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://github.com/k8s-service-bindings/spec). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC2++](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
+Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://github.com/k8s-service-bindings/spec). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC2++](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
 
 This implementation provides support for:
-- [Provisioned Service](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#provisioned-service)
-- [Application Projection](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#application-projection)
-- [Service Binding](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#service-binding)
-- Extensions including:
-  - [Direct Secret Reference](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#direct-secret-reference)
-  - [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec/tree/86bc6e8b9dad47e0ade03bbefa5c23da35e00804#role-based-access-control-rbac)
+- [Provisioned Service](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#provisioned-service)
+- [Application Projection](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#application-projection)
+- [Service Binding](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#service-binding)
+- [Direct Secret Reference](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#direct-secret-reference)
+- [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#role-based-access-control-rbac)
 
-The `Binding Secret Generation Strategies` extension is not supported.
+The following are not supported:
+- [Application Resource Mapping](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#application-resource-mapping)
+- Extensions including:
+  - [Binding Secret Generation Strategies](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#binding-secret-generation-strategies)
 
 ## Try it out
 
@@ -28,7 +30,7 @@ Using the [latest release](https://github.com/vmware-labs/service-bindings/relea
 
 ### Build from source
 
-We use [`ko`](https://github.com/google/ko) to build the CRD and reconciler, and [`kapp`](https://get-kapp.io) to deploy them.
+We use [Golang](https://golang.org) and [`ko`](https://github.com/google/ko) to build the CRD and reconciler, and [`kapp`](https://get-kapp.io) to deploy them.
 
 From within the cloned directory for this project, run:
 
@@ -49,6 +51,7 @@ Samples are located in the [samples directory](./samples), including:
 - [Spring PetClinic with MySQL](./samples/spring-petclinic)
 - [Controlled Resource](./samples/controlled-resource)
 - [Environment Variables and Mappings](./samples/environment-variable-mappings)
+- [Overridden Type and Provider](./samples/overridden-type-provider)
 - [Provisioned Service](./samples/provisioned-service)
 - [Multiple Bindings](./samples/multi-binding)
 

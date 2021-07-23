@@ -71,13 +71,13 @@ Assuming ingress is properly configured, an invocable URL will be returned for t
 
 ```
 NAME                   URL
-controlled-resource   http://controlled-resource.default.1.2.3.4.xip.io
+controlled-resource   http://controlled-resource.default.{YOUR_CLUSTERS_HOSTNAME}
 ```
 
 Make a request to the service.
 
 ```sh
-curl http://controlled-resource.default.1.2.3.4.xip.io
+curl http://controlled-resource.default.{YOUR_CLUSTERS_HOSTNAME}
 Hello service binding!
 ```
 

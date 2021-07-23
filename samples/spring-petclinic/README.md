@@ -35,19 +35,17 @@ The describe output will contain:
 ...
   Containers:
    application:
-    Image:      scothis/petclinic:service-bindings
-    Port:       <none>
-    Host Port:  <none>
+    ...
     Environment:
       SPRING_PROFILES_ACTIVE:  mysql
       SERVICE_BINDING_ROOT:    /bindings
     Mounts:
-      /bindings/spring-petclinic-db from binding-49a23274b0590d5057aae1ae621be723716c4dd5 (ro)
+      /bindings/spring-petclinic-db from binding-4b2c350fb984fc36b6cf39515a2efced0fcb5053 (ro)
   Volumes:
-   binding-49a23274b0590d5057aae1ae621be723716c4dd5:
-    Type:        Secret (a volume populated by a Secret)
-    SecretName:  spring-petclinic-db
-    Optional:    false
+   binding-4b2c350fb984fc36b6cf39515a2efced0fcb5053:
+    Type:                Projected (a volume that contains injected data from multiple sources)
+    SecretName:          spring-petclinic-db
+    SecretOptionalName:  <nil>
 ...
 ```
 

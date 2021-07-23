@@ -31,19 +31,21 @@ For each service binding, the `ServiceAvailable` condition should be `True` and 
 ```
 ...
   conditions:
-  - lastTransitionTime: "2020-08-03T15:25:45Z"
+  - lastTransitionTime: "2021-07-23T16:46:58Z"
+    message: jobs.batch "overridden-type-provider" not found
+    reason: ProjectionReadyApplicationMissing
+    status: "False"
+    type: Ready
+  - lastTransitionTime: "2021-07-23T16:46:58Z"
+    message: ""
+    reason: Available
+    status: "True"
+    type: ServiceAvailable
+  - lastTransitionTime: "2021-07-23T16:46:58Z"
     message: jobs.batch "overridden-type-provider" not found
     reason: ApplicationMissing
     status: "False"
     type: ProjectionReady
-  - lastTransitionTime: "2020-08-03T15:25:45Z"
-    message: jobs.batch "overridden-type-provider" not found
-    reason: ApplicationMissing
-    status: "False"
-    type: Ready
-  - lastTransitionTime: "2020-08-03T15:25:45Z"
-    status: "True"
-    type: ServiceAvailable
 ```
 
 Create the application `Job`:
@@ -75,7 +77,7 @@ We should see our injected environment variable as well as other variable common
 Inspect the logs from the job:
 
 ```sh
-kubectl logs -l job-name=overridden-type-provider
+kubectl logs -l job-name=overridden-type-provider --tail 100
 ```
 
 ```

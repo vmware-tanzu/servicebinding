@@ -50,7 +50,6 @@ Samples are located in the [samples directory](./samples), including:
 
 - [Spring PetClinic with MySQL](./samples/spring-petclinic)
 - [Controlled Resource](./samples/controlled-resource)
-- [Environment Variables and Mappings](./samples/environment-variable-mappings)
 - [Overridden Type and Provider](./samples/overridden-type-provider)
 - [Provisioned Service](./samples/provisioned-service)
 - [Multiple Bindings](./samples/multi-binding)

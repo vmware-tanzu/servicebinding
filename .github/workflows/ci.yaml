@@ -76,10 +76,12 @@ jobs:
         cp -r samples "bundle/samples"
 
         echo "##[group]Build Service Bindings"
+          cp hack/boilerplate/boilerplate.yaml.txt bundle/service-bindings.yaml
           ko resolve -t ${slug} -B -f config \
-            | sed -e "s|bindings.labs.vmware.com/release: devel|bindings.labs.vmware.com/release: ${slug}|" \
-            > "bundle/service-bindings.yaml"
-          kbld -f "bundle/service-bindings.yaml" --imgpkg-lock-output "bundle/.imgpkg/images.yml" 
+            | ytt -f - -f config/carvel/release-version.overlay.yaml \
+                --data-value version=${slug} \
+            >> bundle/service-bindings.yaml
+          kbld -f bundle/service-bindings.yaml --imgpkg-lock-output bundle/.imgpkg/images.yml
         echo "##[endgroup]"
 
         echo "##[group]Create bundle"
@@ -184,9 +186,9 @@ jobs:
         imgpkg copy --tar service-bindings-bundle.tar --to-repo "${BUNDLE}"
         kapp deploy -a service-bindings-package -y \
           -f <( \
-            cat config/carvel/package.yaml \
-              | sed -e "s|\${version}|$(cat VERSION)|" \
-              | sed -e "s|\${image}|${BUNDLE}|" \
+            ytt -f config/carvel/package.yaml -f config/carvel/package.values.yaml \
+              --data-value version=$(cat VERSION) \
+              --data-value image=${BUNDLE} \
           )
     - name: Deploy Service Bindings
       run: |
@@ -196,11 +198,9 @@ jobs:
 
         kapp deploy -a service-bindings -y \
           -f <( \
-            cat config/carvel/package-install.yaml \
-              | sed -e "s|\${version}|$(cat VERSION)|" \
-              | sed -e "s|\${namespace}|default|" \
-              | sed -e "s|\${service_account}|service-binding-kc|" \
-              | sed -e "s|\${role}|service-binding-kc|" \
+            ytt -f config/carvel/package-install.yaml -f config/carvel/package-install.values.yaml \
+              --data-value package_constraints=$(cat VERSION) \
+              --data-value-yaml 'package_prerelease={}' \
           )
     - name: Deploy Spring Petclinic
       run: |
@@ -320,12 +320,16 @@ jobs:
 
         mkdir -p bundle
         imgpkg pull -b "${repo_digest}" -o bundle
-        kbld -f bundle/service-bindings.yaml -f bundle/.imgpkg/images.yml > service-bindings.yaml
 
-        cat config/carvel/package.yaml \
-          | sed -e "s|\${version}|${{ steps.get-version.outputs.version }}|" \
-          | sed -e "s|\${image}|${repo_digest}|" \
-          > "service-bindings-package.yaml"
+        cp hack/boilerplate/boilerplate.yaml.txt service-bindings.yaml
+        kbld -f bundle/service-bindings.yaml -f bundle/.imgpkg/images.yml \
+          >> service-bindings.yaml
+
+        cp hack/boilerplate/boilerplate.yaml.txt service-bindings-package.yaml
+        ytt -f config/carvel/package.yaml -f config/carvel/package.values.yaml \
+          --data-value version=${version} \
+          --data-value image=${repo_digest} \
+          >> service-bindings-package.yaml
     - name: Upload Service Bindings release bundle
       uses: actions/upload-release-asset@v1.0.2
       env:

@@ -1,0 +1,8 @@
+#! Copyright 2021 VMware, Inc.
+#! SPDX-License-Identifier: Apache-2.0
+
+#@ load("@ytt:data", "data")
+
+#@data/values
+---
+name: service-bindings.labs.vmware.com

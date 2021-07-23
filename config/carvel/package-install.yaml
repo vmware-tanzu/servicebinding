@@ -1,22 +1,26 @@
-# Copyright 2021 VMware, Inc.
-# SPDX-License-Identifier: Apache-2.0
+#! Copyright 2021 VMware, Inc.
+#! SPDX-License-Identifier: Apache-2.0
+
+#@ load("@ytt:data", "data")
 
 ---
 apiVersion: packaging.carvel.dev/v1alpha1
 kind: PackageInstall
 metadata:
-  namespace: ${namespace}
-  name: service-bindings
+  namespace: #@ data.values.namespace
+  name: #@ data.values.name
   annotations:
     kapp.k14s.io/change-group: service-bindings.labs.vmware.com/install
     kapp.k14s.io/change-rule: "upsert after upserting service-bindings.labs.vmware.com/install-rbac"
 spec:
-  serviceAccountName: ${service_account}
+  serviceAccountName: #@ data.values.service_account_name
   packageRef:
-    refName: service-bindings.labs.vmware.com
+    refName: #@ data.values.package_name
     versionSelection:
-      constraints: ${version}
-      prereleases: {}
+      constraints: #@ data.values.package_constraints
+      #@ if data.values.package_prerelease != None:
+      prereleases: #@ data.values.package_prerelease
+      #@ end
 
 ---
 apiVersion: kapp.k14s.io/v1alpha1
@@ -40,8 +44,8 @@ waitRules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  namespace: ${namespace}
-  name: ${service_account}
+  namespace: #@ data.values.namespace
+  name: #@ data.values.service_account_name
   annotations:
     kapp.k14s.io/change-group: service-bindings.labs.vmware.com/install-rbac
     kapp.k14s.io/change-rule: "delete after deleting service-bindings.labs.vmware.com/install"
@@ -50,7 +54,7 @@ metadata:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: ${role}
+  name: #@ data.values.cluster_role_name
   annotations:
     kapp.k14s.io/change-group: service-bindings.labs.vmware.com/install-rbac
     kapp.k14s.io/change-rule: "delete after deleting service-bindings.labs.vmware.com/install"
@@ -96,15 +100,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ${role}-${namespace}-${service_account}
+  name: #@ data.values.cluster_role_binding_name
   annotations:
     kapp.k14s.io/change-group: service-bindings.labs.vmware.com/install-rbac
     kapp.k14s.io/change-rule: "delete after deleting service-bindings.labs.vmware.com/install"
 subjects:
   - kind: ServiceAccount
-    name: ${service_account}
-    namespace: ${namespace}
+    name: #@ data.values.service_account_name
+    namespace: #@ data.values.namespace
 roleRef:
   kind: ClusterRole
-  name: ${role}
+  name: #@ data.values.cluster_role_name
   apiGroup: rbac.authorization.k8s.io

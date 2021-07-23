@@ -1,18 +1,21 @@
-# Copyright 2021 VMware, Inc.
-# SPDX-License-Identifier: Apache-2.0
+#! Copyright 2021 VMware, Inc.
+#! SPDX-License-Identifier: Apache-2.0
 
+#@ load("@ytt:data", "data")
+
+---
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: service-bindings.labs.vmware.com.${version}
+  name: #@ data.values.name + '.' + data.values.version
 spec:
-  refName: service-bindings.labs.vmware.com
-  version: ${version}
+  refName: #@ data.values.name
+  version: #@ data.values.version
   template:
     spec:
       fetch:
       - imgpkgBundle:
-          image: ${image}
+          image: #@ data.values.image
       template:
       - kbld:
           paths:

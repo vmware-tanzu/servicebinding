@@ -1,0 +1,25 @@
+#! Copyright 2021 VMware, Inc.
+#! SPDX-License-Identifier: Apache-2.0
+
+#@ load("@ytt:data", "data")
+
+---
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: #@ data.values.name + '.' + data.values.version
+spec:
+  refName: #@ data.values.name
+  version: #@ data.values.version
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: #@ data.values.image
+      template:
+      - kbld:
+          paths:
+          - service-bindings.yaml
+          - .imgpkg/images.yml
+      deploy:
+      - kapp: {}

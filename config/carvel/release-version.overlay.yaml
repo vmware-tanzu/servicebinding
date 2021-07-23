@@ -1,0 +1,19 @@
+#! Copyright 2021 VMware, Inc.
+#! SPDX-License-Identifier: Apache-2.0
+
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+
+#@overlay/match by=overlay.subset({"metadata":{"labels":{"bindings.labs.vmware.com/release":"devel"}}}),expects="1+"
+---
+metadata:
+  labels:
+    bindings.labs.vmware.com/release: #@ data.values.version
+
+#@overlay/match by=overlay.subset({"spec":{"template":{"metadata":{"labels":{"bindings.labs.vmware.com/release":"devel"}}}}}),expects="1+"
+---
+spec:
+  template:
+    metadata:
+      labels:
+        bindings.labs.vmware.com/release: #@ data.values.version

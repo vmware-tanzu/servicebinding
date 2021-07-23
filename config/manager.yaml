@@ -17,8 +17,6 @@ spec:
       role: manager
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
         app: manager
         role: manager
@@ -30,7 +28,7 @@ spec:
       - name: manager
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: ko://github.com/vmware-labs/service-bindings/cmd/labs-service-bindings-manager
+        image: ko://github.com/vmware-labs/service-bindings/cmd/manager
         resources:
           requests:
             cpu: 100m

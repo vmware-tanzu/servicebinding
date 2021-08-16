@@ -70,18 +70,21 @@ jobs:
         readonly slug=${version}-${git_timestamp}-${git_sha:0:16}
 
         mkdir -p bundle/.imgpkg
+        mkdir -p bundle/config
+        mkdir -p bundle/samples
+
         cp LICENSE "bundle/LICENSE"
         cp NOTICE "bundle/NOTICE"
         cp VERSION "bundle/VERSION"
         cp -r samples "bundle/samples"
 
         echo "##[group]Build Service Bindings"
-          cp hack/boilerplate/boilerplate.yaml.txt bundle/service-bindings.yaml
+          cp hack/boilerplate/boilerplate.yaml.txt bundle/config/service-bindings.yaml
           ko resolve -t ${slug} -B -f config \
             | ytt -f - -f config/carvel/release-version.overlay.yaml \
                 --data-value version=${slug} \
-            >> bundle/service-bindings.yaml
-          kbld -f bundle/service-bindings.yaml --imgpkg-lock-output bundle/.imgpkg/images.yml
+            >> bundle/config/service-bindings.yaml
+          kbld -f bundle/config/service-bindings.yaml --imgpkg-lock-output bundle/.imgpkg/images.yml
         echo "##[endgroup]"
 
         echo "##[group]Create bundle"
@@ -322,7 +325,7 @@ jobs:
         imgpkg pull -b "${repo_digest}" -o bundle
 
         cp hack/boilerplate/boilerplate.yaml.txt service-bindings.yaml
-        kbld -f bundle/service-bindings.yaml -f bundle/.imgpkg/images.yml \
+        kbld -f bundle/config/service-bindings.yaml -f bundle/.imgpkg/images.yml \
           >> service-bindings.yaml
 
         cp hack/boilerplate/boilerplate.yaml.txt service-bindings-package.yaml

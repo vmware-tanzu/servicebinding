@@ -19,7 +19,7 @@ spec:
       template:
       - kbld:
           paths:
-          - service-bindings.yaml
           - .imgpkg/images.yml
+          - config/service-bindings.yaml
       deploy:
       - kapp: {}

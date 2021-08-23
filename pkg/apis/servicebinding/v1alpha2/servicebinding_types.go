@@ -55,17 +55,17 @@ type ServiceBindingSpec struct {
 	// +optional
 	Provider string `json:"provider,omitempty"`
 
-	// Application resource to inject the binding into
-	Application *ApplicationReference `json:"application,omitempty"`
+	// Workload resource to inject the binding into
+	Workload *WorkloadReference `json:"workload,omitempty"`
 	// Service referencing the binding secret
 	Service *tracker.Reference `json:"service,omitempty"`
 
-	// Env projects keys from the binding secret into the application as
+	// Env projects keys from the binding secret into the workload as
 	// environment variables
 	Env []EnvVar `json:"env,omitempty"`
 }
 
-type ApplicationReference = labsinternalv1alpha1.ApplicationReference
+type WorkloadReference = labsinternalv1alpha1.WorkloadReference
 
 type EnvVar = labsinternalv1alpha1.EnvVar
 
@@ -95,20 +95,20 @@ type ServiceBindingList struct {
 }
 
 func (b *ServiceBinding) Validate(ctx context.Context) (errs *apis.FieldError) {
-	if b.Spec.Application == nil {
+	if b.Spec.Workload == nil {
 		errs = errs.Also(
-			apis.ErrMissingField("spec.application"),
+			apis.ErrMissingField("spec.workload"),
 		)
 	} else {
 		// tracker.Reference requires a Namespace
-		a := b.Spec.Application.DeepCopy()
+		a := b.Spec.Workload.DeepCopy()
 		a.Namespace = "fake"
 		errs = errs.Also(
-			a.Validate(ctx).ViaField("spec.application"),
+			a.Validate(ctx).ViaField("spec.workload"),
 		)
-		if b.Spec.Application.Namespace != "" {
+		if b.Spec.Workload.Namespace != "" {
 			errs = errs.Also(
-				apis.ErrDisallowedFields("spec.application.namespace"),
+				apis.ErrDisallowedFields("spec.workload.namespace"),
 			)
 		}
 	}

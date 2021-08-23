@@ -16,7 +16,7 @@ If not already installed, [install the ServiceBinding CRD and controller][instal
 
 ## Deploy
 
-Apply the custom application, service and connect them with a `ServiceBinding`:
+Apply the custom workload, service and connect them with a `ServiceBinding`:
 
 ```sh
 kubectl apply -f ./samples/provisioned-service
@@ -24,7 +24,7 @@ kubectl apply -f ./samples/provisioned-service
 
 ## Understand
 
-The application.yaml defines a Kubernetes `Service` and `Deployment` representing our workload.
+The workload.yaml defines a Kubernetes `Service` and `Deployment` representing our workload.
 The service.yaml defined a `ProvisionedService` exposing it's `.status.binding.name` referencing a `Secret`.
 The `ServiceBinding`'s service reference target the `ProvisionedService`.
 
@@ -59,7 +59,7 @@ curl http://localhost:8080
 Hello service binding!
 ```
 
-Going further, try updating the `ProvisionedService` to point at a different secret. The service binding is now decoupled from knowledge of a specific `Secret`. Be aware that while the value in the projected secret will be kept up to date, the application uses environment variables that will require the pod be restarted to detect a new value.
+Going further, try updating the `ProvisionedService` to point at a different secret. The service binding is now decoupled from knowledge of a specific `Secret`. Be aware that while the value in the projected secret will be kept up to date, the workload uses environment variables that will require the pod be restarted to detect a new value.
 
 
 [provisioned-service]: https://github.com/k8s-service-bindings/spec/#provisioned-service

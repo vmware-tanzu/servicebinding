@@ -10,7 +10,7 @@ spec:
   template:
     spec:
       containers:
-      - name: application
+      - name: workload
         image: ubuntu:bionic
         command: ["env"]
       enableServiceLinks: false

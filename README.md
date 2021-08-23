@@ -7,19 +7,19 @@
 [![codecov](https://codecov.io/gh/vmware-labs/service-bindings/branch/main/graph/badge.svg)](https://codecov.io/gh/vmware-labs/service-bindings)
 
 
-Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://github.com/k8s-service-bindings/spec). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC2++](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
+Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://github.com/k8s-service-bindings/spec). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC2++](https://github.com/k8s-service-bindings/spec/tree/e874935880b120cfd809d691b0fee5baca023a2e)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
 
 This implementation provides support for:
-- [Provisioned Service](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#provisioned-service)
-- [Application Projection](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#application-projection)
-- [Service Binding](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#service-binding)
-- [Direct Secret Reference](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#direct-secret-reference)
-- [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#role-based-access-control-rbac)
+- [Provisioned Service](https://github.com/k8s-service-bindings/spec/tree/e874935880b120cfd809d691b0fee5baca023a2e#provisioned-service)
+- [Workload Projection](https://github.com/k8s-service-bindings/spec/tree/e874935880b120cfd809d691b0fee5baca023a2e#workload-projection)
+- [Service Binding](https://github.com/k8s-service-bindings/spec/tree/e874935880b120cfd809d691b0fee5baca023a2e#service-binding)
+- [Direct Secret Reference](https://github.com/k8s-service-bindings/spec/tree/e874935880b120cfd809d691b0fee5baca023a2e#direct-secret-reference)
+- [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec/tree/e874935880b120cfd809d691b0fee5baca023a2e#role-based-access-control-rbac)
 
 The following are not supported:
-- [Application Resource Mapping](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#application-resource-mapping)
+- [Workload Resource Mapping](https://github.com/k8s-service-bindings/spec/tree/e874935880b120cfd809d691b0fee5baca023a2e#workload-resource-mapping)
 - Extensions including:
-  - [Binding Secret Generation Strategies](https://github.com/k8s-service-bindings/spec/tree/04b99a3b9215af59e060359848de9622e909ff9e#binding-secret-generation-strategies)
+  - [Binding Secret Generation Strategies](https://github.com/k8s-service-bindings/spec/tree/e874935880b120cfd809d691b0fee5baca023a2e#binding-secret-generation-strategies)
 
 ## Try it out
 
@@ -66,14 +66,14 @@ kind: ServiceBinding
 metadata:
   name: account-db
 spec:
-  application:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: account-service
   service:
     apiVersion: bindings.labs.vmware.com/v1alpha1
     kind: ProvisionedService
     name: account-db
+  workload:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: account-service
 ```
 
 ### ProvisionedService (bindings.labs.vmware.com/v1alpha1)

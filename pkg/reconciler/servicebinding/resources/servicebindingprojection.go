@@ -28,12 +28,12 @@ func MakeServiceBindingProjection(binding *servicebindingv1alpha2.ServiceBinding
 			OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(binding)},
 		},
 		Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-			Name:        binding.Spec.Name,
-			Type:        binding.Spec.Type,
-			Provider:    binding.Spec.Provider,
-			Binding:     *binding.Status.Binding,
-			Application: *binding.Spec.Application,
-			Env:         binding.Spec.Env,
+			Name:     binding.Spec.Name,
+			Type:     binding.Spec.Type,
+			Provider: binding.Spec.Provider,
+			Binding:  *binding.Status.Binding,
+			Workload: *binding.Spec.Workload,
+			Env:      binding.Spec.Env,
 		},
 	}
 

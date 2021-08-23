@@ -1,6 +1,6 @@
 # Overridden Type and Provider
 
-When projected into the application workload, the binding must contain a `type` entry and should contain a `provider` entry.
+When projected into the workload, the binding must contain a `type` entry and should contain a `provider` entry.
 If the Secret doesn't contain a type or provider, or contains the wrong values, they can be overridden for the binding.
 
 In this sample, we'll use a [Kubernetes Job][kubernetes-jobs] to dump the environment to the logs and exit.
@@ -12,7 +12,7 @@ If not already installed, [install the ServiceBinding CRD and controller][instal
 ## Deploy
 
 Like Pods, Kubernetes Jobs are immutable after they are created.
-We need to make sure the `ServiceBinding`s are fully configured before the application is created.
+We need to make sure the `ServiceBinding`s are fully configured before the workload is created.
 
 Apply the `ProvisionedService` and `ServiceBinding`:
 
@@ -33,7 +33,7 @@ For each service binding, the `ServiceAvailable` condition should be `True` and 
   conditions:
   - lastTransitionTime: "2021-07-23T16:46:58Z"
     message: jobs.batch "overridden-type-provider" not found
-    reason: ProjectionReadyApplicationMissing
+    reason: ProjectionReadyWorkloadMissing
     status: "False"
     type: Ready
   - lastTransitionTime: "2021-07-23T16:46:58Z"
@@ -43,20 +43,20 @@ For each service binding, the `ServiceAvailable` condition should be `True` and 
     type: ServiceAvailable
   - lastTransitionTime: "2021-07-23T16:46:58Z"
     message: jobs.batch "overridden-type-provider" not found
-    reason: ApplicationMissing
+    reason: WorkloadMissing
     status: "False"
     type: ProjectionReady
 ```
 
-Create the application `Job`:
+Create the workload `Job`:
 
 ```sh
-kubectl apply -f ./samples/overridden-type-provider/application.yaml
+kubectl apply -f ./samples/overridden-type-provider/workload.yaml
 ```
 
 ## Understand
 
-Each `ServiceBinding` resource defines an environment variable that is projected into the application in addition to the binding volume mount.
+Each `ServiceBinding` resource defines an environment variable that is projected into the workload in addition to the binding volume mount.
 
 ```sh
 kubectl describe job overridden-type-provider
@@ -71,7 +71,7 @@ Environment:
 ...
 ```
 
-The application job dumps the environment to the log and then exits.
+The job dumps the environment to the log and then exits.
 We should see our injected environment variable as well as other variable commonly found in Kubernetes containers.
 
 Inspect the logs from the job:

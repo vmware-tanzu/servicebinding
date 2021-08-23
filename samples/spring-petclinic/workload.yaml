@@ -31,11 +31,11 @@ spec:
         app: spring-petclinic
     spec:
       containers:
-        - name: application
+        - name: workload
           # built with paketo builder from https://github.com/spring-projects/spring-petclinic
           image: scothis/petclinic:service-bindings-20200922
           env:
-          # tell the application to use mysql instead of the default embedded database
+          # tell the workload to use mysql instead of the default embedded database
           - name: SPRING_PROFILES_ACTIVE
             value: mysql
           ports:

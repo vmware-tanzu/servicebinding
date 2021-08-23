@@ -22,15 +22,15 @@ import (
 )
 
 const (
-	ServiceBindingProjectionConditionReady                = apis.ConditionReady
-	ServiceBindingProjectionConditionApplicationAvailable = "ApplicationAvailable"
+	ServiceBindingProjectionConditionReady             = apis.ConditionReady
+	ServiceBindingProjectionConditionWorkloadAvailable = "WorkloadAvailable"
 
 	ServiceBindingRootEnv = "SERVICE_BINDING_ROOT"
 	bindingVolumePrefix   = "binding-"
 )
 
 var sbpCondSet = apis.NewLivingConditionSet(
-	ServiceBindingProjectionConditionApplicationAvailable,
+	ServiceBindingProjectionConditionWorkloadAvailable,
 )
 
 func (b *ServiceBindingProjection) GetStatus() *duckv1.Status {
@@ -43,7 +43,7 @@ func (b *ServiceBindingProjection) GetConditionSet() apis.ConditionSet {
 
 func (b *ServiceBindingProjection) GetSubject() tracker.Reference {
 	var ref tracker.Reference
-	b.Spec.Application.Reference.DeepCopyInto(&ref)
+	b.Spec.Workload.Reference.DeepCopyInto(&ref)
 	ref.Namespace = b.Namespace
 	return ref
 }
@@ -228,7 +228,7 @@ func (b *ServiceBindingProjection) doContainer(ctx context.Context, ps *duckv1.W
 }
 
 func (b *ServiceBindingProjection) isTargetContainer(idx int, c *corev1.Container) bool {
-	targets := b.Spec.Application.Containers
+	targets := b.Spec.Workload.Containers
 	if len(targets) == 0 {
 		return true
 	}
@@ -332,16 +332,16 @@ func (bs *ServiceBindingProjectionStatus) InitializeConditions() {
 }
 
 func (bs *ServiceBindingProjectionStatus) MarkBindingAvailable() {
-	sbpCondSet.Manage(bs).MarkTrue(ServiceBindingProjectionConditionApplicationAvailable)
+	sbpCondSet.Manage(bs).MarkTrue(ServiceBindingProjectionConditionWorkloadAvailable)
 }
 
 func (bs *ServiceBindingProjectionStatus) MarkBindingUnavailable(reason string, message string) {
 	if strings.HasPrefix(reason, "Subject") {
-		// knative/pkg uses "Subject*" reasons, we want to rename to "Application*"
-		reason = strings.Replace(reason, "Subject", "Application", 1)
+		// knative/pkg uses "Subject*" reasons, we want to rename to "Workload*"
+		reason = strings.Replace(reason, "Subject", "Workload", 1)
 	}
 	sbpCondSet.Manage(bs).MarkFalse(
-		ServiceBindingProjectionConditionApplicationAvailable, reason, message)
+		ServiceBindingProjectionConditionWorkloadAvailable, reason, message)
 }
 
 func (bs *ServiceBindingProjectionStatus) SetObservedGeneration(gen int64) {

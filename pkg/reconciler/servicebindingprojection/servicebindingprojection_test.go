@@ -79,11 +79,11 @@ func TestReconcile(t *testing.T) {
 				},
 				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
 					Name: name,
-					Application: labsinternalv1alpha1.ApplicationReference{
+					Workload: labsinternalv1alpha1.WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
-							Name:       "my-application",
+							Name:       "my-workload",
 						},
 					},
 					Binding: corev1.LocalObjectReference{
@@ -95,11 +95,11 @@ func TestReconcile(t *testing.T) {
 						ObservedGeneration: 1,
 						Conditions: duckv1.Conditions{
 							{
-								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionApplicationAvailable,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
 								Status: corev1.ConditionTrue,
 							},
 							{
-								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionReady,
+								Type:   labsinternalv1alpha1.ServiceBindingProjectionConditionWorkloadAvailable,
 								Status: corev1.ConditionTrue,
 							},
 						},
@@ -109,7 +109,7 @@ func TestReconcile(t *testing.T) {
 			&appsv1.Deployment{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
-					Name:      "my-application",
+					Name:      "my-workload",
 					Annotations: map[string]string{
 						"internal.bindings.labs.vmware.com/projection-e9ead9b18f311f72f9c7a54af76427b50d02e2e3": "my-secret",
 					},

@@ -11,14 +11,14 @@ metadata:
 spec:
   type: overridden-type
   provider: overridden-provider
-  application:
-    apiVersion: batch/v1
-    kind: Job
-    name: overridden-type-provider
   # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
   service:
     apiVersion: v1
     kind: Secret
+    name: overridden-type-provider
+  workload:
+    apiVersion: batch/v1
+    kind: Job
     name: overridden-type-provider
   env:
   - name: BOUND_TYPE

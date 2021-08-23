@@ -67,12 +67,12 @@ func TestServiceBindingProjection_Validate(t *testing.T) {
 			seed: &ServiceBindingProjection{},
 			expected: (&apis.FieldError{}).Also(
 				apis.ErrMissingOneOf(
-					"spec.application.name",
-					"spec.application.selector",
+					"spec.workload.name",
+					"spec.workload.selector",
 				),
 				apis.ErrMissingField(
-					"spec.application.apiVersion",
-					"spec.application.kind",
+					"spec.workload.apiVersion",
+					"spec.workload.kind",
 				),
 				apis.ErrMissingField("spec.binding"),
 				apis.ErrMissingField("spec.name"),
@@ -86,7 +86,7 @@ func TestServiceBindingProjection_Validate(t *testing.T) {
 					Binding: corev1.LocalObjectReference{
 						Name: "my-secret",
 					},
-					Application: ApplicationReference{
+					Workload: WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -98,14 +98,14 @@ func TestServiceBindingProjection_Validate(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name: "valid, application selector",
+			name: "valid, workload selector",
 			seed: &ServiceBindingProjection{
 				Spec: ServiceBindingProjectionSpec{
 					Name: "my-binding",
 					Binding: corev1.LocalObjectReference{
 						Name: "my-secret",
 					},
-					Application: ApplicationReference{
+					Workload: WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -124,7 +124,7 @@ func TestServiceBindingProjection_Validate(t *testing.T) {
 					Binding: corev1.LocalObjectReference{
 						Name: "my-secret",
 					},
-					Application: ApplicationReference{
+					Workload: WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -149,7 +149,7 @@ func TestServiceBindingProjection_Validate(t *testing.T) {
 					Binding: corev1.LocalObjectReference{
 						Name: "my-secret",
 					},
-					Application: ApplicationReference{
+					Workload: WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -160,7 +160,7 @@ func TestServiceBindingProjection_Validate(t *testing.T) {
 				},
 			},
 			expected: (&apis.FieldError{}).Also(
-				apis.ErrDisallowedFields("spec.application.namespace"),
+				apis.ErrDisallowedFields("spec.workload.namespace"),
 			),
 		},
 		{
@@ -171,7 +171,7 @@ func TestServiceBindingProjection_Validate(t *testing.T) {
 					Binding: corev1.LocalObjectReference{
 						Name: "my-secret",
 					},
-					Application: ApplicationReference{
+					Workload: WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -196,7 +196,7 @@ func TestServiceBindingProjection_Validate(t *testing.T) {
 					Binding: corev1.LocalObjectReference{
 						Name: "my-secret",
 					},
-					Application: ApplicationReference{
+					Workload: WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -224,7 +224,7 @@ func TestServiceBindingProjection_Validate(t *testing.T) {
 					Binding: corev1.LocalObjectReference{
 						Name: "my-secret",
 					},
-					Application: ApplicationReference{
+					Workload: WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -311,11 +311,11 @@ func TestServiceBindingProjectionStatus_MarBindingAvailable(t *testing.T) {
 		Status: duckv1.Status{
 			Conditions: duckv1.Conditions{
 				{
-					Type:   ServiceBindingProjectionConditionApplicationAvailable,
+					Type:   ServiceBindingProjectionConditionReady,
 					Status: corev1.ConditionTrue,
 				},
 				{
-					Type:   ServiceBindingProjectionConditionReady,
+					Type:   ServiceBindingProjectionConditionWorkloadAvailable,
 					Status: corev1.ConditionTrue,
 				},
 			},
@@ -334,15 +334,15 @@ func TestServiceBindingProjectionStatus_MarkBindingUnavailable(t *testing.T) {
 		Status: duckv1.Status{
 			Conditions: duckv1.Conditions{
 				{
-					Type:    ServiceBindingProjectionConditionApplicationAvailable,
+					Type:    ServiceBindingProjectionConditionReady,
 					Status:  corev1.ConditionFalse,
-					Reason:  "ApplicationReason",
+					Reason:  "WorkloadReason",
 					Message: "a message",
 				},
 				{
-					Type:    ServiceBindingProjectionConditionReady,
+					Type:    ServiceBindingProjectionConditionWorkloadAvailable,
 					Status:  corev1.ConditionFalse,
-					Reason:  "ApplicationReason",
+					Reason:  "WorkloadReason",
 					Message: "a message",
 				},
 			},
@@ -369,11 +369,11 @@ func TestServiceBindingProjectionStatus_InitializeConditions(t *testing.T) {
 				Status: duckv1.Status{
 					Conditions: duckv1.Conditions{
 						{
-							Type:   ServiceBindingProjectionConditionApplicationAvailable,
+							Type:   ServiceBindingProjectionConditionReady,
 							Status: corev1.ConditionUnknown,
 						},
 						{
-							Type:   ServiceBindingProjectionConditionReady,
+							Type:   ServiceBindingProjectionConditionWorkloadAvailable,
 							Status: corev1.ConditionUnknown,
 						},
 					},
@@ -386,11 +386,11 @@ func TestServiceBindingProjectionStatus_InitializeConditions(t *testing.T) {
 				Status: duckv1.Status{
 					Conditions: duckv1.Conditions{
 						{
-							Type:   ServiceBindingProjectionConditionReady,
+							Type:   ServiceBindingProjectionConditionWorkloadAvailable,
 							Status: corev1.ConditionTrue,
 						},
 						{
-							Type:   ServiceBindingProjectionConditionApplicationAvailable,
+							Type:   ServiceBindingProjectionConditionReady,
 							Status: corev1.ConditionTrue,
 						},
 					},
@@ -400,11 +400,11 @@ func TestServiceBindingProjectionStatus_InitializeConditions(t *testing.T) {
 				Status: duckv1.Status{
 					Conditions: duckv1.Conditions{
 						{
-							Type:   ServiceBindingProjectionConditionReady,
+							Type:   ServiceBindingProjectionConditionWorkloadAvailable,
 							Status: corev1.ConditionTrue,
 						},
 						{
-							Type:   ServiceBindingProjectionConditionApplicationAvailable,
+							Type:   ServiceBindingProjectionConditionReady,
 							Status: corev1.ConditionTrue,
 						},
 					},
@@ -428,18 +428,18 @@ func TestServiceBindingProjection_GetSubject(t *testing.T) {
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
 		Namespace:  "default",
-		Name:       "my-application",
+		Name:       "my-workload",
 	}
 	seed := &ServiceBindingProjection{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 		},
 		Spec: ServiceBindingProjectionSpec{
-			Application: ApplicationReference{
+			Workload: WorkloadReference{
 				Reference: tracker.Reference{
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
-					Name:       "my-application",
+					Name:       "my-workload",
 				},
 			},
 		},
@@ -1275,7 +1275,7 @@ func TestServiceBindingProjection_Do(t *testing.T) {
 					Binding: corev1.LocalObjectReference{
 						Name: "my-secret",
 					},
-					Application: ApplicationReference{
+					Workload: WorkloadReference{
 						Containers: []string{
 							"my-container",
 						},

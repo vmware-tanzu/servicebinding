@@ -70,11 +70,11 @@ func TestReconcile(t *testing.T) {
 		Kind:       provisionedService.GetGroupVersionKind().Kind,
 		Name:       provisionedService.Name,
 	}
-	applicationRef := servicebindingv1alpha2.ApplicationReference{
+	workloadRef := servicebindingv1alpha2.WorkloadReference{
 		Reference: tracker.Reference{
 			APIVersion: "apps/v1",
 			Kind:       "Deployment",
-			Name:       "my-application",
+			Name:       "my-workload",
 		},
 	}
 
@@ -114,9 +114,9 @@ func TestReconcile(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					ObservedGeneration: 1,
@@ -160,8 +160,8 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
+					Name:     name,
+					Workload: workloadRef,
 					Binding: corev1.LocalObjectReference{
 						Name: secretName,
 					},
@@ -193,9 +193,9 @@ func TestReconcile(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
@@ -223,8 +223,8 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
+					Name:     name,
+					Workload: workloadRef,
 					Binding: corev1.LocalObjectReference{
 						Name: secretName,
 					},
@@ -239,9 +239,9 @@ func TestReconcile(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					ObservedGeneration: 1,
@@ -287,9 +287,9 @@ func TestReconcile(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
@@ -312,8 +312,8 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
+					Name:     name,
+					Workload: workloadRef,
 					Binding: corev1.LocalObjectReference{
 						Name: secretName,
 					},
@@ -340,8 +340,8 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 					Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-						Name:        name,
-						Application: applicationRef,
+						Name:     name,
+						Workload: workloadRef,
 						Binding: corev1.LocalObjectReference{
 							Name: secretName,
 						},
@@ -357,9 +357,9 @@ func TestReconcile(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					ObservedGeneration: 1,
@@ -403,9 +403,9 @@ func TestReconcile(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					ObservedGeneration: 1,
@@ -446,8 +446,8 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
+					Name:     name,
+					Workload: workloadRef,
 					Binding: corev1.LocalObjectReference{
 						Name: secretName,
 					},
@@ -480,9 +480,9 @@ func TestReconcile(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					ObservedGeneration: 1,
@@ -531,8 +531,8 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
+					Name:     name,
+					Workload: workloadRef,
 					Binding: corev1.LocalObjectReference{
 						Name: secretName,
 					},
@@ -555,9 +555,9 @@ func TestReconcile(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					ObservedGeneration: 1,
@@ -597,8 +597,8 @@ func TestReconcile(t *testing.T) {
 					},
 				},
 				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
+					Name:     name,
+					Workload: workloadRef,
 					Binding: corev1.LocalObjectReference{
 						Name: secretName,
 					},
@@ -639,8 +639,8 @@ func TestReconcile(t *testing.T) {
 						},
 					},
 					Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-						Name:        name,
-						Application: applicationRef,
+						Name:     name,
+						Workload: workloadRef,
 						Binding: corev1.LocalObjectReference{
 							Name: secretName,
 						},
@@ -673,9 +673,9 @@ func TestReconcile(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: servicebindingv1alpha2.ServiceBindingSpec{
-					Name:        name,
-					Application: &applicationRef,
-					Service:     &serviceRef,
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
 				},
 				Status: servicebindingv1alpha2.ServiceBindingStatus{
 					ObservedGeneration: 1,
@@ -706,8 +706,8 @@ func TestReconcile(t *testing.T) {
 					Name:      name,
 				},
 				Spec: labsinternalv1alpha1.ServiceBindingProjectionSpec{
-					Name:        name,
-					Application: applicationRef,
+					Name:     name,
+					Workload: workloadRef,
 					Binding: corev1.LocalObjectReference{
 						Name: secretName,
 					},

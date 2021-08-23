@@ -39,7 +39,7 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 					Name:     "my-binding",
 					Type:     "my-type",
 					Provider: "my-provider",
-					Application: &servicebindingv1alpha2.ApplicationReference{
+					Workload: &servicebindingv1alpha2.WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -83,7 +83,7 @@ func TestMakeServiceBindingProjection(t *testing.T) {
 					Name:     "my-binding",
 					Type:     "my-type",
 					Provider: "my-provider",
-					Application: labsinternalv1alpha1.ApplicationReference{
+					Workload: labsinternalv1alpha1.WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",

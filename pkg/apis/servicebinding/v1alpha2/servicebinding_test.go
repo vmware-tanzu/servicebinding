@@ -88,7 +88,7 @@ func TestServiceBinding_Validate(t *testing.T) {
 			name: "empty",
 			seed: &ServiceBinding{},
 			expected: (&apis.FieldError{}).Also(
-				apis.ErrMissingField("spec.application"),
+				apis.ErrMissingField("spec.workload"),
 				apis.ErrMissingField("spec.service"),
 			),
 		},
@@ -96,11 +96,11 @@ func TestServiceBinding_Validate(t *testing.T) {
 			name: "valid",
 			seed: &ServiceBinding{
 				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
+					Workload: &WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
-							Name:       "my-app",
+							Name:       "my-workload",
 						},
 					},
 					Service: &tracker.Reference{
@@ -113,10 +113,10 @@ func TestServiceBinding_Validate(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name: "valid, application selector",
+			name: "valid, workload selector",
 			seed: &ServiceBinding{
 				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
+					Workload: &WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -136,11 +136,11 @@ func TestServiceBinding_Validate(t *testing.T) {
 			name: "invalid, service selector",
 			seed: &ServiceBinding{
 				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
+					Workload: &WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
-							Name:       "my-application",
+							Name:       "my-workload",
 						},
 					},
 					Service: &tracker.Reference{
@@ -158,7 +158,7 @@ func TestServiceBinding_Validate(t *testing.T) {
 			name: "valid, env",
 			seed: &ServiceBinding{
 				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
+					Workload: &WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -184,7 +184,7 @@ func TestServiceBinding_Validate(t *testing.T) {
 			name: "disallow namespaces",
 			seed: &ServiceBinding{
 				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
+					Workload: &WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -201,7 +201,7 @@ func TestServiceBinding_Validate(t *testing.T) {
 				},
 			},
 			expected: (&apis.FieldError{}).Also(
-				apis.ErrDisallowedFields("spec.application.namespace"),
+				apis.ErrDisallowedFields("spec.workload.namespace"),
 				apis.ErrDisallowedFields("spec.service.namespace"),
 			),
 		},
@@ -209,7 +209,7 @@ func TestServiceBinding_Validate(t *testing.T) {
 			name: "empty env",
 			seed: &ServiceBinding{
 				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
+					Workload: &WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",
@@ -235,7 +235,7 @@ func TestServiceBinding_Validate(t *testing.T) {
 			name: "duplicate env",
 			seed: &ServiceBinding{
 				Spec: ServiceBindingSpec{
-					Application: &ApplicationReference{
+					Workload: &WorkloadReference{
 						Reference: tracker.Reference{
 							APIVersion: "apps/v1",
 							Kind:       "Deployment",

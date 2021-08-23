@@ -1,6 +1,6 @@
 # Controlled Resource
 
-Sometimes a the application resource you create is not PodSpec-able, but it creates a child resource that is. In cases like this, we can inject into the child resource. Normally, it is not possible to mutate a controlled resource, as the controller should see the mutation and undo the change, however, `ServiceBinding`s are able to inject into controlled resources and keep the injected values in sync.
+Sometimes a the workload resource you create is not PodSpec-able, but it creates a child resource that is. In cases like this, we can inject into the child resource. Normally, it is not possible to mutate a controlled resource, as the controller should see the mutation and undo the change, however, `ServiceBinding`s are able to inject into controlled resources and keep the injected values in sync.
 
 This behavior may not be portable across other service binding implementations.
 
@@ -12,7 +12,7 @@ For this sample, we'll also need [Knative Serving][knative-install].
 
 ## Deploy
 
-Apply the custom application, service and connect them with a `ServiceBinding`:
+Apply the custom workload, service and connect them with a `ServiceBinding`:
 
 ```sh
 kubectl apply -f ./samples/controlled-resource
@@ -20,12 +20,12 @@ kubectl apply -f ./samples/controlled-resource
 
 ## Understand
 
-The application.yaml defines a Knative `Service`, which in turn controls a Knative `Configuration`.
-The `ServiceBinding`'s application reference targets the `Configuration`, instead of the `Service`.
+The workload.yaml defines a Knative `Service`, which in turn controls a Knative `Configuration`.
+The `ServiceBinding`'s workload reference targets the `Configuration`, instead of the `Service`.
 
 > Note: the Knative `Service` and `Configuration` resources are both PodSpec-able, and can both be the target of a service binding. Typically, a binding would target the service instead of the configuration resource. We're targeting the configuration in this sample to demonstrate targeting a controlled resource.
 
-The application reference is using a label selector to match the target configuration. Label selectors are useful when a binding needs to target multiple resources, or the name of the target resource is not known. Controllers may generate multiple child resources, or use a generated name which will not be known in advance.
+The workload reference is using a label selector to match the target configuration. Label selectors are useful when a binding needs to target multiple resources, or the name of the target resource is not known. Controllers may generate multiple child resources, or use a generated name which will not be known in advance.
 
 We can see the binding applied to the Knative `Configuration`.
 

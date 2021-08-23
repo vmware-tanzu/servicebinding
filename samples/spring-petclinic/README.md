@@ -8,13 +8,13 @@ If not already installed, [install the ServiceBinding CRD and controller][instal
 
 ## Deploy
 
-Apply the PetClinic application, MySQL service and connect them with a ServiceBinding:
+Apply the PetClinic workload, MySQL service and connect them with a ServiceBinding:
 
 ```sh
 kubectl apply -f ./samples/spring-petclinic
 ```
 
-Wait for the application (and database) to start and become healthy:
+Wait for the workload (and database) to start and become healthy:
 
 ```sh
 kubectl wait deployment spring-petclinic --for condition=available --timeout=2m
@@ -22,7 +22,7 @@ kubectl wait deployment spring-petclinic --for condition=available --timeout=2m
 
 ## Understand
 
-Inspect the PetClinic application as bound:
+Inspect the PetClinic workload as bound:
 
 ```sh
 kubectl describe deployment spring-petclinic
@@ -34,7 +34,7 @@ The describe output will contain:
 ```txt
 ...
   Containers:
-   application:
+   workload:
     ...
     Environment:
       SPRING_PROFILES_ACTIVE:  mysql
@@ -49,13 +49,13 @@ The describe output will contain:
 ...
 ```
 
-The application uses [Spring Cloud Bindings][scb], which discovers the bound MySQL service by type and reconfigures Spring Boot to consume the service.
+The workload uses [Spring Cloud Bindings][scb], which discovers the bound MySQL service by type and reconfigures Spring Boot to consume the service.
 Spring Cloud Bindings is automatically added to Spring applications built by Paketo buildpacks.
 
-We can see the effect of Spring Cloud Bindings by view the application logs:
+We can see the effect of Spring Cloud Bindings by view the workload logs:
 
 ```sh
-kubectl logs -l app=spring-petclinic -c application --tail 1000
+kubectl logs -l app=spring-petclinic -c workload --tail 1000
 ```
 
 The logs should contain:
@@ -87,7 +87,7 @@ Spring Cloud Bindings Boot Auto-Configuration Enabled
 
 ## Play
 
-To connect to the application, forward a local port into the cluster:
+To connect to the workload, forward a local port into the cluster:
 
 ```sh
 kubectl port-forward service/spring-petclinic 8080:80

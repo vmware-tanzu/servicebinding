@@ -29,7 +29,7 @@ spec:
         app: provisioned-service
     spec:
       containers:
-        - name: application
+        - name: workload
           # from https://knative.dev/docs/serving/samples/hello-world/helloworld-go/
           image: gcr.io/knative-samples/helloworld-go
           env:

@@ -9,15 +9,15 @@ metadata:
   labels:
     multi-binding: "true"
 spec:
-  application:
-    apiVersion: batch/v1
-    kind: Job
-    name: multi-binding
   # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
   service:
     apiVersion: v1
     kind: Secret
     name: multi-binding-1
+  workload:
+    apiVersion: batch/v1
+    kind: Job
+    name: multi-binding
   env:
   - name: MULTI_BINDING_1
     key: number
@@ -30,15 +30,15 @@ metadata:
   labels:
     multi-binding: "true"
 spec:
-  application:
-    apiVersion: batch/v1
-    kind: Job
-    name: multi-binding
   # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
   service:
     apiVersion: v1
     kind: Secret
     name: multi-binding-2
+  workload:
+    apiVersion: batch/v1
+    kind: Job
+    name: multi-binding
   env:
   - name: MULTI_BINDING_2
     key: number

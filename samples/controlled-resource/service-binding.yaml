@@ -7,18 +7,18 @@ kind: ServiceBinding
 metadata:
   name: controlled-resource
 spec:
-  application:
+  # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
+  service:
+    apiVersion: v1
+    kind: Secret
+    name: controlled-resource
+  workload:
     apiVersion: serving.knative.dev/v1
     kind: Configuration
     # use a label selector since we may not know the name of the controlled resource
     selector:
       matchLabels:
         serving.knative.dev/service: controlled-resource
-  # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
-  service:
-    apiVersion: v1
-    kind: Secret
-    name: controlled-resource
   env:
   - name: TARGET
     key: target

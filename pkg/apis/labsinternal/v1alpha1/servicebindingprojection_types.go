@@ -62,18 +62,18 @@ type ServiceBindingProjectionSpec struct {
 	// Binding reference to the service binding's projected secret
 	Binding corev1.LocalObjectReference `json:"binding"`
 
-	// Application resource to inject the binding into
-	Application ApplicationReference `json:"application"`
+	// Workload resource to inject the binding into
+	Workload WorkloadReference `json:"workload"`
 
-	// Env projects keys from the binding secret into the application as
+	// Env projects keys from the binding secret into the workload as
 	// environment variables
 	Env []EnvVar `json:"env,omitempty"`
 }
 
-type ApplicationReference struct {
+type WorkloadReference struct {
 	tracker.Reference
 
-	// Containers to target within the application. If not set, all containers
+	// Containers to target within the workload. If not set, all containers
 	// will be injected.
 	Containers []string `json:"containers,omitempty"`
 }
@@ -108,14 +108,14 @@ func (b *ServiceBindingProjection) Validate(ctx context.Context) (errs *apis.Fie
 		)
 	}
 
-	a := b.Spec.Application.DeepCopy()
+	a := b.Spec.Workload.DeepCopy()
 	a.Namespace = "fake"
 	errs = errs.Also(
-		a.Validate(ctx).ViaField("spec.application"),
+		a.Validate(ctx).ViaField("spec.workload"),
 	)
-	if b.Spec.Application.Namespace != "" {
+	if b.Spec.Workload.Namespace != "" {
 		errs = errs.Also(
-			apis.ErrDisallowedFields("spec.application.namespace"),
+			apis.ErrDisallowedFields("spec.workload.namespace"),
 		)
 	}
 

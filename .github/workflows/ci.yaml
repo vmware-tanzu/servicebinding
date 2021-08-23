@@ -213,7 +213,7 @@ jobs:
 
         kapp deploy -a spring-petclinic-db -f samples/spring-petclinic/service.yaml -y
         kapp deploy -a spring-petclinic-binding -f samples/spring-petclinic/service-binding.yaml -y
-        kapp deploy -a spring-petclinic -f samples/spring-petclinic/application.yaml -y
+        kapp deploy -a spring-petclinic -f samples/spring-petclinic/workload.yaml -y
     - name: Collect diagnostics
       run: |
         echo "##[group]Describe nodes"
@@ -238,7 +238,7 @@ jobs:
           kubectl get deployment spring-petclinic -oyaml
         echo "##[endgroup]"
         echo "##[group]Petclinic logs"
-          kubectl logs -l app=spring-petclinic -c application --tail 1000
+          kubectl logs -l app=spring-petclinic -c workload --tail 1000
         echo "##[endgroup]"
         echo "##[group]MySQL deployment"
           kubectl get deployment spring-petclinic-db -oyaml

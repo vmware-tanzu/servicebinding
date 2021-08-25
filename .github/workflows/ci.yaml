@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-go@v2.1.3
+    - uses: actions/setup-go@v2.1.4
       with:
         go-version: 1.15.x
     - name: Test
@@ -35,7 +35,7 @@ jobs:
       BUNDLE: registry.local/service-bindings/bundle
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-go@v2.1.3
+    - uses: actions/setup-go@v2.1.4
       with:
         go-version: 1.15.x
     - uses: vmware-tanzu/carvel-setup-action@v1

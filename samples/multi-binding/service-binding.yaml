@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: service.binding/v1alpha2
+apiVersion: servicebinding.io/v1alpha3
 kind: ServiceBinding
 metadata:
   name: multi-binding-1
@@ -23,7 +23,7 @@ spec:
     key: number
 
 ---
-apiVersion: service.binding/v1alpha2
+apiVersion: servicebinding.io/v1alpha3
 kind: ServiceBinding
 metadata:
   name: multi-binding-2

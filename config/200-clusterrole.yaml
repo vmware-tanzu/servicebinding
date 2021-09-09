@@ -10,6 +10,9 @@ metadata:
 aggregationRule:
   clusterRoleSelectors:
   - matchLabels:
+      servicebinding.io/controller: "true"
+  # legacy support
+  - matchLabels:
       service.binding/controller: "true"
 rules: [] # Rules are automatically filled in by the controller manager.
 ---
@@ -19,7 +22,7 @@ metadata:
   name: service-binding-core
   labels:
     bindings.labs.vmware.com/release: devel
-    service.binding/controller: "true"
+    servicebinding.io/controller: "true"
 rules:
   - apiGroups: [""]
     resources: ["configmaps", "services", "secrets", "events", "namespaces"]
@@ -43,7 +46,7 @@ metadata:
   name: service-binding-crd
   labels:
     bindings.labs.vmware.com/release: devel
-    service.binding/controller: "true"
+    servicebinding.io/controller: "true"
 rules:
   - apiGroups: ["service.binding"]
     resources: ["*"]
@@ -63,7 +66,7 @@ metadata:
   name: service-binding-apps
   labels:
     bindings.labs.vmware.com/release: devel
-    service.binding/controller: "true"
+    servicebinding.io/controller: "true"
 rules:
   - apiGroups: ["apps"]
     resources: ["deployments", "daemonsets", "statefulsets"]
@@ -80,7 +83,7 @@ metadata:
   name: service-binding-knative-serving
   labels:
     bindings.labs.vmware.com/release: devel
-    service.binding/controller: "true"
+    servicebinding.io/controller: "true"
 rules:
   - apiGroups: ["serving.knative.dev"]
     resources: ["services", "configurations"]
@@ -95,7 +98,7 @@ metadata:
   name: service-binding-kpack
   labels:
     bindings.labs.vmware.com/release: devel
-    service.binding/controller: "true"
+    servicebinding.io/controller: "true"
 rules:
   - apiGroups: ["build.pivotal.io"]
     resources: ["images"]
@@ -109,7 +112,7 @@ metadata:
   name: service-binding-riff
   labels:
     bindings.labs.vmware.com/release: devel
-    service.binding/controller: "true"
+    servicebinding.io/controller: "true"
 rules:
   - apiGroups: ["build.projectriff.io"]
     resources: ["applications", "containers", "functions"]

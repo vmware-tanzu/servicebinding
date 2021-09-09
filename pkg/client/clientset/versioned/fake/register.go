@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package fake
 
 import (
-	duckv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha2"
+	duckv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha3"
 	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
 	internalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
 	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
@@ -23,7 +23,7 @@ var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 
 var localSchemeBuilder = runtime.SchemeBuilder{
-	duckv1alpha2.AddToScheme,
+	duckv1alpha3.AddToScheme,
 	bindingsv1alpha1.AddToScheme,
 	internalv1alpha1.AddToScheme,
 	servicebindingv1alpha3.AddToScheme,

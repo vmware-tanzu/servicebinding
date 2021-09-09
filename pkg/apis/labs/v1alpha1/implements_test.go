@@ -8,12 +8,12 @@ package v1alpha1
 import (
 	"testing"
 
-	duckv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha2"
+	duckv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha3"
 	"knative.dev/pkg/apis/duck"
 )
 
 func TestImplementsBinding(t *testing.T) {
-	if err := duck.VerifyType(&ProvisionedService{}, &duckv1alpha2.Serviceable{}); err != nil {
+	if err := duck.VerifyType(&ProvisionedService{}, &duckv1alpha3.Serviceable{}); err != nil {
 		t.Fatal(err)
 	}
 }

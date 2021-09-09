@@ -12,13 +12,13 @@ import (
 	testing "k8s.io/client-go/testing"
 )
 
-type FakeDuckV1alpha2 struct {
+type FakeDuckV1alpha3 struct {
 	*testing.Fake
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeDuckV1alpha2) RESTClient() rest.Interface {
+func (c *FakeDuckV1alpha3) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

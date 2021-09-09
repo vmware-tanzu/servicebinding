@@ -9,8 +9,8 @@ package fake
 
 import (
 	clientset "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned"
-	duckv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha2"
-	fakeduckv1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha2/fake"
+	duckv1alpha3 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha3"
+	fakeduckv1alpha3 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha3/fake"
 	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1"
 	fakebindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1/fake"
 	internalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labsinternal/v1alpha1"
@@ -71,9 +71,9 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// DuckV1alpha2 retrieves the DuckV1alpha2Client
-func (c *Clientset) DuckV1alpha2() duckv1alpha2.DuckV1alpha2Interface {
-	return &fakeduckv1alpha2.FakeDuckV1alpha2{Fake: &c.Fake}
+// DuckV1alpha3 retrieves the DuckV1alpha3Client
+func (c *Clientset) DuckV1alpha3() duckv1alpha3.DuckV1alpha3Interface {
+	return &fakeduckv1alpha3.FakeDuckV1alpha3{Fake: &c.Fake}
 }
 
 // BindingsV1alpha1 retrieves the BindingsV1alpha1Client

@@ -48,7 +48,7 @@ metadata:
     bindings.labs.vmware.com/release: devel
     servicebinding.io/controller: "true"
 rules:
-  - apiGroups: ["service.binding"]
+  - apiGroups: ["servicebinding.io"]
     resources: ["*"]
     verbs: ["*"]
   - apiGroups: ["bindings.labs.vmware.com"]

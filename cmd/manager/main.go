@@ -30,7 +30,7 @@ import (
 
 	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
 	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
+	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/provisionedservice"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding"
 	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebindingprojection"
@@ -62,8 +62,8 @@ var (
 )
 var ourTypes = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
 	labsv1alpha1.SchemeGroupVersion.WithKind("ProvisionedService"):                 &labsv1alpha1.ProvisionedService{},
-	servicebindingv1alpha2.SchemeGroupVersion.WithKind("ServiceBinding"):           &servicebindingv1alpha2.ServiceBinding{},
-	servicebindingv1alpha2.SchemeGroupVersion.WithKind("ServiceBindingProjection"): &labsinternalv1alpha1.ServiceBindingProjection{},
+	servicebindingv1alpha3.SchemeGroupVersion.WithKind("ServiceBinding"):           &servicebindingv1alpha3.ServiceBinding{},
+	servicebindingv1alpha3.SchemeGroupVersion.WithKind("ServiceBindingProjection"): &labsinternalv1alpha1.ServiceBindingProjection{},
 }
 
 func NewDefaultingAdmissionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {

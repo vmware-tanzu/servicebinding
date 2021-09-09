@@ -12,10 +12,10 @@ import (
 
 	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
 	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
+	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
 	servicebindingsclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client"
 	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha2/serviceable"
-	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha2/servicebinding"
+	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha3/servicebinding"
 	"github.com/vmware-labs/service-bindings/pkg/resolver"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,7 +32,7 @@ import (
 	// register injection fakes
 	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha2/serviceable/fake"
 	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection/fake"
-	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha2/servicebinding/fake"
+	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha3/servicebinding/fake"
 	_ "knative.dev/pkg/injection/clients/dynamicclient/fake"
 
 	. "github.com/vmware-labs/service-bindings/pkg/reconciler/testing"
@@ -70,7 +70,7 @@ func TestReconcile(t *testing.T) {
 		Kind:       provisionedService.GetGroupVersionKind().Kind,
 		Name:       provisionedService.Name,
 	}
-	workloadRef := servicebindingv1alpha2.WorkloadReference{
+	workloadRef := servicebindingv1alpha3.WorkloadReference{
 		Reference: tracker.Reference{
 			APIVersion: "apps/v1",
 			Kind:       "Deployment",
@@ -93,13 +93,13 @@ func TestReconcile(t *testing.T) {
 		Name: "nop - deleted",
 		Key:  key,
 		Objects: []runtime.Object{
-			&servicebindingv1alpha2.ServiceBinding{
+			&servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:         namespace,
 					Name:              name,
 					DeletionTimestamp: &now,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{},
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{},
 			},
 		},
 	}, {
@@ -107,35 +107,35 @@ func TestReconcile(t *testing.T) {
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			&servicebindingv1alpha2.ServiceBinding{
+			&servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
 					Name:       name,
 					Generation: 1,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
 					Name:     name,
 					Workload: &workloadRef,
 					Service:  &serviceRef,
 				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
 					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
 					Conditions: []metav1.Condition{
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionReady,
 							Status: metav1.ConditionTrue,
 							Reason: "Ready",
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionServiceAvailable,
 							Status: metav1.ConditionTrue,
 							Reason: "Available",
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionProjectionReady,
 							Status: metav1.ConditionTrue,
 							Reason: "Projected",
 						},
@@ -147,11 +147,11 @@ func TestReconcile(t *testing.T) {
 					Namespace: namespace,
 					Name:      name,
 					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
+						"servicebinding.io/servicebinding": "my-binding",
 					},
 					OwnerReferences: []metav1.OwnerReference{
 						{
-							APIVersion:         "service.binding/v1alpha2",
+							APIVersion:         "servicebinding.io/v1alpha3",
 							Kind:               "ServiceBinding",
 							Name:               name,
 							BlockOwnerDeletion: ptr.Bool(true),
@@ -186,18 +186,18 @@ func TestReconcile(t *testing.T) {
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			&servicebindingv1alpha2.ServiceBinding{
+			&servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
 					Name:       name,
 					Generation: 1,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
 					Name:     name,
 					Workload: &workloadRef,
 					Service:  &serviceRef,
 				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
@@ -210,11 +210,11 @@ func TestReconcile(t *testing.T) {
 					Namespace: namespace,
 					Name:      name,
 					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
+						"servicebinding.io/servicebinding": "my-binding",
 					},
 					OwnerReferences: []metav1.OwnerReference{
 						{
-							APIVersion:         "service.binding/v1alpha2",
+							APIVersion:         "servicebinding.io/v1alpha3",
 							Kind:               "ServiceBinding",
 							Name:               name,
 							BlockOwnerDeletion: ptr.Bool(true),
@@ -232,37 +232,37 @@ func TestReconcile(t *testing.T) {
 			},
 		},
 		WantStatusUpdates: []clientgotesting.UpdateActionImpl{{
-			Object: &servicebindingv1alpha2.ServiceBinding{
+			Object: &servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
 					Name:       name,
 					Generation: 1,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
 					Name:     name,
 					Workload: &workloadRef,
 					Service:  &serviceRef,
 				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
 					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
 					Conditions: []metav1.Condition{
 						{
-							Type:               servicebindingv1alpha2.ServiceBindingConditionReady,
+							Type:               servicebindingv1alpha3.ServiceBindingConditionReady,
 							Status:             metav1.ConditionUnknown,
 							Reason:             "ProjectionReadyUnknown",
 							LastTransitionTime: now,
 						},
 						{
-							Type:               servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Type:               servicebindingv1alpha3.ServiceBindingConditionServiceAvailable,
 							Status:             metav1.ConditionTrue,
 							Reason:             "Available",
 							LastTransitionTime: now,
 						},
 						{
-							Type:               servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Type:               servicebindingv1alpha3.ServiceBindingConditionProjectionReady,
 							Status:             metav1.ConditionUnknown,
 							Reason:             "Unknown",
 							LastTransitionTime: now,
@@ -280,18 +280,18 @@ func TestReconcile(t *testing.T) {
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			&servicebindingv1alpha2.ServiceBinding{
+			&servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
 					Name:       name,
 					Generation: 1,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
 					Name:     name,
 					Workload: &workloadRef,
 					Service:  &serviceRef,
 				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
@@ -303,7 +303,7 @@ func TestReconcile(t *testing.T) {
 					Name:      name,
 					OwnerReferences: []metav1.OwnerReference{
 						{
-							APIVersion:         "service.binding/v1alpha2",
+							APIVersion:         "servicebinding.io/v1alpha3",
 							Kind:               "ServiceBinding",
 							Name:               name,
 							BlockOwnerDeletion: ptr.Bool(true),
@@ -327,11 +327,11 @@ func TestReconcile(t *testing.T) {
 						Namespace: namespace,
 						Name:      name,
 						Labels: map[string]string{
-							"service.binding/servicebinding": "my-binding",
+							"servicebinding.io/servicebinding": "my-binding",
 						},
 						OwnerReferences: []metav1.OwnerReference{
 							{
-								APIVersion:         "service.binding/v1alpha2",
+								APIVersion:         "servicebinding.io/v1alpha3",
 								Kind:               "ServiceBinding",
 								Name:               name,
 								BlockOwnerDeletion: ptr.Bool(true),
@@ -350,37 +350,37 @@ func TestReconcile(t *testing.T) {
 			},
 		},
 		WantStatusUpdates: []clientgotesting.UpdateActionImpl{{
-			Object: &servicebindingv1alpha2.ServiceBinding{
+			Object: &servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
 					Name:       name,
 					Generation: 1,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
 					Name:     name,
 					Workload: &workloadRef,
 					Service:  &serviceRef,
 				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
 					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
 					Conditions: []metav1.Condition{
 						{
-							Type:               servicebindingv1alpha2.ServiceBindingConditionReady,
+							Type:               servicebindingv1alpha3.ServiceBindingConditionReady,
 							Status:             metav1.ConditionUnknown,
 							Reason:             "ProjectionReadyUnknown",
 							LastTransitionTime: now,
 						},
 						{
-							Type:               servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Type:               servicebindingv1alpha3.ServiceBindingConditionServiceAvailable,
 							Status:             metav1.ConditionTrue,
 							Reason:             "Available",
 							LastTransitionTime: now,
 						},
 						{
-							Type:               servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Type:               servicebindingv1alpha3.ServiceBindingConditionProjectionReady,
 							Status:             metav1.ConditionUnknown,
 							Reason:             "Unknown",
 							LastTransitionTime: now,
@@ -396,33 +396,33 @@ func TestReconcile(t *testing.T) {
 		Name: "missing referenced service",
 		Key:  key,
 		Objects: []runtime.Object{
-			&servicebindingv1alpha2.ServiceBinding{
+			&servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
 					Name:       name,
 					Generation: 1,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
 					Name:     name,
 					Workload: &workloadRef,
 					Service:  &serviceRef,
 				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
 					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
 					Conditions: []metav1.Condition{
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionReady,
 							Status: metav1.ConditionTrue,
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionServiceAvailable,
 							Status: metav1.ConditionTrue,
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionProjectionReady,
 							Status: metav1.ConditionTrue,
 						},
 					},
@@ -433,11 +433,11 @@ func TestReconcile(t *testing.T) {
 					Namespace: namespace,
 					Name:      name,
 					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
+						"servicebinding.io/servicebinding": "my-binding",
 					},
 					OwnerReferences: []metav1.OwnerReference{
 						{
-							APIVersion:         "service.binding/v1alpha2",
+							APIVersion:         "servicebinding.io/v1alpha3",
 							Kind:               "ServiceBinding",
 							Name:               name,
 							BlockOwnerDeletion: ptr.Bool(true),
@@ -473,35 +473,35 @@ func TestReconcile(t *testing.T) {
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			&servicebindingv1alpha2.ServiceBinding{
+			&servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
 					Name:       name,
 					Generation: 1,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
 					Name:     name,
 					Workload: &workloadRef,
 					Service:  &serviceRef,
 				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
 					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
 					Conditions: []metav1.Condition{
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionReady,
 							Status: metav1.ConditionTrue,
 							Reason: "Ready",
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionServiceAvailable,
 							Status: metav1.ConditionTrue,
 							Reason: "Available",
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionProjectionReady,
 							Status: metav1.ConditionTrue,
 						},
 					},
@@ -518,11 +518,11 @@ func TestReconcile(t *testing.T) {
 					Namespace: namespace,
 					Name:      name,
 					Labels: map[string]string{
-						"service.binding/servicebinding": "my-binding",
+						"servicebinding.io/servicebinding": "my-binding",
 					},
 					OwnerReferences: []metav1.OwnerReference{
 						{
-							APIVersion:         "service.binding/v1alpha2",
+							APIVersion:         "servicebinding.io/v1alpha3",
 							Kind:               "ServiceBinding",
 							Name:               name,
 							BlockOwnerDeletion: ptr.Bool(true),
@@ -548,35 +548,35 @@ func TestReconcile(t *testing.T) {
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			&servicebindingv1alpha2.ServiceBinding{
+			&servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
 					Name:       name,
 					Generation: 1,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
 					Name:     name,
 					Workload: &workloadRef,
 					Service:  &serviceRef,
 				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
 					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
 					Conditions: []metav1.Condition{
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionReady,
 							Status: metav1.ConditionTrue,
 							Reason: "Ready",
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionServiceAvailable,
 							Status: metav1.ConditionTrue,
 							Reason: "Available",
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionProjectionReady,
 							Status: metav1.ConditionTrue,
 						},
 					},
@@ -588,7 +588,7 @@ func TestReconcile(t *testing.T) {
 					Name:      name,
 					OwnerReferences: []metav1.OwnerReference{
 						{
-							APIVersion:         "service.binding/v1alpha2",
+							APIVersion:         "servicebinding.io/v1alpha3",
 							Kind:               "ServiceBinding",
 							Name:               name,
 							BlockOwnerDeletion: ptr.Bool(true),
@@ -626,11 +626,11 @@ func TestReconcile(t *testing.T) {
 						Namespace: namespace,
 						Name:      name,
 						Labels: map[string]string{
-							"service.binding/servicebinding": "my-binding",
+							"servicebinding.io/servicebinding": "my-binding",
 						},
 						OwnerReferences: []metav1.OwnerReference{
 							{
-								APIVersion:         "service.binding/v1alpha2",
+								APIVersion:         "servicebinding.io/v1alpha3",
 								Kind:               "ServiceBinding",
 								Name:               name,
 								BlockOwnerDeletion: ptr.Bool(true),
@@ -666,35 +666,35 @@ func TestReconcile(t *testing.T) {
 		Key:  key,
 		Objects: []runtime.Object{
 			provisionedService.DeepCopy(),
-			&servicebindingv1alpha2.ServiceBinding{
+			&servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:  namespace,
 					Name:       name,
 					Generation: 1,
 				},
-				Spec: servicebindingv1alpha2.ServiceBindingSpec{
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
 					Name:     name,
 					Workload: &workloadRef,
 					Service:  &serviceRef,
 				},
-				Status: servicebindingv1alpha2.ServiceBindingStatus{
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
 					ObservedGeneration: 1,
 					Binding: &corev1.LocalObjectReference{
 						Name: secretName,
 					},
 					Conditions: []metav1.Condition{
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionReady,
 							Status: metav1.ConditionTrue,
 							Reason: "Ready",
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionServiceAvailable,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionServiceAvailable,
 							Status: metav1.ConditionTrue,
 							Reason: "Available",
 						},
 						{
-							Type:   servicebindingv1alpha2.ServiceBindingConditionProjectionReady,
+							Type:   servicebindingv1alpha3.ServiceBindingConditionProjectionReady,
 							Status: metav1.ConditionTrue,
 						},
 					},

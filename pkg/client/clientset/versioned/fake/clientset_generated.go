@@ -15,8 +15,8 @@ import (
 	fakebindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1/fake"
 	internalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labsinternal/v1alpha1"
 	fakeinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labsinternal/v1alpha1/fake"
-	servicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha2"
-	fakeservicev1alpha2 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha2/fake"
+	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha3"
+	fakeservicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha3/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -86,7 +86,7 @@ func (c *Clientset) InternalV1alpha1() internalv1alpha1.InternalV1alpha1Interfac
 	return &fakeinternalv1alpha1.FakeInternalV1alpha1{Fake: &c.Fake}
 }
 
-// ServiceV1alpha2 retrieves the ServiceV1alpha2Client
-func (c *Clientset) ServiceV1alpha2() servicev1alpha2.ServiceV1alpha2Interface {
-	return &fakeservicev1alpha2.FakeServiceV1alpha2{Fake: &c.Fake}
+// ServicebindingV1alpha3 retrieves the ServicebindingV1alpha3Client
+func (c *Clientset) ServicebindingV1alpha3() servicebindingv1alpha3.ServicebindingV1alpha3Interface {
+	return &fakeservicebindingv1alpha3.FakeServicebindingV1alpha3{Fake: &c.Fake}
 }

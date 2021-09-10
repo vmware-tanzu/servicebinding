@@ -165,7 +165,7 @@ type SharedInformerFactory interface {
 
 	Bindings() labs.Interface
 	Internal() labsinternal.Interface
-	Service() servicebinding.Interface
+	Servicebinding() servicebinding.Interface
 }
 
 func (f *sharedInformerFactory) Bindings() labs.Interface {
@@ -176,6 +176,6 @@ func (f *sharedInformerFactory) Internal() labsinternal.Interface {
 	return labsinternal.New(f, f.namespace, f.tweakListOptions)
 }
 
-func (f *sharedInformerFactory) Service() servicebinding.Interface {
+func (f *sharedInformerFactory) Servicebinding() servicebinding.Interface {
 	return servicebinding.New(f, f.namespace, f.tweakListOptions)
 }

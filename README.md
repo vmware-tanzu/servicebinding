@@ -56,12 +56,12 @@ Samples are located in the [samples directory](./samples), including:
 
 ## Resources
 
-### ServiceBinding (service.binding/v1alpha2)
+### ServiceBinding (servicebinding.io/v1alpha3)
 
 The `ServiceBinding` resource shape and behavior is defined by the spec.
 
 ```
-apiVersion: service.binding/v1alpha2
+apiVersion: servicebinding.io/v1alpha3
 kind: ServiceBinding
 metadata:
   name: account-db

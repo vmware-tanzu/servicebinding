@@ -12,18 +12,18 @@ import (
 	"knative.dev/pkg/kmeta"
 
 	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
+	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
 	resourcenames "github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources/names"
 )
 
-func MakeServiceBindingProjection(binding *servicebindingv1alpha2.ServiceBinding) (*labsinternalv1alpha1.ServiceBindingProjection, error) {
+func MakeServiceBindingProjection(binding *servicebindingv1alpha3.ServiceBinding) (*labsinternalv1alpha1.ServiceBindingProjection, error) {
 	projection := &labsinternalv1alpha1.ServiceBindingProjection{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        resourcenames.ServiceBindingProjection(binding),
 			Namespace:   binding.Namespace,
 			Annotations: map[string]string{},
 			Labels: kmeta.UnionMaps(binding.GetLabels(), map[string]string{
-				servicebindingv1alpha2.ServiceBindingLabelKey: binding.Name,
+				servicebindingv1alpha3.ServiceBindingLabelKey: binding.Name,
 			}),
 			OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(binding)},
 		},
@@ -39,7 +39,7 @@ func MakeServiceBindingProjection(binding *servicebindingv1alpha2.ServiceBinding
 
 	for k, v := range binding.Annotations {
 		// copy forward "serice.bindings" annotations
-		if strings.Contains(k, servicebindingv1alpha2.GroupName) {
+		if strings.Contains(k, servicebindingv1alpha3.GroupName) {
 			projection.Annotations[k] = v
 		}
 	}

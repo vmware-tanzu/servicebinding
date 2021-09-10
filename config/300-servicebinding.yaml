@@ -4,7 +4,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: servicebindings.service.binding
+  name: servicebindings.servicebinding.io
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   labels:
@@ -12,7 +12,7 @@ metadata:
     bindings.labs.vmware.com/crd-install: "true"
     duck.knative.dev/binding: "true"
 spec:
-  group: service.binding
+  group: servicebinding.io
   names:
     kind: ServiceBinding
     listKind: ServiceBindingList
@@ -33,7 +33,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
-    name: v1alpha2
+    name: v1alpha3
     schema:
       openAPIV3Schema:
         description: ServiceBinding is the Schema for the servicebindings API

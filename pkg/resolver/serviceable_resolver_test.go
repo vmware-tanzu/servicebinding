@@ -10,11 +10,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	duckv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha2"
+	duckv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha3"
 	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
-	servicebindingv1alpha2 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha2"
+	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
 	"github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/scheme"
-	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha2/serviceable"
+	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha3/serviceable"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,9 +28,9 @@ import (
 func init() {
 	// Add types to scheme
 	appsv1.AddToScheme(scheme.Scheme)
-	duckv1alpha2.AddToScheme(scheme.Scheme)
+	duckv1alpha3.AddToScheme(scheme.Scheme)
 	labsv1alpha1.AddToScheme(scheme.Scheme)
-	servicebindingv1alpha2.AddToScheme(scheme.Scheme)
+	servicebindingv1alpha3.AddToScheme(scheme.Scheme)
 }
 
 func TestNewServiceableResolver(t *testing.T) {
@@ -74,7 +74,7 @@ func TestServiceableResolver_ServiceableFromObjectReference(t *testing.T) {
 					},
 				},
 			},
-			parent: &servicebindingv1alpha2.ServiceBinding{
+			parent: &servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "my-namespace",
 					Name:      "my-binding",
@@ -93,7 +93,7 @@ func TestServiceableResolver_ServiceableFromObjectReference(t *testing.T) {
 		{
 			name: "lookup secret",
 			seed: []runtime.Object{},
-			parent: &servicebindingv1alpha2.ServiceBinding{
+			parent: &servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "my-namespace",
 					Name:      "my-binding",
@@ -147,7 +147,7 @@ func TestServiceableResolver_ServiceableFromObjectReference(t *testing.T) {
 					},
 				},
 			},
-			parent: &servicebindingv1alpha2.ServiceBinding{
+			parent: &servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "my-namespace",
 					Name:      "my-binding",
@@ -164,7 +164,7 @@ func TestServiceableResolver_ServiceableFromObjectReference(t *testing.T) {
 		{
 			name: "lookup error",
 			seed: []runtime.Object{},
-			parent: &servicebindingv1alpha2.ServiceBinding{
+			parent: &servicebindingv1alpha3.ServiceBinding{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "my-namespace",
 					Name:      "my-binding",
@@ -193,7 +193,7 @@ func TestServiceableResolver_ServiceableFromObjectReference(t *testing.T) {
 		// 			},
 		// 		},
 		// 	},
-		// 	parent: &servicebindingv1alpha2.ServiceBinding{
+		// 	parent: &servicebindingv1alpha3.ServiceBinding{
 		// 		ObjectMeta: metav1.ObjectMeta{
 		// 			Namespace: "my-namespace",
 		// 			Name:      "my-binding",

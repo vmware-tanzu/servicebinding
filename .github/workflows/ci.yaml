@@ -76,6 +76,7 @@ jobs:
         cp LICENSE "bundle/LICENSE"
         cp NOTICE "bundle/NOTICE"
         cp VERSION "bundle/VERSION"
+        cp config/carvel/bundle.yaml "bundle/bundle.yaml"
         cp -r samples "bundle/samples"
 
         echo "##[group]Build Service Bindings"

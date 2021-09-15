@@ -21,5 +21,9 @@ spec:
           paths:
           - .imgpkg/images.yml
           - config/service-bindings.yaml
+      - ytt:
+          paths:
+          - "-"
+          - bundle.yaml
       deploy:
       - kapp: {}

@@ -7,7 +7,7 @@
 ---
 namespace: default
 name: service-bindings
-package_name: service-bindings.labs.vmware.com
+package_name: service-bindings.vmware.com
 package_prerelease: null
 service_account_name: service-binding-kc
 cluster_role_name: service-binding-kc

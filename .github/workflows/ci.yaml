@@ -14,7 +14,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.3.5
+    - uses: actions/checkout@v2.4.0
     - uses: actions/setup-go@v2.1.4
       with:
         go-version: 1.15.x
@@ -34,7 +34,7 @@ jobs:
       KO_DOCKER_REPO: registry.local/service-bindings
       BUNDLE: registry.local/service-bindings/bundle
     steps:
-    - uses: actions/checkout@v2.3.5
+    - uses: actions/checkout@v2.4.0
     - uses: actions/setup-go@v2.1.4
       with:
         go-version: 1.15.x
@@ -113,7 +113,7 @@ jobs:
       REGISTRY_PORT: 5000
       BUNDLE: registry.local:5000/service-bindings/bundle
     steps:
-    - uses: actions/checkout@v2.3.5
+    - uses: actions/checkout@v2.4.0
     - uses: vmware-tanzu/carvel-setup-action@v1
     - name: Install kind
       run: |
@@ -276,7 +276,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.3.5
+    - uses: actions/checkout@v2.4.0
     - uses: vmware-tanzu/carvel-setup-action@v1
     - name: Install crane
       run: |

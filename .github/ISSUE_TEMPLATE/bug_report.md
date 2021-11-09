@@ -7,7 +7,7 @@
 
 **Steps to reproduce the bug**
 
-**Version** (include the SHA if the version is not obvious)
+**Version (Tanzu Application Platform verision, K8s version) ** 
 
 **Environment where the bug was observed (cloud, OS, etc)**
 

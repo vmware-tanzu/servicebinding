@@ -19,12 +19,13 @@ const (
 	ServiceBindingConditionReady            = "Ready"
 	ServiceBindingConditionServiceAvailable = "ServiceAvailable"
 	ServiceBindingConditionProjectionReady  = "ProjectionReady"
+	InitializeConditionReason               = "Unknown"
 )
 
-func (bs *ServiceBindingStatus) InitializeConditions() {
-	ready := metav1.Condition{Type: ServiceBindingConditionReady}
-	serviceAvailable := metav1.Condition{Type: ServiceBindingConditionServiceAvailable}
-	projectionReady := metav1.Condition{Type: ServiceBindingConditionProjectionReady}
+func (bs *ServiceBindingStatus) InitializeConditions(now metav1.Time) {
+	ready := metav1.Condition{Type: ServiceBindingConditionReady, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: InitializeConditionReason}
+	serviceAvailable := metav1.Condition{Type: ServiceBindingConditionServiceAvailable, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: InitializeConditionReason}
+	projectionReady := metav1.Condition{Type: ServiceBindingConditionProjectionReady, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: InitializeConditionReason}
 	for _, c := range bs.Conditions {
 		switch c.Type {
 		case ServiceBindingConditionReady:

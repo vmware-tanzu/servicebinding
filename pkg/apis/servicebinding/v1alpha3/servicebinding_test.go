@@ -286,9 +286,9 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 			projection: nil,
 			expected: &ServiceBindingStatus{
 				Conditions: []metav1.Condition{
-					{Type: ServiceBindingConditionReady},
-					{Type: ServiceBindingConditionServiceAvailable},
-					{Type: ServiceBindingConditionProjectionReady},
+					{Type: ServiceBindingConditionReady, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: InitializeConditionReason},
+					{Type: ServiceBindingConditionServiceAvailable, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: InitializeConditionReason},
+					{Type: ServiceBindingConditionProjectionReady, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: InitializeConditionReason},
 				},
 			},
 		},
@@ -301,10 +301,15 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 					{
 						Type:               ServiceBindingConditionReady,
 						Status:             metav1.ConditionUnknown,
-						Reason:             "ProjectionReadyUnknown",
+						Reason:             "ServiceAvailableUnknown",
 						LastTransitionTime: now,
 					},
-					{Type: ServiceBindingConditionServiceAvailable},
+					{
+						Type:               ServiceBindingConditionServiceAvailable,
+						LastTransitionTime: now,
+						Status:             metav1.ConditionUnknown,
+						Reason:             InitializeConditionReason,
+					},
 					{
 						Type:               ServiceBindingConditionProjectionReady,
 						Status:             metav1.ConditionUnknown,
@@ -334,11 +339,14 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 					{
 						Type:               ServiceBindingConditionReady,
 						Status:             metav1.ConditionUnknown,
-						Reason:             "Unknown",
+						Reason:             "ServiceAvailableUnknown",
 						LastTransitionTime: now,
 					},
 					{
-						Type: ServiceBindingConditionServiceAvailable,
+						Type:               ServiceBindingConditionServiceAvailable,
+						LastTransitionTime: now,
+						Status:             metav1.ConditionUnknown,
+						Reason:             InitializeConditionReason,
 					},
 					{
 						Type:               ServiceBindingConditionProjectionReady,
@@ -376,7 +384,10 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 						LastTransitionTime: now,
 					},
 					{
-						Type: ServiceBindingConditionServiceAvailable,
+						Type:               ServiceBindingConditionServiceAvailable,
+						LastTransitionTime: now,
+						Status:             metav1.ConditionUnknown,
+						Reason:             InitializeConditionReason,
 					},
 					{
 						Type:               ServiceBindingConditionProjectionReady,
@@ -407,11 +418,14 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 					{
 						Type:               ServiceBindingConditionReady,
 						Status:             metav1.ConditionUnknown,
-						Reason:             "ProjectionReadyUnknown",
+						Reason:             "ServiceAvailableUnknown",
 						LastTransitionTime: now,
 					},
 					{
-						Type: ServiceBindingConditionServiceAvailable,
+						Type:               ServiceBindingConditionServiceAvailable,
+						LastTransitionTime: now,
+						Status:             metav1.ConditionUnknown,
+						Reason:             InitializeConditionReason,
 					},
 					{
 						Type:               ServiceBindingConditionProjectionReady,
@@ -426,9 +440,9 @@ func TestServiceBindingStatus_PropagateServiceBindingProjectionStatus(t *testing
 	for _, c := range tests {
 		t.Run(c.name, func(t *testing.T) {
 			actual := c.seed.DeepCopy()
-			actual.InitializeConditions()
+			actual.InitializeConditions(now)
 			actual.PropagateServiceBindingProjectionStatus(c.projection, now)
-			if diff := cmp.Diff(c.expected, actual); diff != "" {
+			if diff := cmp.Diff(c.expected, actual, cmpopts.IgnoreTypes(metav1.Time{})); diff != "" {
 				t.Errorf("%s: PropagateServiceBindingProjectionStatus() (-expected, +actual): %s", c.name, diff)
 			}
 		})
@@ -442,7 +456,7 @@ func TestServiceBindingStatus_MarkServiceAvailable(t *testing.T) {
 			{
 				Type:               ServiceBindingConditionReady,
 				Status:             metav1.ConditionUnknown,
-				Reason:             "Unknown",
+				Reason:             "ProjectionReadyUnknown",
 				LastTransitionTime: now,
 			},
 			{
@@ -451,14 +465,14 @@ func TestServiceBindingStatus_MarkServiceAvailable(t *testing.T) {
 				Reason:             "Available",
 				LastTransitionTime: now,
 			},
-			{Type: ServiceBindingConditionProjectionReady},
+			{Type: ServiceBindingConditionProjectionReady, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: "Unknown"},
 		},
 	}
 	actual := &ServiceBindingStatus{}
-	actual.InitializeConditions()
+	actual.InitializeConditions(now)
 	actual.MarkServiceAvailable(now)
 
-	if diff := cmp.Diff(expected, actual); diff != "" {
+	if diff := cmp.Diff(expected, actual, cmpopts.IgnoreTypes(metav1.Time{})); diff != "" {
 		t.Errorf("MarkServiceAvailable() (-expected, +actual): %s", diff)
 	}
 }
@@ -481,19 +495,20 @@ func TestServiceBindingStatus_MarkServiceUnavailable(t *testing.T) {
 				Message:            "the message",
 				LastTransitionTime: now,
 			},
-			{Type: ServiceBindingConditionProjectionReady},
+			{Type: ServiceBindingConditionProjectionReady, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: "Unknown"},
 		},
 	}
 	actual := &ServiceBindingStatus{}
-	actual.InitializeConditions()
+	actual.InitializeConditions(now)
 	actual.MarkServiceUnavailable("TheReason", "the message", now)
 
-	if diff := cmp.Diff(expected, actual); diff != "" {
+	if diff := cmp.Diff(expected, actual, cmpopts.IgnoreTypes(metav1.Time{})); diff != "" {
 		t.Errorf("MarkServiceUnavailable() (-expected, +actual): %s", diff)
 	}
 }
 
 func TestServiceBindingStatus_InitializeConditions(t *testing.T) {
+	now := metav1.Now()
 	tests := []struct {
 		name     string
 		seed     *ServiceBindingStatus
@@ -504,9 +519,9 @@ func TestServiceBindingStatus_InitializeConditions(t *testing.T) {
 			seed: &ServiceBindingStatus{},
 			expected: &ServiceBindingStatus{
 				Conditions: []metav1.Condition{
-					{Type: ServiceBindingConditionReady},
-					{Type: ServiceBindingConditionServiceAvailable},
-					{Type: ServiceBindingConditionProjectionReady},
+					{Type: ServiceBindingConditionReady, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: "Unknown"},
+					{Type: ServiceBindingConditionServiceAvailable, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: "Unknown"},
+					{Type: ServiceBindingConditionProjectionReady, Status: metav1.ConditionUnknown, LastTransitionTime: now, Reason: "Unknown"},
 				},
 			},
 		},
@@ -549,7 +564,7 @@ func TestServiceBindingStatus_InitializeConditions(t *testing.T) {
 	for _, c := range tests {
 		t.Run(c.name, func(t *testing.T) {
 			actual := c.seed.DeepCopy()
-			actual.InitializeConditions()
+			actual.InitializeConditions(now)
 			if diff := cmp.Diff(c.expected, actual, cmpopts.IgnoreTypes(metav1.Time{})); diff != "" {
 				t.Errorf("%s: InitializeConditions() (-expected, +actual): %s", c.name, diff)
 			}
@@ -572,11 +587,21 @@ func TestServiceBindingStatus_aggregateReadyCondition(t *testing.T) {
 					{
 						Type:               ServiceBindingConditionReady,
 						Status:             "Unknown",
+						Reason:             "ServiceAvailableUnknown",
+						LastTransitionTime: now,
+					},
+					{
+						Type:               ServiceBindingConditionServiceAvailable,
+						Status:             "Unknown",
 						Reason:             "Unknown",
 						LastTransitionTime: now,
 					},
-					{Type: ServiceBindingConditionServiceAvailable},
-					{Type: ServiceBindingConditionProjectionReady},
+					{
+						Type:               ServiceBindingConditionProjectionReady,
+						Status:             "Unknown",
+						Reason:             "Unknown",
+						LastTransitionTime: now,
+					},
 				},
 			},
 		},
@@ -769,9 +794,9 @@ func TestServiceBindingStatus_aggregateReadyCondition(t *testing.T) {
 	for _, c := range tests {
 		t.Run(c.name, func(t *testing.T) {
 			actual := c.seed.DeepCopy()
-			actual.InitializeConditions()
+			actual.InitializeConditions(now)
 			actual.aggregateReadyCondition(now)
-			if diff := cmp.Diff(c.expected, actual); diff != "" {
+			if diff := cmp.Diff(c.expected, actual, cmpopts.IgnoreTypes(metav1.Time{})); diff != "" {
 				t.Errorf("%s: aggregateReadyCondition() (-expected, +actual): %s", c.name, diff)
 			}
 		})

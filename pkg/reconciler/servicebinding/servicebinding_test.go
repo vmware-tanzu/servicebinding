@@ -393,6 +393,63 @@ func TestReconcile(t *testing.T) {
 			Eventf(corev1.EventTypeNormal, "Reconciled", "ServiceBinding reconciled: %q", key),
 		},
 	}, {
+		Name: "missing referenced service with no service projection",
+		Key:  key,
+		Objects: []runtime.Object{
+			&servicebindingv1alpha3.ServiceBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace:  namespace,
+					Name:       name,
+					Generation: 1,
+				},
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
+				},
+			},
+		},
+		WantErr: true,
+		WantEvents: []string{
+			Eventf(corev1.EventTypeWarning, "InternalError", "failed to get resource for bindings.labs.vmware.com/v1alpha1, Resource=provisionedservices: provisionedservices.bindings.labs.vmware.com %q not found", serviceRef.Name),
+		},
+		WantStatusUpdates: []clientgotesting.UpdateActionImpl{{
+			Object: &servicebindingv1alpha3.ServiceBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace:  namespace,
+					Name:       name,
+					Generation: 1,
+				},
+				Spec: servicebindingv1alpha3.ServiceBindingSpec{
+					Name:     name,
+					Workload: &workloadRef,
+					Service:  &serviceRef,
+				},
+				Status: servicebindingv1alpha3.ServiceBindingStatus{
+					Conditions: []metav1.Condition{
+						{
+							Type:               servicebindingv1alpha3.ServiceBindingConditionReady,
+							Status:             metav1.ConditionUnknown,
+							LastTransitionTime: now,
+							Reason:             "Unknown",
+						},
+						{
+							Type:               servicebindingv1alpha3.ServiceBindingConditionServiceAvailable,
+							Status:             metav1.ConditionUnknown,
+							LastTransitionTime: now,
+							Reason:             "Unknown",
+						},
+						{
+							Type:               servicebindingv1alpha3.ServiceBindingConditionProjectionReady,
+							Status:             metav1.ConditionUnknown,
+							LastTransitionTime: now,
+							Reason:             "Unknown",
+						},
+					},
+				},
+			},
+		}},
+	}, {
 		Name: "missing referenced service",
 		Key:  key,
 		Objects: []runtime.Object{

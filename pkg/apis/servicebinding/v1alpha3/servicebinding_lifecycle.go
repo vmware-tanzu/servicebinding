@@ -113,10 +113,6 @@ func (bs *ServiceBindingStatus) aggregateReadyCondition(now metav1.Time) {
 		bs.Conditions[0].Status = metav1.ConditionUnknown
 		bs.Conditions[0].Reason = fmt.Sprintf("%s%s", ServiceBindingConditionProjectionReady, bs.Conditions[2].Reason)
 		bs.Conditions[0].Message = bs.Conditions[2].Message
-	} else {
-		bs.Conditions[0].Status = metav1.ConditionUnknown
-		bs.Conditions[0].Reason = "Unknown"
-		bs.Conditions[0].Message = ""
 	}
 
 	// update time when the status changes

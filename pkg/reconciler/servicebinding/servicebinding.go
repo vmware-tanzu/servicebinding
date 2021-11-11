@@ -58,8 +58,8 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, binding *servicebindingv
 		return nil
 	}
 
-	binding.Status.InitializeConditions()
 	now := r.now()
+	binding.Status.InitializeConditions(now)
 
 	secretRef, err := r.provisionedSecret(ctx, logger, binding)
 	if err != nil {

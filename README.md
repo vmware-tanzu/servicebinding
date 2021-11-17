@@ -44,6 +44,10 @@ kapp deploy -a service-bindings -f <(ko resolve -f config)
 kapp delete -a service-bindings
 ```
 
+## Troubleshooting
+
+Service Bindings for Kubernetes is an implementation of the Service Binding Specification for Kubernetes, If any trouble shows up please refer to the troubleshooting guide [here](./docs/troubleshooting.md).
+
 ## Samples
 
 Samples are located in the [samples directory](./samples), including:

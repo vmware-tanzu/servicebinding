@@ -44,6 +44,10 @@ kapp deploy -a service-bindings -f <(ko resolve -f config)
 kapp delete -a service-bindings
 ```
 
+## Troubleshooting
+
+For basic troubleshooting Service Bindings, please see the troubleshooting guide [here](./docs/troubleshooting.md).
+
 ## Samples
 
 Samples are located in the [samples directory](./samples), including:

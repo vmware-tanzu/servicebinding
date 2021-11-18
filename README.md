@@ -46,7 +46,7 @@ kapp delete -a service-bindings
 
 ## Troubleshooting
 
-Service Bindings for Kubernetes is an implementation of the Service Binding Specification for Kubernetes, If any trouble shows up please refer to the troubleshooting guide [here](./docs/troubleshooting.md).
+For basic troubleshooting Service Bindings, please see the troubleshooting guide [here](./docs/troubleshooting.md).
 
 ## Samples
 

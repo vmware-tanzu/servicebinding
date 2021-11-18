@@ -2,9 +2,11 @@
 
 ## Collecting logs from service binding manager
 
-Retrieve the logs from the service-bindings `Pod` in the `service-bindings` namespace using
+Retrieve pod logs from the `manager` running in the `service-bindings` namespace.
 
-    `kubectl -n service-bindings logs -l role=manager`
+    ```bash
+    kubectl -n service-bindings logs -l role=manager
+    ```
 
     For example:
 

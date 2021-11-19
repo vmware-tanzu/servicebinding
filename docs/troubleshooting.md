@@ -8,7 +8,7 @@ Retrieve pod logs from the `manager` running in the `service-bindings` namespace
     kubectl -n service-bindings logs -l role=manager
     ```
 
-    For example:
+For example:
 
    ```bash
     2021/11/05 15:25:28 Registering 3 clients

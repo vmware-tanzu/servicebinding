@@ -7,19 +7,19 @@
 [![codecov](https://codecov.io/gh/vmware-labs/service-bindings/branch/main/graph/badge.svg)](https://codecov.io/gh/vmware-labs/service-bindings)
 
 
-Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://github.com/k8s-service-bindings/spec). We are tracking changes to the spec as it approaches a stable release (currently targeting [pre-RC3](https://github.com/k8s-service-bindings/spec/tree/12a9f2e376c50f051cc9aa913443bdecb0a24a01)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
+Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://servicebinding.io/). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC3](https://github.com/servicebinding/spec/tree/v1.0.0-rc3)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
 
 This implementation provides support for:
-- [Provisioned Service](https://github.com/k8s-service-bindings/spec/tree/12a9f2e376c50f051cc9aa913443bdecb0a24a01#provisioned-service)
-- [Workload Projection](https://github.com/k8s-service-bindings/spec/tree/12a9f2e376c50f051cc9aa913443bdecb0a24a01#workload-projection)
-- [Service Binding](https://github.com/k8s-service-bindings/spec/tree/12a9f2e376c50f051cc9aa913443bdecb0a24a01#service-binding)
-- [Direct Secret Reference](https://github.com/k8s-service-bindings/spec/tree/12a9f2e376c50f051cc9aa913443bdecb0a24a01#direct-secret-reference)
-- [Role-Based Access Control (RBAC)](https://github.com/k8s-service-bindings/spec/tree/12a9f2e376c50f051cc9aa913443bdecb0a24a01#role-based-access-control-rbac)
+- [Provisioned Service](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#provisioned-service)
+- [Workload Projection](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#workload-projection)
+- [Service Binding](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#service-binding)
+- [Direct Secret Reference](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#direct-secret-reference)
+- [Role-Based Access Control (RBAC)](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#role-based-access-control-rbac)
 
-The following are not supported:
-- [Workload Resource Mapping](https://github.com/k8s-service-bindings/spec/tree/12a9f2e376c50f051cc9aa913443bdecb0a24a01#workload-resource-mapping)
+The following are not implemented:
+- [Workload Resource Mapping](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#workload-resource-mapping)
 - Extensions including:
-  - [Binding Secret Generation Strategies](https://github.com/k8s-service-bindings/spec/tree/12a9f2e376c50f051cc9aa913443bdecb0a24a01#binding-secret-generation-strategies)
+  - [Binding Secret Generation Strategies](https://github.com/servicebinding/spec/blob/v1.0.0-rc3/extensions/secret-generation.md)
 
 ## Try it out
 

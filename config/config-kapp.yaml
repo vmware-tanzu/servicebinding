@@ -19,14 +19,19 @@ data:
       type: copy
       sources: [existing]
       resourceMatchers:
-      - kindNamespaceNameMatcher: {kind: ClusterRole, namespace: "", name: service-binding-admin}
+      - andMatcher:
+          matchers:
+          - apiVersionKindMatcher: {apiVersion: rbac.authorization.k8s.io/v1, kind: ClusterRole}
+          - kindNamespaceNameMatcher: {kind: ClusterRole, name: service-binding-admin}
     - path: [data]
       type: copy
       sources: [existing]
       resourceMatchers:
-      - kindNamespaceNameMatcher: {kind: Secret, namespace: service-bindings, name: webhook-certs}
+      - andMatcher:
+          matchers:
+          - apiVersionKindMatcher: {apiVersion: v1, kind: Secret}
+          - kindNamespaceNameMatcher: {kind: Secret, namespace: service-bindings, name: webhook-certs}
     - paths:
-      - [metadata, annotations]
       - [webhooks, {allIndexes: true}, clientConfig, caBundle]
       - [webhooks, {allIndexes: true}, clientConfig, service, path]
       - [webhooks, {allIndexes: true}, clientConfig, service, port]

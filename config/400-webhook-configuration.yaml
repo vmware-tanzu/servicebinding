@@ -84,4 +84,4 @@ metadata:
   namespace: service-bindings
   labels:
     bindings.labs.vmware.com/release: devel
-# The data is populated at install time.
+# data is populated at runtime.

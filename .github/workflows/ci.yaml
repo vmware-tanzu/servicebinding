@@ -217,7 +217,7 @@ jobs:
             ytt -f config/carvel/package-install.yaml -f config/carvel/package-install.values.yaml \
               --data-value package_constraints=$(cat VERSION) \
               --data-value-yaml 'package_prerelease={}' \
-              --data-value sync_period=1m \
+              --data-value sync_period=10s \
           )
     - name: Deploy Spring Petclinic
       run: |
@@ -275,9 +275,6 @@ jobs:
         set -o errexit
         set -o nounset
         set -o pipefail
-
-        # I hate to slow down CI, but the current tests run in about a minute, which may not be long enough to see a redeploy
-        sleep 60
 
         deploys=$(kapp app-change list -a service-bindings-ctrl --json | jq '.Tables[0].Rows | length')
         if [ "$deploys" != "1" ]; then

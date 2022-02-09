@@ -104,6 +104,18 @@ jobs:
       with:
         name: service-bindings-bundle.tar
         path: bundle/service-bindings-bundle.tar
+    - name: Grype scan
+      run: |
+        echo "##[group]Install grype"
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+        echo "##[endgroup]"
+        echo "##[group]Scan source ."
+          grype dir:. --exclude ./hack
+        echo "##[endgroup]"
+        echo "##[group]Scan manager image"
+          grype registry:registry.local:5000/service-bindings/manager:latest
+        echo "##[endgroup]"
+      continue-on-error: true
 
   acceptance:
     needs: stage

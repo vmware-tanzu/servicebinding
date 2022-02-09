@@ -39,8 +39,6 @@ jobs:
       with:
         go-version: 1.15.x
     - uses: vmware-tanzu/carvel-setup-action@v1
-      with:
-        imgpkg: v0.22.0
     - run: |
         imgpkg version
         kbld version
@@ -231,6 +229,7 @@ jobs:
             ytt -f config/carvel/package-install.yaml -f config/carvel/package-install.values.yaml \
               --data-value package_constraints=$(cat VERSION) \
               --data-value-yaml 'package_prerelease={}' \
+              --data-value sync_period=10s \
           )
     - name: Deploy Spring Petclinic
       run: |
@@ -243,6 +242,8 @@ jobs:
         kapp deploy -a spring-petclinic -f samples/spring-petclinic/workload.yaml -y
     - name: Collect diagnostics
       run: |
+        set +o errexit
+
         echo "##[group]Describe nodes"
           kubectl describe nodes
         echo "##[endgroup]"
@@ -257,6 +258,12 @@ jobs:
         echo "##[endgroup]"
         echo "##[group]Package Installs"
           kubectl get packageinstall -A -oyaml
+        echo "##[endgroup]"
+        echo "##[group]Kapp list apps"
+          kapp list -A
+        echo "##[endgroup]"
+        echo "##[group]Package changesets"
+          kapp app-change list -a service-bindings-ctrl
         echo "##[endgroup]"
         echo "##[group]Service Binding manager logs"
           kubectl logs -n service-bindings -l app=manager -c manager --tail 1000
@@ -275,6 +282,17 @@ jobs:
         echo "##[endgroup]"
       if: always()
       continue-on-error: true
+    - name: Fail for multiple kapp changes
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        deploys=$(kapp app-change list -a service-bindings-ctrl --json | jq '.Tables[0].Rows | length')
+        if [ "$deploys" != "1" ]; then
+          echo "Too many app changes for the service-binding package, expected 1 found ${deploys}"
+          exit 1
+        fi
     - name: Cleanup Spring Petclinic
       run: |
         set -o errexit

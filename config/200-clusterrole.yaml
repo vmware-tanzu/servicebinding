@@ -14,7 +14,7 @@ aggregationRule:
   # legacy support
   - matchLabels:
       service.binding/controller: "true"
-rules: [] # Rules are automatically filled in by the controller manager.
+# rules are automatically filled in at runtime.
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1

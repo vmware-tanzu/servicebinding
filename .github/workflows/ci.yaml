@@ -86,7 +86,7 @@ jobs:
 
         echo "##[group]Build Service Bindings"
           cp hack/boilerplate/boilerplate.yaml.txt bundle/config/service-bindings.yaml
-          ko resolve -t ${slug} -B -f config \
+          ko resolve -t ${slug} -t latest -B -f config \
             | ytt -f - -f config/carvel/release-version.overlay.yaml \
                 --data-value version=${slug} \
             >> bundle/config/service-bindings.yaml

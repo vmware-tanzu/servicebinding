@@ -124,6 +124,7 @@ jobs:
         - 1.18.15
         - 1.19.7
         - 1.20.2
+        - 1.22.5
       fail-fast: false
     env:
       REGISTRY_NAME: registry.local
@@ -282,6 +283,16 @@ jobs:
         echo "##[endgroup]"
       if: always()
       continue-on-error: true
+    - name: Fail if Service Binding is not Ready
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+        ready=$(kubectl get -f samples/spring-petclinic/service-binding.yaml -o jsonpath='{.status.conditions[?(@.type == "Ready")].status'})
+        if [ "$ready" != "True" ]; then
+          echo "Expected Service Binding Ready status to be True, found ${ready}"
+          exit 1
+        fi
     - name: Fail for multiple kapp changes
       run: |
         set -o errexit

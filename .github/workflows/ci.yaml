@@ -242,18 +242,25 @@ jobs:
         kapp deploy -a spring-petclinic-db -f samples/spring-petclinic/service.yaml -y
         kapp deploy -a spring-petclinic-binding -f samples/spring-petclinic/service-binding.yaml -y
         kapp deploy -a spring-petclinic -f samples/spring-petclinic/workload.yaml -y
+
+        # check that the workload and servicebinding are healthy
+        kubectl wait deployment spring-petclinic --for condition=available
+        kubectl wait servicebinding.servicebinding.io spring-petclinic-db --for condition=ready
     - name: Collect diagnostics
       run: |
         set +o errexit
 
+        echo "##[group]All resources"
+          kubectl get all,secrets,servicebindings.servicebinding.io -A
+        echo "##[endgroup]"
+        echo "##[group]Describe servicebindings"
+          kubectl describe servicebindings.servicebinding.io
+        echo "##[endgroup]"
         echo "##[group]Describe nodes"
           kubectl describe nodes
         echo "##[endgroup]"
         echo "##[group]Describe pods"
           kubectl describe pods
-        echo "##[endgroup]"
-        echo "##[group]All resources"
-          kubectl get all,secrets --all-namespaces
         echo "##[endgroup]"
         echo "##[group]Packages"
           kubectl get package -A -oyaml
@@ -284,19 +291,6 @@ jobs:
         echo "##[endgroup]"
       if: always()
       continue-on-error: true
-    - name: Fail if Service Binding is not Ready
-      run: |
-        set -o errexit
-        set -o nounset
-        set -o pipefail
-        ready=$(kubectl get -f samples/spring-petclinic/service-binding.yaml -o jsonpath='{.status.conditions[?(@.type == "Ready")].status'})
-        if [ "$ready" != "True" ]; then
-          echo "Expected Service Binding Ready status to be True, found ${ready}"
-          echo "##[group]Service Binding Resource"
-            kubectl get -f samples/spring-petclinic/service-binding.yaml -o yaml
-          echo "##[endgroup]"
-          exit 1
-        fi
     - name: Fail for multiple kapp changes
       run: |
         set -o errexit

@@ -197,7 +197,7 @@ jobs:
             help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
         EOF
     - name: Download staged Service Bindings build
-      uses: actions/download-artifact@v2.1.0
+      uses: actions/download-artifact@v3
       with:
         name: service-bindings-bundle.tar
     - name: Install kapp-controller
@@ -365,7 +365,7 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: true
     - name: Download staged Service Bindings build
-      uses: actions/download-artifact@v2.1.0
+      uses: actions/download-artifact@v3
       with:
         name: service-bindings-bundle.tar
     - name: Relocate bundle to public registry

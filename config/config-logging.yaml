@@ -10,6 +10,29 @@ metadata:
     bindings.labs.vmware.com/release: devel
 
 data:
+  zap-logger-config: |
+      {
+        "level": "info",
+        "development": false,
+        "outputPaths": ["stderr"],
+        "errorOutputPaths": ["stderr"],
+        "encoding": "json",
+        "encoderConfig": {
+          "timeKey": "ts",
+          "levelKey": "level",
+          "nameKey": "logger",
+          "callerKey": "caller",
+          "messageKey": "msg",
+          "stacktraceKey": "stacktrace",
+          "lineEnding": "",
+          "levelEncoder": "",
+          "timeEncoder": "rfc3339nano",
+          "durationEncoder": "",
+          "callerEncoder": ""
+        }
+      }
+  loglevel.controller: "info"
+  loglevel.webhook: "info"
   _example: |
     ################################
     #                              #
@@ -48,8 +71,3 @@ data:
           "callerEncoder": ""
         }
       }
-
-    # Log level overrides
-    # Changes are be picked up immediately.
-    loglevel.controller: "info"
-    loglevel.webhook: "info"

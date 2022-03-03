@@ -8,8 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 package labsinternal
 
 import (
-	internalinterfaces "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/labsinternal/v1alpha1"
+	internalinterfaces "github.com/vmware-tanzu/servicebinding/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/client/informers/externalversions/labsinternal/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

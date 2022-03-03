@@ -10,8 +10,8 @@ package fake
 import (
 	context "context"
 
-	fake "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/factory/fake"
-	servicebinding "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha3/servicebinding"
+	fake "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/factory/fake"
+	servicebinding "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/servicebinding/v1alpha3/servicebinding"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 )

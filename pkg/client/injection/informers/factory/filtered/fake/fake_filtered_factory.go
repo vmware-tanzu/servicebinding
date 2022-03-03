@@ -10,9 +10,9 @@ package fakeFilteredFactory
 import (
 	context "context"
 
-	externalversions "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions"
-	fake "github.com/vmware-labs/service-bindings/pkg/client/injection/client/fake"
-	filtered "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/factory/filtered"
+	externalversions "github.com/vmware-tanzu/servicebinding/pkg/client/informers/externalversions"
+	fake "github.com/vmware-tanzu/servicebinding/pkg/client/injection/client/fake"
+	filtered "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/factory/filtered"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"

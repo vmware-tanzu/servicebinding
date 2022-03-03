@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"testing"
 
-	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
+	labsinternalv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labsinternal/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,12 +26,12 @@ import (
 	"knative.dev/pkg/webhook/psbinding"
 
 	// register injection fakes
-	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection/fake"
+	_ "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection/fake"
 	_ "knative.dev/pkg/client/injection/ducks/duck/v1/podspecable/fake"
 	_ "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace/fake"
 	_ "knative.dev/pkg/injection/clients/dynamicclient/fake"
 
-	. "github.com/vmware-labs/service-bindings/pkg/reconciler/testing"
+	. "github.com/vmware-tanzu/servicebinding/pkg/reconciler/testing"
 	. "knative.dev/pkg/reconciler/testing"
 )
 

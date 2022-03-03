@@ -10,8 +10,8 @@ import (
 	"errors"
 	"fmt"
 
-	duckv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha3"
-	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha3/serviceable"
+	duckv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/duck/v1alpha3"
+	"github.com/vmware-tanzu/servicebinding/pkg/client/injection/ducks/duck/v1alpha3/serviceable"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/types"

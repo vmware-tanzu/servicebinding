@@ -12,8 +12,8 @@ import (
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 
-	provisionedserviceinformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labs/v1alpha1/provisionedservice"
-	provisionedservicereconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/labs/v1alpha1/provisionedservice"
+	provisionedserviceinformer "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/labs/v1alpha1/provisionedservice"
+	provisionedservicereconciler "github.com/vmware-tanzu/servicebinding/pkg/client/injection/reconciler/labs/v1alpha1/provisionedservice"
 )
 
 // NewController creates a Reconciler and returns the result of NewImpl.

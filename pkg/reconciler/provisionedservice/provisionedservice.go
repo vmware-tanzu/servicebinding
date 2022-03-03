@@ -10,8 +10,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
-	provisionedservicereconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/labs/v1alpha1/provisionedservice"
+	labsv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labs/v1alpha1"
+	provisionedservicereconciler "github.com/vmware-tanzu/servicebinding/pkg/client/injection/reconciler/labs/v1alpha1/provisionedservice"
 	"knative.dev/pkg/reconciler"
 )
 

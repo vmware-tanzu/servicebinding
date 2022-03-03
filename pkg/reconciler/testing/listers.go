@@ -9,13 +9,13 @@ SPDX-License-Identifier: Apache-2.0
 package testing
 
 import (
-	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
-	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
-	fakeservicebindingsclientset "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/fake"
-	labslisters "github.com/vmware-labs/service-bindings/pkg/client/listers/labs/v1alpha1"
-	labsinternallisters "github.com/vmware-labs/service-bindings/pkg/client/listers/labsinternal/v1alpha1"
-	servicebindinglisters "github.com/vmware-labs/service-bindings/pkg/client/listers/servicebinding/v1alpha3"
+	labsv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labs/v1alpha1"
+	labsinternalv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labsinternal/v1alpha1"
+	servicebindingv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/servicebinding/v1alpha3"
+	fakeservicebindingsclientset "github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned/fake"
+	labslisters "github.com/vmware-tanzu/servicebinding/pkg/client/listers/labs/v1alpha1"
+	labsinternallisters "github.com/vmware-tanzu/servicebinding/pkg/client/listers/labsinternal/v1alpha1"
+	servicebindinglisters "github.com/vmware-tanzu/servicebinding/pkg/client/listers/servicebinding/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	fakekubeclientset "k8s.io/client-go/kubernetes/fake"

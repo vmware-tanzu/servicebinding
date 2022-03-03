@@ -13,9 +13,9 @@ import (
 	fmt "fmt"
 	reflect "reflect"
 
-	v1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
-	versioned "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned"
-	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/client/listers/servicebinding/v1alpha3"
+	v1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/servicebinding/v1alpha3"
+	versioned "github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned"
+	servicebindingv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/client/listers/servicebinding/v1alpha3"
 	zap "go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	equality "k8s.io/apimachinery/pkg/api/equality"

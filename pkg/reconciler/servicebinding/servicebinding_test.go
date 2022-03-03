@@ -10,13 +10,13 @@ import (
 	"fmt"
 	"testing"
 
-	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
-	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
-	servicebindingsclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client"
-	"github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha3/serviceable"
-	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha3/servicebinding"
-	"github.com/vmware-labs/service-bindings/pkg/resolver"
+	labsv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labs/v1alpha1"
+	labsinternalv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labsinternal/v1alpha1"
+	servicebindingv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/servicebinding/v1alpha3"
+	servicebindingsclient "github.com/vmware-tanzu/servicebinding/pkg/client/injection/client"
+	"github.com/vmware-tanzu/servicebinding/pkg/client/injection/ducks/duck/v1alpha3/serviceable"
+	servicebindingreconciler "github.com/vmware-tanzu/servicebinding/pkg/client/injection/reconciler/servicebinding/v1alpha3/servicebinding"
+	"github.com/vmware-tanzu/servicebinding/pkg/resolver"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -30,12 +30,12 @@ import (
 	"knative.dev/pkg/tracker"
 
 	// register injection fakes
-	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha3/serviceable/fake"
-	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection/fake"
-	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha3/servicebinding/fake"
+	_ "github.com/vmware-tanzu/servicebinding/pkg/client/injection/ducks/duck/v1alpha3/serviceable/fake"
+	_ "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection/fake"
+	_ "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/servicebinding/v1alpha3/servicebinding/fake"
 	_ "knative.dev/pkg/injection/clients/dynamicclient/fake"
 
-	. "github.com/vmware-labs/service-bindings/pkg/reconciler/testing"
+	. "github.com/vmware-tanzu/servicebinding/pkg/reconciler/testing"
 	. "knative.dev/pkg/reconciler/testing"
 )
 

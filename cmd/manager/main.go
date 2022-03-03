@@ -28,16 +28,16 @@ import (
 	"knative.dev/pkg/webhook/resourcesemantics/defaulting"
 	"knative.dev/pkg/webhook/resourcesemantics/validation"
 
-	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
-	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
-	"github.com/vmware-labs/service-bindings/pkg/reconciler/provisionedservice"
-	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding"
-	"github.com/vmware-labs/service-bindings/pkg/reconciler/servicebindingprojection"
+	labsv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labs/v1alpha1"
+	labsinternalv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labsinternal/v1alpha1"
+	servicebindingv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/servicebinding/v1alpha3"
+	"github.com/vmware-tanzu/servicebinding/pkg/reconciler/provisionedservice"
+	"github.com/vmware-tanzu/servicebinding/pkg/reconciler/servicebinding"
+	"github.com/vmware-tanzu/servicebinding/pkg/reconciler/servicebindingprojection"
 )
 
 var (
-	// TODO(scothis) restore labels after https://github.com/vmware-labs/service-bindings/issues/130
+	// TODO(scothis) restore labels after https://github.com/vmware-tanzu/servicebinding/issues/130
 	//BindingExcludeLabel can be applied to exclude resource from webhook
 	// BindingExcludeLabel = "bindings.labs.vmware.com/exclude"
 	BindingExcludeLabel = "knative.dev.bindings.labs.vmware.com/exclude"

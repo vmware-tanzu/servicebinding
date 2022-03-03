@@ -1,10 +1,10 @@
 
 # Service Bindings for Kubernetes
 
-![CI](https://github.com/vmware-labs/service-bindings/workflows/CI/badge.svg?branch=main)
-[![GoDoc](https://godoc.org/github.com/vmware-labs/service-bindings?status.svg)](https://godoc.org/github.com/vmware-labs/service-bindings)
-[![Go Report Card](https://goreportcard.com/badge/github.com/vmware-labs/service-bindings)](https://goreportcard.com/report/github.com/vmware-labs/service-bindings)
-[![codecov](https://codecov.io/gh/vmware-labs/service-bindings/branch/main/graph/badge.svg)](https://codecov.io/gh/vmware-labs/service-bindings)
+![CI](https://github.com/vmware-tanzu/servicebinding/workflows/CI/badge.svg?branch=main)
+[![GoDoc](https://godoc.org/github.com/vmware-tanzu/servicebinding?status.svg)](https://godoc.org/github.com/vmware-tanzu/servicebinding)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vmware-tanzu/servicebinding)](https://goreportcard.com/report/github.com/vmware-tanzu/servicebinding)
+[![codecov](https://codecov.io/gh/vmware-tanzu/servicebinding/branch/main/graph/badge.svg)](https://codecov.io/gh/vmware-tanzu/servicebinding)
 
 
 Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://servicebinding.io/). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC3](https://github.com/servicebinding/spec/tree/v1.0.0-rc3)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
@@ -26,7 +26,7 @@ The following are not implemented:
 Prerequisites:
 - a Kubernetes 1.18+ cluster
 
-Using the [latest release](https://github.com/vmware-labs/service-bindings/releases/latest) is recommended.
+Using the [latest release](https://github.com/vmware-tanzu/servicebinding/releases/latest) is recommended.
 
 ### Build from source
 

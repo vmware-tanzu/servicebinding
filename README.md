@@ -7,19 +7,21 @@
 [![codecov](https://codecov.io/gh/vmware-labs/service-bindings/branch/main/graph/badge.svg)](https://codecov.io/gh/vmware-labs/service-bindings)
 
 
-Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://servicebinding.io/). We are tracking changes to the spec as it approaches a stable release (currently targeting [RC3](https://github.com/servicebinding/spec/tree/v1.0.0-rc3)). Backwards and forwards compatibility should not be expected for alpha versioned resources.
+Service Bindings for Kubernetes implements the [Service Binding Specification for Kubernetes](https://servicebinding.io/) v1.0.
 
 This implementation provides support for:
-- [Provisioned Service](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#provisioned-service)
-- [Workload Projection](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#workload-projection)
-- [Service Binding](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#service-binding)
-- [Direct Secret Reference](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#direct-secret-reference)
-- [Role-Based Access Control (RBAC)](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#role-based-access-control-rbac)
+- [Provisioned Service](https://github.com/servicebinding/spec/tree/v1.0.0#provisioned-service)
+- [Workload Projection](https://github.com/servicebinding/spec/tree/v1.0.0#workload-projection)
+- [Service Binding](https://github.com/servicebinding/spec/tree/v1.0.0#service-binding)
+- [Direct Secret Reference](https://github.com/servicebinding/spec/tree/v1.0.0#direct-secret-reference)
+- [Role-Based Access Control (RBAC)](https://github.com/servicebinding/spec/tree/v1.0.0#role-based-access-control-rbac)
 
 The following are not implemented:
-- [Workload Resource Mapping](https://github.com/servicebinding/spec/tree/v1.0.0-rc3#workload-resource-mapping)
+- [Workload Resource Mapping](https://github.com/servicebinding/spec/tree/v1.0.0#workload-resource-mapping)
 - Extensions including:
-  - [Binding Secret Generation Strategies](https://github.com/servicebinding/spec/blob/v1.0.0-rc3/extensions/secret-generation.md)
+  - [Binding Secret Generation Strategies](https://github.com/servicebinding/spec/blob/v1.0.0/extensions/secret-generation.md)
+
+Equivalent capabilities from the v1.0.0-rc3 (servicebinding.io/v1alpha3) version of the spec are also supported. There are no significant API or runtime changes between v1alpha3 and v1beta1 versions.
 
 ## Try it out
 

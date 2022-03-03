@@ -88,41 +88,15 @@ rules:
   - apiGroups: ["serving.knative.dev"]
     resources: ["services", "configurations"]
     verbs: ["get", "list", "watch", "update", "patch"]
-
 ---
-# This piece of the aggregated cluster role enables us to read
-# Kpack image resources
-kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: service-binding-kpack
-  labels:
-    bindings.labs.vmware.com/release: devel
-    servicebinding.io/controller: "true"
-rules:
-  - apiGroups: ["build.pivotal.io"]
-    resources: ["images"]
-    verbs: ["get", "list", "watch"]
----
-# This piece of the aggregated cluster role enables us to read
-# riff resources
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: service-binding-riff
+  name: service-binding-app-viewer
   labels:
-    bindings.labs.vmware.com/release: devel
-    servicebinding.io/controller: "true"
+    # Add these permissions to the "app-viewer" role.
+    apps.tanzu.vmware.com/aggregate-to-app-viewer: "true"
 rules:
-  - apiGroups: ["build.projectriff.io"]
-    resources: ["applications", "containers", "functions"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["core.projectriff.io"]
-    resources: ["deployers"]
-    verbs: ["get", "list", "watch", "update", "patch"]
-  - apiGroups: ["knative.projectriff.io"]
-    resources: ["deployers"]
-    verbs: ["get", "list", "watch", "update", "patch"]
-  - apiGroups: ["streams.projectriff.io"]
-    resources: ["processors"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+- apiGroups: ["servicebinding.io"]
+  resources: ["servicebindings"]
+  verbs: ["get","list","watch"]

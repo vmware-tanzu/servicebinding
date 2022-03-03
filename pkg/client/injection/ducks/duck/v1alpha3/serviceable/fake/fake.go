@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package fake
 
 import (
-	serviceable "github.com/vmware-labs/service-bindings/pkg/client/injection/ducks/duck/v1alpha3/serviceable"
+	serviceable "github.com/vmware-tanzu/servicebinding/pkg/client/injection/ducks/duck/v1alpha3/serviceable"
 	injection "knative.dev/pkg/injection"
 )
 

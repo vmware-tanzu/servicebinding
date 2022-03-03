@@ -15,7 +15,7 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf ${TMP_DIR}' EXIT
 export GOPATH=${GOPATH:-${TMP_DIR}}
 
-TMP_REPO_PATH="${TMP_DIR}/src/github.com/vmware-labs/service-bindings"
+TMP_REPO_PATH="${TMP_DIR}/src/github.com/vmware-tanzu/servicebinding"
 mkdir -p "$(dirname "${TMP_REPO_PATH}")" && ln -s "${REPO_ROOT}" "${TMP_REPO_PATH}"
 
 API_GROUPS="labs:v1alpha1 labsinternal:v1alpha1 servicebinding:v1alpha3 duck:v1alpha3"
@@ -25,14 +25,14 @@ API_GROUPS="labs:v1alpha1 labsinternal:v1alpha1 servicebinding:v1alpha3 duck:v1a
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
 bash ${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
-  github.com/vmware-labs/service-bindings/pkg/client github.com/vmware-labs/service-bindings/pkg/apis \
+  github.com/vmware-tanzu/servicebinding/pkg/client github.com/vmware-tanzu/servicebinding/pkg/apis \
   "$API_GROUPS" \
   --output-base "${TMP_DIR}/src" \
   --go-header-file ${REPO_ROOT}/hack/boilerplate/boilerplate.go.txt
 
 # Knative Injection
 bash ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh "injection" \
-  github.com/vmware-labs/service-bindings/pkg/client github.com/vmware-labs/service-bindings/pkg/apis \
+  github.com/vmware-tanzu/servicebinding/pkg/client github.com/vmware-tanzu/servicebinding/pkg/apis \
   "$API_GROUPS" \
   --output-base "${TMP_DIR}/src" \
   --go-header-file ${REPO_ROOT}/hack/boilerplate/boilerplate.go.txt

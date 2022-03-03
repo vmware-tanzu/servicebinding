@@ -8,7 +8,7 @@ package v1alpha1
 import (
 	"testing"
 
-	duckv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/duck/v1alpha3"
+	duckv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/duck/v1alpha3"
 	"knative.dev/pkg/apis/duck"
 )
 

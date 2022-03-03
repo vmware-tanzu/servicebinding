@@ -8,8 +8,8 @@ package servicebindingprojection
 import (
 	"context"
 
-	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection"
+	labsinternalv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labsinternal/v1alpha1"
+	servicebindingprojectioninformer "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/scheme"

@@ -1,4 +1,4 @@
-module github.com/vmware-labs/service-bindings
+module github.com/vmware-tanzu/servicebinding
 
 go 1.15
 

@@ -11,9 +11,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/kmeta"
 
-	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
-	resourcenames "github.com/vmware-labs/service-bindings/pkg/reconciler/servicebinding/resources/names"
+	labsinternalv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labsinternal/v1alpha1"
+	servicebindingv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/servicebinding/v1alpha3"
+	resourcenames "github.com/vmware-tanzu/servicebinding/pkg/reconciler/servicebinding/resources/names"
 )
 
 func MakeServiceBindingProjection(binding *servicebindingv1alpha3.ServiceBinding) (*labsinternalv1alpha1.ServiceBindingProjection, error) {

@@ -11,8 +11,8 @@ import (
 	"context"
 	"time"
 
-	v1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
-	scheme "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/scheme"
+	v1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/servicebinding/v1alpha3"
+	scheme "github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

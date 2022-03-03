@@ -8,8 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	"github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labsinternal/v1alpha1"
+	"github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

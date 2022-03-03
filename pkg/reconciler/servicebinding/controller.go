@@ -8,12 +8,12 @@ package servicebinding
 import (
 	"context"
 
-	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
-	bindingclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client"
-	servicebindingprojectioninformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection"
-	servicebindinginformer "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/servicebinding/v1alpha3/servicebinding"
-	servicebindingreconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/servicebinding/v1alpha3/servicebinding"
-	"github.com/vmware-labs/service-bindings/pkg/resolver"
+	servicebindingv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/servicebinding/v1alpha3"
+	bindingclient "github.com/vmware-tanzu/servicebinding/pkg/client/injection/client"
+	servicebindingprojectioninformer "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/labsinternal/v1alpha1/servicebindingprojection"
+	servicebindinginformer "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/servicebinding/v1alpha3/servicebinding"
+	servicebindingreconciler "github.com/vmware-tanzu/servicebinding/pkg/client/injection/reconciler/servicebinding/v1alpha3/servicebinding"
+	"github.com/vmware-tanzu/servicebinding/pkg/resolver"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	"knative.dev/pkg/configmap"

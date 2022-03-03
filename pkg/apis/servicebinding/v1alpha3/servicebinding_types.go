@@ -17,7 +17,7 @@ import (
 	"knative.dev/pkg/kmeta"
 	"knative.dev/pkg/tracker"
 
-	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
+	labsinternalv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labsinternal/v1alpha1"
 )
 
 const (

@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
-	servicebindingsclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client/fake"
-	provisionedservicereconciler "github.com/vmware-labs/service-bindings/pkg/client/injection/reconciler/labs/v1alpha1/provisionedservice"
+	labsv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labs/v1alpha1"
+	servicebindingsclient "github.com/vmware-tanzu/servicebinding/pkg/client/injection/client/fake"
+	provisionedservicereconciler "github.com/vmware-tanzu/servicebinding/pkg/client/injection/reconciler/labs/v1alpha1/provisionedservice"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -24,9 +24,9 @@ import (
 	"knative.dev/pkg/logging"
 
 	// register injection fakes
-	_ "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labs/v1alpha1/provisionedservice/fake"
+	_ "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/labs/v1alpha1/provisionedservice/fake"
 
-	. "github.com/vmware-labs/service-bindings/pkg/reconciler/testing"
+	. "github.com/vmware-tanzu/servicebinding/pkg/reconciler/testing"
 	. "knative.dev/pkg/reconciler/testing"
 )
 

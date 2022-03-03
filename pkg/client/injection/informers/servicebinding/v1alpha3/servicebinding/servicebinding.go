@@ -10,8 +10,8 @@ package servicebinding
 import (
 	context "context"
 
-	v1alpha3 "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/servicebinding/v1alpha3"
-	factory "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/factory"
+	v1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/client/informers/externalversions/servicebinding/v1alpha3"
+	factory "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/factory"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
@@ -35,7 +35,7 @@ func Get(ctx context.Context) v1alpha3.ServiceBindingInformer {
 	untyped := ctx.Value(Key{})
 	if untyped == nil {
 		logging.FromContext(ctx).Panic(
-			"Unable to fetch github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/servicebinding/v1alpha3.ServiceBindingInformer from context.")
+			"Unable to fetch github.com/vmware-tanzu/servicebinding/pkg/client/informers/externalversions/servicebinding/v1alpha3.ServiceBindingInformer from context.")
 	}
 	return untyped.(v1alpha3.ServiceBindingInformer)
 }

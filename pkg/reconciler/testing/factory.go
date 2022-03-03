@@ -13,8 +13,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	labsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
-	fakeservicebindingsclient "github.com/vmware-labs/service-bindings/pkg/client/injection/client/fake"
+	labsv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labs/v1alpha1"
+	fakeservicebindingsclient "github.com/vmware-tanzu/servicebinding/pkg/client/injection/client/fake"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

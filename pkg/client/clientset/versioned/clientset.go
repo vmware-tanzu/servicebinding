@@ -10,10 +10,10 @@ package versioned
 import (
 	"fmt"
 
-	duckv1alpha3 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/duck/v1alpha3"
-	bindingsv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labs/v1alpha1"
-	internalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labsinternal/v1alpha1"
-	servicebindingv1alpha3 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/servicebinding/v1alpha3"
+	duckv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned/typed/duck/v1alpha3"
+	bindingsv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned/typed/labs/v1alpha1"
+	internalv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned/typed/labsinternal/v1alpha1"
+	servicebindingv1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned/typed/servicebinding/v1alpha3"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

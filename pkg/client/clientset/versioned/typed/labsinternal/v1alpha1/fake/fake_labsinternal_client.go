@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package fake
 
 import (
-	v1alpha1 "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/typed/labsinternal/v1alpha1"
+	v1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned/typed/labsinternal/v1alpha1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

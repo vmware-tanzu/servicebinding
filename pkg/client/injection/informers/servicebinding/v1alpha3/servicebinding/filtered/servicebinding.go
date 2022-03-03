@@ -10,8 +10,8 @@ package filtered
 import (
 	context "context"
 
-	v1alpha3 "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/servicebinding/v1alpha3"
-	filtered "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/factory/filtered"
+	v1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/client/informers/externalversions/servicebinding/v1alpha3"
+	filtered "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/factory/filtered"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
@@ -48,7 +48,7 @@ func Get(ctx context.Context, selector string) v1alpha3.ServiceBindingInformer {
 	untyped := ctx.Value(Key{Selector: selector})
 	if untyped == nil {
 		logging.FromContext(ctx).Panicf(
-			"Unable to fetch github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/servicebinding/v1alpha3.ServiceBindingInformer with selector %s from context.", selector)
+			"Unable to fetch github.com/vmware-tanzu/servicebinding/pkg/client/informers/externalversions/servicebinding/v1alpha3.ServiceBindingInformer with selector %s from context.", selector)
 	}
 	return untyped.(v1alpha3.ServiceBindingInformer)
 }

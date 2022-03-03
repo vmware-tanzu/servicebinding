@@ -10,9 +10,9 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labs/v1alpha1"
-	labsinternalv1alpha1 "github.com/vmware-labs/service-bindings/pkg/apis/labsinternal/v1alpha1"
-	v1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
+	v1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labs/v1alpha1"
+	labsinternalv1alpha1 "github.com/vmware-tanzu/servicebinding/pkg/apis/labsinternal/v1alpha1"
+	v1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/servicebinding/v1alpha3"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )

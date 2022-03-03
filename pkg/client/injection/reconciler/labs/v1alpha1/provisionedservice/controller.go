@@ -13,9 +13,9 @@ import (
 	reflect "reflect"
 	strings "strings"
 
-	versionedscheme "github.com/vmware-labs/service-bindings/pkg/client/clientset/versioned/scheme"
-	client "github.com/vmware-labs/service-bindings/pkg/client/injection/client"
-	provisionedservice "github.com/vmware-labs/service-bindings/pkg/client/injection/informers/labs/v1alpha1/provisionedservice"
+	versionedscheme "github.com/vmware-tanzu/servicebinding/pkg/client/clientset/versioned/scheme"
+	client "github.com/vmware-tanzu/servicebinding/pkg/client/injection/client"
+	provisionedservice "github.com/vmware-tanzu/servicebinding/pkg/client/injection/informers/labs/v1alpha1/provisionedservice"
 	zap "go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"

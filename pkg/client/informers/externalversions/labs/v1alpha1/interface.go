@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package v1alpha1
 
 import (
-	internalinterfaces "github.com/vmware-labs/service-bindings/pkg/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/vmware-tanzu/servicebinding/pkg/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

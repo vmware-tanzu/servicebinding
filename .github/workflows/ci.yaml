@@ -20,10 +20,8 @@ jobs:
         go-version: 1.15.x
     - name: Test
       run: go test ./... -coverprofile cover.out
-    - name: Report coverage
-      run: bash <(curl -s https://codecov.io/bash)
-      env:
-        CODECOV_TOKEN: a99a7ac2-ad9e-4c7a-b33a-17732e3469f4
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
 
   stage:
     needs: test

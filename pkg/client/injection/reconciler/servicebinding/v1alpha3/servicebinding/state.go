@@ -10,7 +10,7 @@ package servicebinding
 import (
 	fmt "fmt"
 
-	v1alpha3 "github.com/vmware-labs/service-bindings/pkg/apis/servicebinding/v1alpha3"
+	v1alpha3 "github.com/vmware-tanzu/servicebinding/pkg/apis/servicebinding/v1alpha3"
 	types "k8s.io/apimachinery/pkg/types"
 	cache "k8s.io/client-go/tools/cache"
 	reconciler "knative.dev/pkg/reconciler"

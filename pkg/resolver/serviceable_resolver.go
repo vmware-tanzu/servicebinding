@@ -52,6 +52,11 @@ func (r *ServiceableResolver) ServiceableFromObjectReference(ctx context.Context
 		return nil, fmt.Errorf("failed to track %+v: %v", ref, err)
 	}
 	gvr, _ := meta.UnsafeGuessKindToResource(ref.GroupVersionKind())
+
+	// Tactical fix for Postgres resource pluralization
+	if gvr.Resource == "postgreses" && gvr.Group == "sql.tanzu.vmware.com" {
+		gvr.Resource = "postgres"
+	}
 	_, lister, err := r.informerFactory.Get(ctx, gvr)
 	if err != nil {
 		return nil, err

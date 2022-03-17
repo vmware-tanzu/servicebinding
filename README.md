@@ -46,6 +46,31 @@ kapp deploy -a service-bindings -f <(ko resolve -f config)
 kapp delete -a service-bindings
 ```
 
+## Collecting logs from service binding manager
+
+Retrieve pod logs from the `manager` running in the `service-bindings` namespace.
+
+  ```bash
+  kubectl -n service-bindings logs -l role=manager
+  ```
+
+For example:
+
+  ```bash
+  2021/11/05 15:25:28 Registering 3 clients
+  2021/11/05 15:25:28 Registering 3 informer factories
+  2021/11/05 15:25:28 Registering 7 informers
+  2021/11/05 15:25:28 Registering 8 controllers
+  {"severity":"INFO","timestamp":"2021-11-05T15:25:28.483823208Z","caller":"logging/config.go:116","message":"Successfully created the logger."}
+  {"severity":"INFO","timestamp":"2021-11-05T15:25:28.48392361Z","caller":"logging/config.go:117","message":"Logging level set to: info"}
+  {"severity":"INFO","timestamp":"2021-11-05T15:25:28.483999911Z","caller":"logging/config.go:79","message":"Fetch GitHub commit ID from kodata failed","error":"open /var/run/ko/HEAD: no such file or directory"}
+  {"severity":"INFO","timestamp":"2021-11-05T15:25:28.484035711Z","logger":"webhook","caller":"profiling/server.go:64","message":"Profiling enabled: false"}
+  {"severity":"INFO","timestamp":"2021-11-05T15:25:28.522884909Z","logger":"webhook","caller":"leaderelection/context.go:46","message":"Running with Standard leader election"}
+  {"severity":"INFO","timestamp":"2021-11-05T15:25:28.523358615Z","logger":"webhook","caller":"provisionedservice/controller.go:31","message":"Setting up event handlers."}
+  ...
+    {"severity":"ERROR","timestamp":"2021-11-17T15:00:24.561881861Z","logger":"webhook","caller":"controller/controller.go:548","message":"Reconcile error","duration":"167.902µs","error":"deployments.apps \"spring-petclinic\" not found","stacktrace":"knative.dev/pkg/controller.(*Impl).handleErr\n\tknative.dev/pkg@v0.0.0-20210331065221-952fdd90dbb0/controller/controller.go:548\nknative.dev/pkg/controller.(*Impl).processNextWorkItem\n\tknative.dev/pkg@v0.0.0-20210331065221-952fdd90dbb0/controller/controller.go:531\nknative.dev/pkg/controller.(*Impl).RunContext.func3\n\tknative.dev/pkg@v0.0.0-20210331065221-952fdd90dbb0/controller/controller.go:468"}
+  ```
+
 ## Troubleshooting
 
 For basic troubleshooting Service Bindings, please see the troubleshooting guide [here](./docs/troubleshooting.md).

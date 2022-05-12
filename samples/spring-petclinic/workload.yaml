@@ -33,7 +33,7 @@ spec:
       containers:
         - name: workload
           # built with paketo builder from https://github.com/spring-projects/spring-petclinic
-          image: scothis/petclinic:service-bindings-20200922
+          image: ghcr.io/vmware-tanzu/servicebinding/test/petclinic:20200922
           env:
           # tell the workload to use mysql instead of the default embedded database
           - name: SPRING_PROFILES_ACTIVE

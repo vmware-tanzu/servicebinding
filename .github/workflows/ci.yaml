@@ -204,7 +204,7 @@ jobs:
         set -o nounset
         set -o pipefail
 
-        kapp deploy -a kapp-controller -y -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml
+        kapp deploy -a kapp-controller -y -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/v0.36.1/release.yml
     - name: Deploy Service Bindings Package
       run: |
         set -o errexit

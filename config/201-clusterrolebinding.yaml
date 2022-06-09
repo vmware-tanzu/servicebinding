@@ -7,7 +7,6 @@ metadata:
   name: service-binding-controller-admin
   labels:
     bindings.labs.vmware.com/release: devel
-    bindings.labs.vmware.com/admin: "true"
 subjects:
   - kind: ServiceAccount
     name: controller

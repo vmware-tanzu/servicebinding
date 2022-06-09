@@ -11,6 +11,8 @@ aggregationRule:
   clusterRoleSelectors:
   - matchLabels:
       bindings.labs.vmware.com/admin: "true"
+  - matchLabels:
+      servicebinding.io/controller: "true"
   # legacy support
   - matchLabels:
       service.binding/controller: "true"
@@ -104,10 +106,10 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: service-binding-provisioned-service
+  name: service-binding-provisioned-services
   labels:
     servicebinding.io/controller: "true"
 rules:
 - apiGroups: ["bindings.labs.vmware.com"]
-  resources: ["*"]
+  resources: ["provisionedservices"]
   verbs: ["get","list","watch"]

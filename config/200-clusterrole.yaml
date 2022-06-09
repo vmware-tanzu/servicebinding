@@ -10,6 +10,8 @@ metadata:
 aggregationRule:
   clusterRoleSelectors:
   - matchLabels:
+      bindings.labs.vmware.com/admin: "true"
+  - matchLabels:
       servicebinding.io/controller: "true"
   # legacy support
   - matchLabels:
@@ -22,7 +24,7 @@ metadata:
   name: service-binding-core
   labels:
     bindings.labs.vmware.com/release: devel
-    servicebinding.io/controller: "true"
+    bindings.labs.vmware.com/admin: "true"
 rules:
   - apiGroups: [""]
     resources: ["configmaps", "services", "secrets", "events", "namespaces"]
@@ -46,7 +48,7 @@ metadata:
   name: service-binding-crd
   labels:
     bindings.labs.vmware.com/release: devel
-    servicebinding.io/controller: "true"
+    bindings.labs.vmware.com/admin: "true"
 rules:
   - apiGroups: ["servicebinding.io"]
     resources: ["*"]
@@ -99,4 +101,15 @@ metadata:
 rules:
 - apiGroups: ["servicebinding.io"]
   resources: ["servicebindings"]
+  verbs: ["get","list","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: service-binding-provisioned-services
+  labels:
+    servicebinding.io/controller: "true"
+rules:
+- apiGroups: ["bindings.labs.vmware.com"]
+  resources: ["provisionedservices"]
   verbs: ["get","list","watch"]

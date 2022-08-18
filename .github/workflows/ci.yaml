@@ -125,6 +125,7 @@ jobs:
         - 1.21.12
         - 1.22.9
         - 1.23.6
+        - 1.24.2
       fail-fast: false
     env:
       REGISTRY_NAME: registry.local
@@ -143,7 +144,7 @@ jobs:
     - name: Install kind
       run: |
         cd $(mktemp -d -t kind.XXXX)
-        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.14.0/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin
         cd -
@@ -205,7 +206,7 @@ jobs:
         set -o nounset
         set -o pipefail
 
-        kapp deploy -a kapp-controller -y -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/v0.36.1/release.yml
+        kapp deploy -a kapp-controller -y -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/v0.39.0/release.yml
     - name: Deploy Service Bindings Package
       run: |
         set -o errexit
@@ -297,7 +298,7 @@ jobs:
         set -o pipefail
 
         deploys=$(kapp app-change list -a service-bindings-ctrl --json | jq '.Tables[0].Rows | length')
-        if [ "$deploys" != "1" ]; then
+        if [ "$((deploys))" -gt 1 ]; then
           echo "Too many app changes for the service-binding package, expected 1 found ${deploys}"
           exit 1
         fi

@@ -124,6 +124,7 @@ jobs:
         - 1.22.9
         - 1.23.6
         - 1.24.2
+        - 1.25.2
       fail-fast: false
     env:
       REGISTRY_NAME: registry.local
@@ -142,7 +143,7 @@ jobs:
     - name: Install kind
       run: |
         cd $(mktemp -d -t kind.XXXX)
-        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.14.0/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.16.0/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin
         cd -

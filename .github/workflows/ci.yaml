@@ -22,6 +22,11 @@ jobs:
       run: go test ./... -coverprofile cover.out
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+    - name: Scan Inclusive Terminology
+      uses: get-woke/woke-action@v0
+      with: 
+        fail-on-error: true
+        woke-args: -c https://via.vmw.com/its-woke-rules
 
   stage:
     needs: test

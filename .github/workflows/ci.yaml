@@ -20,6 +20,11 @@ jobs:
         go-version: 1.18.x
     - name: Test
       run: go test ./... -coverprofile cover.out
+    - name: Scan Inclusive Terminology
+      uses: get-woke/woke-action@v0
+      with: 
+        fail-on-error: true
+        woke-args: -c https://via.vmw.com/its-woke-rules
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
 
@@ -183,7 +188,7 @@ jobs:
         docker network connect kind local-registry
 
         # Document the local registry
-        # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
+        # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry # wokeignore:rule=master
         cat <<EOF | kubectl apply -f -
         apiVersion: v1
         kind: ConfigMap

@@ -130,6 +130,7 @@ jobs:
         - 1.23.6
         - 1.24.2
         - 1.25.2
+        - 1.26.0
       fail-fast: false
     env:
       REGISTRY_NAME: registry.local

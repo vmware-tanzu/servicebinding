@@ -338,6 +338,8 @@ jobs:
     - uses: vmware-tanzu/carvel-setup-action@v1
       with:
         imgpkg: v0.22.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - run: |
         imgpkg version
         kbld version

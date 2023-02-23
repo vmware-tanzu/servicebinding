@@ -1,1 +1,2 @@
-defaultBaseImage: paketobuildpacks/run-jammy-tiny:latest
+# paketobuildpacks/run-jammy-static:0.0.28
+defaultBaseImage: paketobuildpacks/run-jammy-static@sha256:43f8f7f1b9181866221cc472719ddeca748dc95792a35b35a082935b50a554b7

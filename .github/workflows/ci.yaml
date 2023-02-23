@@ -356,12 +356,12 @@ jobs:
         chmod +x ./crane
         sudo mv ./crane /usr/local/bin
         cd -
-    - name: Docker login
-      run: |
-        echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-      env:
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Get release version
       id: get-version
       run: |
@@ -386,7 +386,7 @@ jobs:
         set -o pipefail
 
         version="${{ steps.get-version.outputs.version }}"
-        repo="vmware/labs-service-bindings-manager"
+        repo="ghcr.io/${{ github.repository }}/bundle"
         repo_tag="${repo}:${version}"
 
         imgpkg copy --tar service-bindings-bundle.tar --to-repo "${repo}"

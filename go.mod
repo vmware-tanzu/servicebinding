@@ -4,9 +4,9 @@ go 1.18
 
 require (
 	github.com/google/go-cmp v0.5.9
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.24.0
-	k8s.io/api v0.20.0-alpha.2
+	k8s.io/api v0.20.16-rc.0
 	k8s.io/apimachinery v0.20.16-rc.0
 	k8s.io/client-go v0.20.0-alpha.2
 	k8s.io/code-generator v0.19.16

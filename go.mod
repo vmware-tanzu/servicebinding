@@ -8,7 +8,7 @@ require (
 	go.uber.org/zap v1.24.0
 	k8s.io/api v0.20.16-rc.0
 	k8s.io/apimachinery v0.20.16-rc.0
-	k8s.io/client-go v0.20.0-alpha.2
+	k8s.io/client-go v0.20.0-rc.0
 	k8s.io/code-generator v0.19.16
 	knative.dev/pkg v0.0.0-20210902173607-983897f9e37f // pin to branch release-0.22
 )
@@ -95,7 +95,7 @@ require (
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.4.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211110013926-83f114cd0513 // indirect
-	k8s.io/utils v0.0.0-20200729134348-d5654de09c73 // indirect
+	k8s.io/utils v0.0.0-20201110183641-67b214c5f920 // indirect
 	knative.dev/hack v0.0.0-20210325223819-b6ab329907d3 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect

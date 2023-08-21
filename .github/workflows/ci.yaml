@@ -366,7 +366,7 @@ jobs:
     - name: Get release version
       id: get-version
       run: |
-        echo ::set-output name=version::$(cat VERSION)
+        echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
     - name: Draft release
       id: create_release
       uses: actions/create-release@v1.1.4

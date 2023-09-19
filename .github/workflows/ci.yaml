@@ -43,7 +43,9 @@ jobs:
         go-version: 1.18.x
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - uses: vmware-tanzu/carvel-setup-action@v1
+    - uses: carvel-dev/setup-action@v1
+      with:
+       token: ${{ secrets.GITHUB_TOKEN }}
     - run: |
         imgpkg version
         kbld version
@@ -141,11 +143,9 @@ jobs:
       BUNDLE: registry.local:5000/service-bindings/bundle
     steps:
     - uses: actions/checkout@v4
-    - uses: vmware-tanzu/carvel-setup-action@v1
+    - uses: carvel-dev/setup-action@v1
       with:
-        imgpkg: v0.29.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       token: ${{ secrets.GITHUB_TOKEN }}
     - run: |
         imgpkg version
         kbld version
@@ -340,11 +340,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: vmware-tanzu/carvel-setup-action@v1
+    - uses: carvel-dev/setup-action@v1
       with:
-        imgpkg: v0.22.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       token: ${{ secrets.GITHUB_TOKEN }}
     - run: |
         imgpkg version
         kbld version

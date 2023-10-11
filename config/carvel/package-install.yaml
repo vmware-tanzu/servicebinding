@@ -2,6 +2,25 @@
 #! SPDX-License-Identifier: Apache-2.0
 
 #@ load("@ytt:data", "data")
+#@ load("@ytt:base64", "base64")
+#@ load("@ytt:yaml", "yaml")
+
+#@ def collect_values():
+#@  values = {}
+#@  if hasattr(data.values, "shared"):
+#@    values["shared"] = data.values.shared
+#@  end
+#@  return values
+#@ end
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: service-bindings-values
+  namespace: #@ data.values.namespace
+stringData:
+  values.yaml: #@ yaml.encode(collect_values())
 
 ---
 apiVersion: packaging.carvel.dev/v1alpha1
@@ -22,6 +41,10 @@ spec:
       #@ if data.values.package_prerelease != None:
       prereleases: #@ data.values.package_prerelease
       #@ end
+  values:
+  - secretRef:
+      name: service-bindings-values
+
 
 ---
 apiVersion: kapp.k14s.io/v1alpha1

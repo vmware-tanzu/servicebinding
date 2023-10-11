@@ -89,6 +89,7 @@ jobs:
         cp NOTICE "bundle/NOTICE"
         cp VERSION "bundle/VERSION"
         cp config/carvel/bundle.yaml "bundle/bundle.yaml"
+        cp config/carvel/bundle.yaml "bundle/openshift.yaml"
         cp -r samples "bundle/samples"
 
         echo "##[group]Build Service Bindings"

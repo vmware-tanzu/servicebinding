@@ -13,3 +13,5 @@ service_account_name: service-binding-kc
 cluster_role_name: service-binding-kc
 cluster_role_binding_name: service-binding-kc
 sync_period: 10m
+shared:
+  kubernetes_distribution: null

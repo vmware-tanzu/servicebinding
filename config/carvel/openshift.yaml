@@ -1,0 +1,83 @@
+#@ load("@ytt:data", "data")
+
+#@  kubernetes_distribution = ""
+#@  if hasattr(data.values, 'kubernetes_distribution'):
+#@    kubernetes_distribution = data.values.kubernetes_distribution
+#@  end
+#@  if hasattr(data.values, 'shared') and hasattr(data.values.shared, 'kubernetes_distribution'):
+#@    kubernetes_distribution = data.values.shared.kubernetes_distribution
+#@  end
+
+#@  if kubernetes_distribution == "openshift":
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: service-binding-nonroot-scc
+  namespace: service-bindings
+rules:
+- apiGroups:
+  - security.openshift.io
+  resourceNames:
+  - service-binding-scc
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - use
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: service-binding-nonroot-scc
+  namespace: service-bindings
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: service-binding-nonroot-scc
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:serviceaccounts:service-bindings
+---
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: false
+allowPrivilegedContainer: false
+allowedCapabilities: null
+apiVersion: security.openshift.io/v1
+defaultAddCapabilities: null
+fsGroup:
+  type: MustRunAs
+groups: []
+kind: SecurityContextConstraints
+metadata:
+  name: service-binding-scc
+priority: null
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+- ALL
+runAsUser:
+  type: MustRunAsNonRoot
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+seccompProfiles:
+- runtime/default
+users: []
+volumes:
+- configMap
+- csi
+- downwardAPI
+- emptyDir
+- ephemeral
+- persistentVolumeClaim
+- projected
+- secret
+#@  end

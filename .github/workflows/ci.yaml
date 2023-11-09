@@ -43,7 +43,7 @@ jobs:
         go-version: 1.18.x
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - uses: carvel-dev/setup-action@v1
+    - uses: carvel-dev/setup-action@v2
       with:
        token: ${{ secrets.GITHUB_TOKEN }}
     - run: |
@@ -144,7 +144,7 @@ jobs:
       BUNDLE: registry.local:5000/service-bindings/bundle
     steps:
     - uses: actions/checkout@v4
-    - uses: carvel-dev/setup-action@v1
+    - uses: carvel-dev/setup-action@v2
       with:
        token: ${{ secrets.GITHUB_TOKEN }}
     - run: |
@@ -341,7 +341,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: carvel-dev/setup-action@v1
+    - uses: carvel-dev/setup-action@v2
       with:
        token: ${{ secrets.GITHUB_TOKEN }}
     - run: |
